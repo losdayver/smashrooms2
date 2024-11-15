@@ -6,7 +6,7 @@ import {
   ICommunicatorEvent,
 } from "../communicator/communicatorTypes";
 import { ISocketServer } from "./socketsTypes";
-import { IConnectionMessage } from "./wsMessageMeta";
+import { IConnectionMessage, IGenericMessage } from "./wsMessageMeta";
 
 export class WSSocketServer implements ISocketServer {
   private communicator: ICommunicatior;
@@ -33,8 +33,10 @@ export class WSSocketServer implements ISocketServer {
       clientSocket.on("message", (buffer) => {
         let data;
         try {
-          data = JSON.parse(buffer.toString()) as IConnectionMessage;
-          this.resolveConnectionMessage(clientSocket, data);
+          data = JSON.parse(buffer.toString()) as any;
+          if (data.name == "conn")
+            this.resolveConnectionMessage(clientSocket, data);
+          else this.resolveGenericMessage(clientSocket, data);
         } catch {}
       });
     });
@@ -43,8 +45,13 @@ export class WSSocketServer implements ISocketServer {
   private resolveConnectionMessage = (
     clientSocket: WebSocket,
     message: IConnectionMessage
+  ) => {
+    console.log(message.clientName);
+  };
+  private resolveGenericMessage = (
+    clientSocket: WebSocket,
+    message: IGenericMessage
   ) => {};
-  private resolveGenericMessage = () => {};
 }
 
 type ClientMap = Map<string, IWSClient>;
