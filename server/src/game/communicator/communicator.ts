@@ -3,15 +3,17 @@ import { ICommunicatior, ICommunicatorSubscriber } from "./communicatorTypes";
 
 export class Communicatior implements ICommunicatior {
   private scene: IScene;
+  private eventHandler: ICommunicatorSubscriber["handlerForCommunicatorEvents"];
 
-  makeSubscribe: (communiucatorSubscriber: ICommunicatorSubscriber) => void;
-  handlerForSceneEventsEvents: (
+  makeSubscribe = (subscriber: ICommunicatorSubscriber) => {
+    this.eventHandler = subscriber.handlerForCommunicatorEvents;
+  };
+  handlerForSceneEventsEvents = (
     event: ISceneEvents,
     sceneClientID: ISceneClient["ID"]
-  ) => void;
-  makeEventSubscribtion: (
-    communiucatorSubscriber: ICommunicatorSubscriber
-  ) => void;
+  ) => {
+    // todo implement
+  };
   processRequest: () => {};
 
   constructor(scene: IScene) {

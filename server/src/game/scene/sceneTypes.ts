@@ -1,6 +1,7 @@
 export interface IScene extends ISceneActions {
   recieveAction: (action: ISceneActions) => void;
   makeSubscribe: (sceneSubscriber: ISceneSubscriber) => void;
+  tick: () => void;
 }
 
 export interface ISceneActions {

@@ -24,9 +24,9 @@ export class Server {
   }
 }
 
-const createWSServer = () => {
+export const createWSServer = (port: number) => {
   const scene = new Scene();
   const communicator = new Communicatior(scene);
-  const wsServer = new WSSocketServer(communicator);
+  const wsServer = new WSSocketServer(communicator, port);
   return new Server(wsServer, communicator, scene);
 };
