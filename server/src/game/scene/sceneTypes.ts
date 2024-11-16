@@ -1,15 +1,15 @@
+import { ClientActionCodes } from "../sockets/messageMeta";
+
 export interface IScene extends ISceneActions {
-  recieveAction: (action: ISceneActions) => void;
   makeSubscribe: (sceneSubscriber: ISceneSubscriber) => void;
   tick: () => void;
 }
 
 export interface ISceneActions {
-  clientAction: (code: ClientActionCodes) => void;
+  clientAction: (clientID: ISceneClient["ID"], code: ClientActionCodes) => void;
   connectAction: (clientID: ISceneClient["ID"]) => void;
   disconnectAction: (clientID: ISceneClient["ID"]) => void;
 }
-export type ClientActionCodes = "left" | "right" | "jump" | "fire" | "duck";
 
 export interface ISceneSubscriber {
   handlerForSceneEventsEvents: (

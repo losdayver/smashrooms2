@@ -1,7 +1,21 @@
-import { ClientActionCodes, ISceneSubscriber } from "../scene/sceneTypes";
+import { ISceneSubscriber } from "../scene/sceneTypes";
+import {
+  ClientActionCodes,
+  IClientActionMessage,
+  IConnectMessage,
+  IConnectResponseMessage,
+  IDisconnectMessage,
+  IGenericMessage,
+} from "../sockets/messageMeta";
 
 export interface ICommunicatior extends ISceneSubscriber {
-  processRequest: (request: ICommunicatorRequests) => void;
+  processMessage: (
+    msg:
+      | IConnectResponseMessage
+      | IDisconnectMessage
+      | IClientActionMessage
+      | IGenericMessage
+  ) => void;
   makeSubscribe: (communiucatorSubscriber: ICommunicatorSubscriber) => void;
 }
 

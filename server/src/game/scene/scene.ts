@@ -1,19 +1,25 @@
+import { ClientActionCodes } from "../sockets/messageMeta";
 import {
-  ClientActionCodes,
   IScene,
   ISceneActions,
   ISceneClient,
   ISceneSubscriber,
 } from "./sceneTypes";
+import { severityLog } from "./../../utils";
 
 export class Scene implements IScene {
   eventHandler: ISceneSubscriber["handlerForSceneEventsEvents"];
 
   tick: () => void;
-  clientAction: (code: ClientActionCodes) => void;
-  connectAction: (clientID: ISceneClient["ID"]) => void;
-  disconnectAction: (clientID: ISceneClient["ID"]) => void;
-  recieveAction: (action: ISceneActions) => void;
+  clientAction = (clientID: ISceneClient["ID"], code: ClientActionCodes) => {
+    severityLog(`client ${clientID} preformed action ${code}`);
+  };
+  connectAction = (clientID: ISceneClient["ID"]) => {
+    severityLog(`scene connected client ${clientID}`);
+  };
+  disconnectAction = (clientID: ISceneClient["ID"]) => {
+    severityLog(`scene disconnected client ${clientID}`);
+  };
 
   makeSubscribe = (subscriber: ISceneSubscriber) => {
     this.eventHandler = subscriber.handlerForSceneEventsEvents;
