@@ -1,4 +1,4 @@
-import { ISceneEvents, ISceneClient, IScene } from "../scene/sceneTypes";
+import { IExternalEvents, ISceneClient, IScene } from "../scene/sceneTypes";
 import {
   IClientActionMessage,
   IConnectResponseMessage,
@@ -15,7 +15,7 @@ export class Communicatior implements ICommunicatior {
     this.eventHandler = subscriber.handlerForCommunicatorEvents;
   };
   handlerForSceneEventsEvents = (
-    event: ISceneEvents,
+    event: IExternalEvents,
     sceneClientID: ISceneClient["ID"]
   ) => {
     // todo implement

@@ -1,3 +1,4 @@
 import { createWSServer } from "./game/server/server";
 
-createWSServer(5889);
+const server = createWSServer(5889);
+server.run();

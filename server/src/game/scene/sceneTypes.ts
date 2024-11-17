@@ -11,13 +11,34 @@ export interface ISceneActions {
   disconnectAction: (clientID: ISceneClient["ID"]) => void;
 }
 
+/** describes event that is put into event queue upon receiving action from outside */
+export type IInternalEvent = ISpawnPropEvent | ISpawnControlledPropEvent;
+export interface ISpawnPropEvent {
+  name: "spawnProp";
+  data: {
+    posX: number;
+    posY: number;
+    propName: string;
+  };
+}
+export interface ISpawnControlledPropEvent {
+  name: "spawnControlledProp";
+  data: {
+    posX: number;
+    posY: number;
+    propName: string;
+    clientID: string;
+  };
+}
+
 export interface ISceneSubscriber {
   handlerForSceneEventsEvents: (
-    event: ISceneEvents,
+    event: IExternalEvents,
     sceneClientID: ISceneClient["ID"]
   ) => void;
 }
-export type ISceneEvents = IGetChunks; // разные события, например, необходимость обновить чанки для пользователя
+
+export type IExternalEvents = IGetChunks; // разные события, например, необходимость обновить чанки для пользователя
 export interface IGetChunks {
   chunkIDs: any[]; // todo implement
 }

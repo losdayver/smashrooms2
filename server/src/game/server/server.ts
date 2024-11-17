@@ -1,3 +1,4 @@
+import { severityLog } from "../../utils";
 import { Communicatior } from "../communicator/communicator";
 import { ICommunicatior } from "../communicator/communicatorTypes";
 import { Scene } from "../scene/scene";
@@ -10,6 +11,10 @@ export class Server {
   private communicatior: ICommunicatior;
   private socketServer: ISocketServer;
 
+  run = () => {
+    global.setInterval(this.scene.tick, 100); // todo make fps based timing with locking
+  };
+
   constructor(
     socketServer: ISocketServer,
     communicatior: ICommunicatior,
@@ -21,10 +26,12 @@ export class Server {
 
     this.communicatior.makeSubscribe(this.socketServer);
     this.scene.makeSubscribe(this.communicatior);
+    severityLog(`server started`);
   }
 }
 
 export const createWSServer = (port: number) => {
+  severityLog(`starting server on port ${port}`);
   const scene = new Scene();
   const communicator = new Communicatior(scene);
   const wsServer = new WSSocketServer(communicator, port);
