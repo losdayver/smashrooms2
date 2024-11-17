@@ -12,7 +12,6 @@ export class Player
   extends Prop
   implements IDamagable, IControlled, INameTagged
 {
-  ID: string;
   controlled = { clientID: null, speed: 10, jumpSpeed: 10 };
   damagable = { health: 100 };
   collidable = {

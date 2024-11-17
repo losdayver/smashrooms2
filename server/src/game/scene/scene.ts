@@ -1,5 +1,7 @@
 import { ClientActionCodes } from "../sockets/messageMeta";
 import {
+  IDestroyControlledPropEvent,
+  IDestroyPropEvent,
   IInternalEvent,
   IScene,
   ISceneActions,
@@ -9,6 +11,7 @@ import {
 } from "./sceneTypes";
 import { severityLog } from "./../../utils";
 import { Prop, propsMap } from "./props";
+import { IControlled } from "./propTypes";
 
 export class Scene implements IScene {
   eventHandler: ISceneSubscriber["handlerForSceneEventsEvents"];
@@ -32,8 +35,35 @@ export class Scene implements IScene {
     // todo test if prop exists and is controlled
     this.propList.unshift(new propsMap[data.propName](data.clientID));
     severityLog(
-      `created new controlled prop ${data.propName} for data.clientID`
+      `created new controlled prop ${data.propName} for ${data.clientID}`
     );
+  };
+  destroyPropHandler = (data: IDestroyPropEvent["data"]) => {
+    for (let i = 0; i < this.propList.length; i++) {
+      if (this.propList[i].ID == data.ID) {
+        this.propList.splice(i, 1);
+      }
+      severityLog(`destroyed prop ${this.propList[i].ID}`);
+      return;
+    }
+  };
+  destroyControlledPropHandler = (
+    data: IDestroyControlledPropEvent["data"]
+  ) => {
+    for (let i = 0; i < this.propList.length; i++) {
+      if (
+        (this.propList[i] as unknown as IControlled)?.controlled.clientID ==
+        data.clientID
+      ) {
+        severityLog(
+          `destroyed controlled prop with clientID ${
+            (this.propList[i] as unknown as IControlled)?.controlled.clientID
+          }`
+        );
+        this.propList.splice(i, 1);
+      }
+      return;
+    }
   };
 
   clientAction = (clientID: ISceneClient["ID"], code: ClientActionCodes) => {
@@ -52,7 +82,10 @@ export class Scene implements IScene {
     });
   };
   disconnectAction = (clientID: ISceneClient["ID"]) => {
-    severityLog(`scene disconnected client ${clientID}`);
+    this.internalEventQueue.unshift({
+      name: "destroyControlledProp",
+      data: { clientID },
+    });
   };
 
   makeSubscribe = (subscriber: ISceneSubscriber) => {
@@ -63,6 +96,8 @@ export class Scene implements IScene {
     this.internalEventHandlerMap = {
       spawnControlledProp: this.spawnControlledPropHandler,
       spawnProp: () => undefined,
+      destroyProp: this.destroyPropHandler,
+      destroyControlledProp: this.destroyControlledPropHandler,
     };
   }
 }

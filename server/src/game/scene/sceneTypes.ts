@@ -12,7 +12,11 @@ export interface ISceneActions {
 }
 
 /** describes event that is put into event queue upon receiving action from outside */
-export type IInternalEvent = ISpawnPropEvent | ISpawnControlledPropEvent;
+export type IInternalEvent =
+  | ISpawnPropEvent
+  | ISpawnControlledPropEvent
+  | IDestroyPropEvent
+  | IDestroyControlledPropEvent;
 export interface ISpawnPropEvent {
   name: "spawnProp";
   data: {
@@ -28,6 +32,18 @@ export interface ISpawnControlledPropEvent {
     posY: number;
     propName: string;
     clientID: string;
+  };
+}
+export interface IDestroyControlledPropEvent {
+  name: "destroyControlledProp";
+  data: {
+    clientID: string;
+  };
+}
+export interface IDestroyPropEvent {
+  name: "destroyProp";
+  data: {
+    ID: string;
   };
 }
 
