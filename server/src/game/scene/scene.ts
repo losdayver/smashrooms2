@@ -8,6 +8,7 @@ import {
   ISceneClient,
   ISceneSubscriber,
   ISpawnControlledPropEvent,
+  ISpawnPropEvent,
 } from "./sceneTypes";
 import { Mutex, severityLog } from "./../../utils";
 import { Prop, propsMap } from "./props";
@@ -17,7 +18,7 @@ export class Scene implements IScene {
   eventHandler: ISceneSubscriber["handlerForSceneEventsEvents"];
 
   private propList: Prop[] = [];
-  internalEventQueueMutex = new Mutex<IInternalEvent[]>([]);
+  private internalEventQueueMutex = new Mutex<IInternalEvent[]>([]);
   private internalEventHandlerMap: Record<
     IInternalEvent["name"],
     (data: any) => void
@@ -26,7 +27,9 @@ export class Scene implements IScene {
   tick = async () => {
     const unlock = await this.internalEventQueueMutex.acquire();
     try {
-      for (let i = 0; i < this.internalEventQueueMutex.value.length; i++) {
+      console.log(this.internalEventQueueMutex.value);
+      console.log(this.propList);
+      while (this.internalEventQueueMutex.value.length) {
         const event = this.internalEventQueueMutex.value.pop();
         this.internalEventHandlerMap[event.name]?.(event.data);
       }
@@ -34,12 +37,24 @@ export class Scene implements IScene {
       unlock();
     }
   };
+  spawnPropHandler = (data: ISpawnPropEvent["data"]) => {
+    const propType = propsMap[data.propName];
+    if (propType) {
+      this.propList.unshift(new propType() as Prop);
+      severityLog(`created new prop ${data.propName}`);
+    }
+  };
   spawnControlledPropHandler = (data: ISpawnControlledPropEvent["data"]) => {
-    // todo test if prop exists and is controlled
-    this.propList.unshift(new propsMap[data.propName](data.clientID));
-    severityLog(
-      `created new controlled prop ${data.propName} for ${data.clientID}`
-    );
+    const propType = propsMap[data.propName];
+    if (propType) {
+      const prop = new propsMap[data.propName](data.clientID) as Prop;
+      if ((prop as unknown as IControlled).controlled) {
+        this.propList.unshift(prop);
+        severityLog(
+          `created new controlled prop ${data.propName} for ${data.clientID}`
+        );
+      }
+    }
   };
   destroyPropHandler = (data: IDestroyPropEvent["data"]) => {
     for (let i = 0; i < this.propList.length; i++) {
@@ -108,7 +123,7 @@ export class Scene implements IScene {
   constructor() {
     this.internalEventHandlerMap = {
       spawnControlledProp: this.spawnControlledPropHandler,
-      spawnProp: () => undefined,
+      spawnProp: this.spawnPropHandler,
       destroyProp: this.destroyPropHandler,
       destroyControlledProp: this.destroyControlledPropHandler,
     };

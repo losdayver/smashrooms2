@@ -35,6 +35,20 @@ export class Player
   }
 }
 
+export class Crate extends Prop implements IDamagable {
+  damagable = { health: 10 };
+  collidable = { sizeX: 64, sizeY: 64, pivotOffsetX: 0, pivotOffsetY: 0 };
+  positioned = {
+    posX: 10,
+    posY: 10,
+  };
+
+  constructor(clientID: string) {
+    super();
+  }
+}
+
 export const propsMap = {
   player: Player,
+  crate: Crate,
 };
