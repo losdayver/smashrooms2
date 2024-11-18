@@ -6,9 +6,12 @@ export interface IScene extends ISceneActions {
 }
 
 export interface ISceneActions {
-  clientAction: (clientID: ISceneClient["ID"], code: ClientActionCodes) => void;
-  connectAction: (clientID: ISceneClient["ID"]) => void;
-  disconnectAction: (clientID: ISceneClient["ID"]) => void;
+  clientAction: (
+    clientID: ISceneClient["ID"],
+    code: ClientActionCodes
+  ) => void | Promise<void>;
+  connectAction: (clientID: ISceneClient["ID"]) => void | Promise<void>;
+  disconnectAction: (clientID: ISceneClient["ID"]) => void | Promise<void>;
 }
 
 /** describes event that is put into event queue upon receiving action from outside */

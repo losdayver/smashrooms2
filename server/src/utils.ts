@@ -31,3 +31,40 @@ export const wslogSend = (
   if (logMsg) severityLog(logMsg, severity);
   socket.send(bufferFromObj(socketMsg));
 };
+export class Mutex<T> {
+  value: T;
+  private queue: ((value: unknown) => void)[];
+  private locked: boolean;
+  constructor(value: T) {
+    this.value = value;
+    this.queue = [];
+    this.locked = false;
+  }
+  acquire = (): Promise<() => void> => {
+    const unlock = () => {
+      this.locked = false;
+      if (this.queue.length) {
+        const nextResolve = this.queue.shift();
+        nextResolve(unlock);
+      }
+    };
+    return new Promise((resolve) => {
+      if (this.locked) {
+        this.queue.push(resolve as any);
+      } else {
+        this.locked = true;
+        resolve(unlock);
+      }
+    });
+  };
+  async unlock() {
+    if (!this.locked) {
+      throw new Error("Mutex is already unlocked");
+    }
+    this.locked = false;
+    if (this.queue.length) {
+      const nextResolve = this.queue.shift();
+      nextResolve(this.unlock.bind(this));
+    }
+  }
+}
