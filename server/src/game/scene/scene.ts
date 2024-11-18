@@ -27,8 +27,6 @@ export class Scene implements IScene {
   tick = async () => {
     const unlock = await this.internalEventQueueMutex.acquire();
     try {
-      console.log(this.internalEventQueueMutex.value);
-      console.log(this.propList);
       while (this.internalEventQueueMutex.value.length) {
         const event = this.internalEventQueueMutex.value.pop();
         this.internalEventHandlerMap[event.name]?.(event.data);
