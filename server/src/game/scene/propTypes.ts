@@ -1,7 +1,19 @@
 import { ClientActionCodes } from "../sockets/messageMeta";
 import { Prop } from "./props";
+import { IScene } from "./sceneTypes";
+
+export type PropBehaviours = Partial<
+  IPositioned &
+    IControlled &
+    IDrawable &
+    ICollidable &
+    IDamagable &
+    IDamaging &
+    INameTagged
+>;
 
 export interface IProp {
+  scene: IScene;
   ID: string;
 }
 

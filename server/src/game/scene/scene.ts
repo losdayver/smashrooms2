@@ -7,6 +7,7 @@ import {
   ISceneActions,
   ISceneClient,
   ISceneSubscriber,
+  ISceneTemplate,
   ISpawnControlledPropEvent,
   ISpawnPropEvent,
 } from "./sceneTypes";
@@ -16,6 +17,8 @@ import { IControlled } from "./propTypes";
 
 export class Scene implements IScene {
   eventHandler: ISceneSubscriber["handlerForSceneEventsEvents"];
+
+  private chunkSize = 256;
 
   private propList: Prop[] = [];
   private internalEventQueueMutex = new Mutex<IInternalEvent[]>([]);
@@ -34,18 +37,19 @@ export class Scene implements IScene {
     } finally {
       unlock();
     }
+    console.log(this.propList);
   };
   spawnPropHandler = (data: ISpawnPropEvent["data"]) => {
     const propType = propsMap[data.propName];
     if (propType) {
-      this.propList.unshift(new propType() as Prop);
+      this.propList.unshift(new propType(this) as Prop);
       severityLog(`created new prop ${data.propName}`);
     }
   };
   spawnControlledPropHandler = (data: ISpawnControlledPropEvent["data"]) => {
     const propType = propsMap[data.propName];
     if (propType) {
-      const prop = new propsMap[data.propName](data.clientID) as Prop;
+      const prop = new propsMap[data.propName](data.clientID, this) as Prop;
       if ((prop as unknown as IControlled).controlled) {
         this.propList.unshift(prop);
         severityLog(
@@ -116,6 +120,10 @@ export class Scene implements IScene {
 
   makeSubscribe = (subscriber: ISceneSubscriber) => {
     this.eventHandler = subscriber.handlerForSceneEventsEvents;
+  };
+
+  loadTemplate = (template: ISceneTemplate) => {
+    this.propList = [...template?.props];
   };
 
   constructor() {

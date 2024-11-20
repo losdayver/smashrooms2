@@ -1,10 +1,23 @@
-import { IControlled, IDamagable, INameTagged, IProp } from "./propTypes";
+import {
+  IControlled,
+  IDamagable,
+  INameTagged,
+  IProp,
+  PropBehaviours,
+} from "./propTypes";
 import { randomUUID } from "crypto";
+import { IScene } from "./sceneTypes";
 
 export abstract class Prop implements IProp {
   ID: string;
-  constructor() {
+  scene: IScene;
+  constructor(scene: IScene, behaviourPresets?: PropBehaviours) {
+    console.log(behaviourPresets);
     this.ID = randomUUID();
+    this.scene = scene;
+    Object.entries(behaviourPresets ?? {}).map(
+      ([key, value]) => (this[key] = value)
+    );
   }
 }
 
@@ -29,8 +42,12 @@ export class Player
     pivotOffsetY: 64,
   };
 
-  constructor(clientID: string) {
-    super();
+  constructor(
+    clientID: string,
+    scene: IScene,
+    behaviourPresets?: PropBehaviours
+  ) {
+    super(scene, behaviourPresets);
     this.controlled.clientID = clientID;
   }
 }
@@ -38,13 +55,10 @@ export class Player
 export class Crate extends Prop implements IDamagable {
   damagable = { health: 10 };
   collidable = { sizeX: 64, sizeY: 64, pivotOffsetX: 0, pivotOffsetY: 0 };
-  positioned = {
-    posX: 10,
-    posY: 10,
-  };
+  positioned;
 
-  constructor(clientID: string) {
-    super();
+  constructor(scene: IScene, behaviourPresets?: PropBehaviours) {
+    super(scene, behaviourPresets);
   }
 }
 

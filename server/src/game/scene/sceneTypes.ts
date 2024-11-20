@@ -1,4 +1,5 @@
 import { ClientActionCodes } from "../sockets/messageMeta";
+import { IProp } from "./propTypes";
 
 export interface IScene extends ISceneActions {
   makeSubscribe: (sceneSubscriber: ISceneSubscriber) => void;
@@ -64,4 +65,9 @@ export interface IGetChunks {
 
 export interface ISceneClient {
   ID: string;
+}
+
+export interface ISceneTemplate {
+  props?: IProp[];
+  layout?: any;
 }
