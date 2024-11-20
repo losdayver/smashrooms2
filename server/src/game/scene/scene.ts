@@ -4,8 +4,6 @@ import {
   IDestroyPropEvent,
   IInternalEvent,
   IScene,
-  ISceneActions,
-  ISceneClient,
   ISceneSubscriber,
   ISceneTemplate,
   ISpawnControlledPropEvent,
@@ -13,7 +11,7 @@ import {
 } from "./sceneTypes";
 import { Mutex, severityLog } from "./../../utils";
 import { Prop, propsMap } from "./props";
-import { IControlled } from "./propTypes";
+import { IControlled, IProp, PropBehaviours } from "./propTypes";
 
 export class Scene implements IScene {
   eventHandler: ISceneSubscriber["handlerForSceneEventsEvents"];
@@ -27,17 +25,30 @@ export class Scene implements IScene {
     (data: any) => void
   >;
 
+  mutatePropBehaviour = (
+    propOrID: (IProp & PropBehaviours) | string,
+    behaviour: { name: string; newValue: PropBehaviours }
+  ) => {
+    const prop =
+      typeof propOrID == "string"
+        ? this.propList.find((prop) => prop.ID == propOrID)
+        : propOrID;
+    prop[behaviour.name] = behaviour.newValue;
+    // todo external event factory
+  };
+
   tick = async () => {
-    const unlock = await this.internalEventQueueMutex.acquire();
-    try {
-      while (this.internalEventQueueMutex.value.length) {
-        const event = this.internalEventQueueMutex.value.pop();
-        this.internalEventHandlerMap[event.name]?.(event.data);
+    if (this.internalEventQueueMutex.value.length) {
+      const unlock = await this.internalEventQueueMutex.acquire();
+      try {
+        while (this.internalEventQueueMutex.value.length) {
+          const event = this.internalEventQueueMutex.value.pop();
+          this.internalEventHandlerMap[event.name]?.(event.data);
+        }
+      } finally {
+        unlock();
       }
-    } finally {
-      unlock();
     }
-    console.log(this.propList);
   };
   spawnPropHandler = (data: ISpawnPropEvent["data"]) => {
     const propType = propsMap[data.propName];
@@ -86,10 +97,10 @@ export class Scene implements IScene {
     }
   };
 
-  clientAction = (clientID: ISceneClient["ID"], code: ClientActionCodes) => {
+  clientAction = (clientID: string, code: ClientActionCodes) => {
     severityLog(`client ${clientID} preformed action ${code}`);
   };
-  connectAction = async (clientID: ISceneClient["ID"]) => {
+  connectAction = async (clientID: string) => {
     const unlock = await this.internalEventQueueMutex.acquire();
     try {
       severityLog(`scene connected client ${clientID}`);
@@ -106,7 +117,7 @@ export class Scene implements IScene {
       unlock();
     }
   };
-  disconnectAction = async (clientID: ISceneClient["ID"]) => {
+  disconnectAction = async (clientID: string) => {
     const unlock = await this.internalEventQueueMutex.acquire();
     try {
       this.internalEventQueueMutex.value.unshift({

@@ -12,7 +12,6 @@ export abstract class Prop implements IProp {
   ID: string;
   scene: IScene;
   constructor(scene: IScene, behaviourPresets?: PropBehaviours) {
-    console.log(behaviourPresets);
     this.ID = randomUUID();
     this.scene = scene;
     Object.entries(behaviourPresets ?? {}).map(

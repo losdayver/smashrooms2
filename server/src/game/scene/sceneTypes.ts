@@ -1,5 +1,5 @@
 import { ClientActionCodes } from "../sockets/messageMeta";
-import { IProp } from "./propTypes";
+import { IProp, PropBehaviours } from "./propTypes";
 
 export interface IScene extends ISceneActions {
   makeSubscribe: (sceneSubscriber: ISceneSubscriber) => void;
@@ -8,11 +8,11 @@ export interface IScene extends ISceneActions {
 
 export interface ISceneActions {
   clientAction: (
-    clientID: ISceneClient["ID"],
+    clientID: string,
     code: ClientActionCodes
   ) => void | Promise<void>;
-  connectAction: (clientID: ISceneClient["ID"]) => void | Promise<void>;
-  disconnectAction: (clientID: ISceneClient["ID"]) => void | Promise<void>;
+  connectAction: (clientID: string) => void | Promise<void>;
+  disconnectAction: (clientID: string) => void | Promise<void>;
 }
 
 /** describes event that is put into event queue upon receiving action from outside */
@@ -53,18 +53,19 @@ export interface IDestroyPropEvent {
 
 export interface ISceneSubscriber {
   handlerForSceneEventsEvents: (
-    event: IExternalEvents,
-    sceneClientID: ISceneClient["ID"]
+    event: IExternalEvent,
+    sceneClientID: string
   ) => void;
 }
 
-export type IExternalEvents = IGetChunks; // разные события, например, необходимость обновить чанки для пользователя
-export interface IGetChunks {
-  chunkIDs: any[]; // todo implement
-}
+export type IExternalEvent = {
+  clientID: string;
+  update: IChunk[];
+  load: IChunk[];
+};
 
-export interface ISceneClient {
-  ID: string;
+export interface IChunk {
+  props: (IProp & PropBehaviours)[];
 }
 
 export interface ISceneTemplate {
