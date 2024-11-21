@@ -9,7 +9,7 @@ import {
   ISpawnControlledPropEvent,
   ISpawnPropEvent,
 } from "./sceneTypes";
-import { Mutex, severityLog, PickOne } from "./../../utils";
+import { Mutex, severityLog } from "./../../utils";
 import { Prop, propsMap } from "./props";
 import { IControlled, IProp, PropBehaviours } from "./propTypes";
 
