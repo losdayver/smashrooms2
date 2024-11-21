@@ -9,7 +9,7 @@ import {
   ISpawnControlledPropEvent,
   ISpawnPropEvent,
 } from "./sceneTypes";
-import { Mutex, severityLog } from "./../../utils";
+import { Mutex, severityLog, PickOne } from "./../../utils";
 import { Prop, propsMap } from "./props";
 import { IControlled, IProp, PropBehaviours } from "./propTypes";
 
@@ -18,7 +18,7 @@ export class Scene implements IScene {
 
   private chunkSize = 256;
 
-  private propList: Prop[] = [];
+  private propList: (Prop & PropBehaviours)[] = []; // todo wrap it up in mutex
   private internalEventQueueMutex = new Mutex<IInternalEvent[]>([]);
   private internalEventHandlerMap: Record<
     IInternalEvent["name"],
@@ -37,7 +37,34 @@ export class Scene implements IScene {
     // todo external event factory
   };
 
+  private _singleTickChunkDivisions: Record<
+    string,
+    {
+      props: IProp[];
+      update: Record<string, IProp & PropBehaviours>;
+      load: IProp[];
+      delete: string[];
+    }
+  >[] = [];
+
   tick = async () => {
+    this._singleTickChunkDivisions = [];
+    this.propList.forEach((prop) => {
+      if (prop.positioned) {
+        const coordID = `${Math.floor(
+          prop.positioned.posX / this.chunkSize
+        )}_${Math.floor(prop.positioned.posY / this.chunkSize)}`;
+        if (!this._singleTickChunkDivisions[coordID])
+          this._singleTickChunkDivisions[coordID] = {
+            props: [prop],
+            update: {},
+            load: {},
+            delete: {},
+          };
+        else this._singleTickChunkDivisions[coordID].props.push(prop);
+      }
+    });
+
     if (this.internalEventQueueMutex.value.length) {
       const unlock = await this.internalEventQueueMutex.acquire();
       try {
@@ -53,8 +80,22 @@ export class Scene implements IScene {
   spawnPropHandler = (data: ISpawnPropEvent["data"]) => {
     const propType = propsMap[data.propName];
     if (propType) {
-      this.propList.unshift(new propType(this) as Prop);
+      const prop = new propType(this) as IProp & PropBehaviours;
+      this.propList.unshift(prop);
       severityLog(`created new prop ${data.propName}`);
+      if (prop.positioned) {
+        const coordID = `${Math.floor(
+          prop.positioned.posX / this.chunkSize
+        )}_${Math.floor(prop.positioned.posY / this.chunkSize)}`;
+        if (!this._singleTickChunkDivisions[coordID])
+          this._singleTickChunkDivisions[coordID] = {
+            props: [],
+            update: {},
+            load: [prop],
+            delete: {},
+          };
+        else this._singleTickChunkDivisions[coordID].load.push(prop);
+      }
     }
   };
   spawnControlledPropHandler = (data: ISpawnControlledPropEvent["data"]) => {
