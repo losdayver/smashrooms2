@@ -52,7 +52,7 @@ export interface IDestroyPropEvent {
 }
 
 export interface ISceneSubscriber {
-  handlerForSceneEventsEvents: (
+  handlerForSceneExternalEvents: (
     event: IExternalEvent,
     sceneClientID: string
   ) => void;

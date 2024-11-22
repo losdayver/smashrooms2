@@ -11,41 +11,40 @@ import {
 } from "./sceneTypes";
 import { Mutex, severityLog } from "./../../utils";
 import { Prop, propsMap } from "./props";
-import { IControlled, IProp, PropBehaviours } from "./propTypes";
+import { IControlled, IPositioned, IProp, PropBehaviours } from "./propTypes";
+
+type _singleTickChunkDivisionsType = Record<
+string,
+_singleTickChunkDivision
+>[];
+type _singleTickChunkDivision = {
+  props: IProp[];
+  update: Record<string, IProp & PropBehaviours>;
+  load: IProp[];
+  delete: string[];
+}
+type _singleTickChunkDivisionKeys = "props" | "update" | "load" | "delete";
 
 export class Scene implements IScene {
-  eventHandler: ISceneSubscriber["handlerForSceneEventsEvents"];
+  eventHandler: ISceneSubscriber["handlerForSceneExternalEvents"];
 
   private chunkSize = 256;
-
   private propList: (Prop & PropBehaviours)[] = []; // todo wrap it up in mutex
   private internalEventQueueMutex = new Mutex<IInternalEvent[]>([]);
   private internalEventHandlerMap: Record<
     IInternalEvent["name"],
     (data: any) => void
   >;
+  private _singleTickChunkDivisions: _singleTickChunkDivisionsType = [];
 
-  mutatePropBehaviour = (
-    propOrID: (IProp & PropBehaviours) | string,
-    behaviour: { name: string; newValue: PropBehaviours }
-  ) => {
-    const prop =
-      typeof propOrID == "string"
-        ? this.propList.find((prop) => prop.ID == propOrID)
-        : propOrID;
-    prop[behaviour.name] = behaviour.newValue;
-    // todo external event factory
-  };
-
-  private _singleTickChunkDivisions: Record<
-    string,
-    {
-      props: IProp[];
-      update: Record<string, IProp & PropBehaviours>;
-      load: IProp[];
-      delete: string[];
-    }
-  >[] = [];
+  private _updateSingleTickChunkDivisions = (whatToAppend: Partial<_singleTickChunkDivision>, prop: IPositioned) => {
+    const coordID = `${Math.floor(
+      prop.positioned.posX / this.chunkSize
+    )}_${Math.floor(prop.positioned.posY / this.chunkSize)}`;
+    if (!this._singleTickChunkDivisions[coordID])
+      this._singleTickChunkDivisions[coordID] = {}
+    this._singleTickChunkDivisions[coordID] = {...whatToAppend, ...this._singleTickChunkDivisions[coordID]};
+  }
 
   tick = async () => {
     this._singleTickChunkDivisions = [];
@@ -77,7 +76,8 @@ export class Scene implements IScene {
       }
     }
   };
-  spawnPropHandler = (data: ISpawnPropEvent["data"]) => {
+
+  private spawnPropHandler = (data: ISpawnPropEvent["data"]) => {
     const propType = propsMap[data.propName];
     if (propType) {
       const prop = new propType(this) as IProp & PropBehaviours;
@@ -98,7 +98,7 @@ export class Scene implements IScene {
       }
     }
   };
-  spawnControlledPropHandler = (data: ISpawnControlledPropEvent["data"]) => {
+  private spawnControlledPropHandler = (data: ISpawnControlledPropEvent["data"]) => {
     const propType = propsMap[data.propName];
     if (propType) {
       const prop = new propsMap[data.propName](data.clientID, this) as Prop;
@@ -110,7 +110,7 @@ export class Scene implements IScene {
       }
     }
   };
-  destroyPropHandler = (data: IDestroyPropEvent["data"]) => {
+  private destroyPropHandler = (data: IDestroyPropEvent["data"]) => {
     for (let i = 0; i < this.propList.length; i++) {
       if (this.propList[i].ID == data.ID) {
         this.propList.splice(i, 1);
@@ -119,7 +119,7 @@ export class Scene implements IScene {
       return;
     }
   };
-  destroyControlledPropHandler = (
+  private destroyControlledPropHandler = (
     data: IDestroyControlledPropEvent["data"]
   ) => {
     for (let i = 0; i < this.propList.length; i++) {
@@ -169,9 +169,20 @@ export class Scene implements IScene {
       unlock();
     }
   };
+  mutatePropBehaviourAction = (
+    propOrID: (IProp & PropBehaviours) | string,
+    behaviour: { name: string; newValue: PropBehaviours }
+  ) => {
+    const prop =
+      typeof propOrID == "string"
+        ? this.propList.find((prop) => prop.ID == propOrID)
+        : propOrID;
+    prop[behaviour.name] = behaviour.newValue;
+    // todo external event factory
+  };
 
   makeSubscribe = (subscriber: ISceneSubscriber) => {
-    this.eventHandler = subscriber.handlerForSceneEventsEvents;
+    this.eventHandler = subscriber.handlerForSceneExternalEvents;
   };
 
   loadTemplate = (template: ISceneTemplate) => {

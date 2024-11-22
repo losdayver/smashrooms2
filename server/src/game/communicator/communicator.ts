@@ -14,7 +14,7 @@ export class Communicatior implements ICommunicatior {
   makeSubscribe = (subscriber: ICommunicatorSubscriber) => {
     this.eventHandler = subscriber.handlerForCommunicatorEvents;
   };
-  handlerForSceneEventsEvents = (
+  handlerForSceneExternalEvents = (
     event: IExternalEvent,
     sceneClientID: string
   ) => {
