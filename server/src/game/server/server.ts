@@ -48,7 +48,7 @@ export const createWSTestingServer = (port: number) => {
         (i) =>
           new Crate(scene, {
             positioned: {
-              posX: 10 + i * 20,
+              posX: 10 + i * 100,
               posY: 10,
             },
           })

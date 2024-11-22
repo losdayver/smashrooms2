@@ -6,7 +6,8 @@
     "strict": true,
     "esModuleInterop": true,
     "strictNullChecks": false,
-    "noImplicitAny": false
+    "noImplicitAny": false,
+    "noEmitOnError": true
   },
   "include": ["src"]
 }

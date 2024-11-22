@@ -13,17 +13,14 @@ import { Mutex, severityLog } from "./../../utils";
 import { Prop, propsMap } from "./props";
 import { IControlled, IPositioned, IProp, PropBehaviours } from "./propTypes";
 
-type _singleTickChunkDivisionsType = Record<
-string,
-_singleTickChunkDivision
->[];
-type _singleTickChunkDivision = {
+type chunkedUpdatesType = Record<string, chunkUpdate>[];
+type chunkUpdate = {
   props: IProp[];
-  update: Record<string, IProp & PropBehaviours>;
+  /** prop ID followed by behaviour that was mutated */
+  update: Record<string, Record<string, PropBehaviours>>;
   load: IProp[];
   delete: string[];
-}
-type _singleTickChunkDivisionKeys = "props" | "update" | "load" | "delete";
+};
 
 export class Scene implements IScene {
   eventHandler: ISceneSubscriber["handlerForSceneExternalEvents"];
@@ -35,35 +32,38 @@ export class Scene implements IScene {
     IInternalEvent["name"],
     (data: any) => void
   >;
-  private _singleTickChunkDivisions: _singleTickChunkDivisionsType = [];
+  private $chunkedUpdates: chunkedUpdatesType = [];
 
-  private _updateSingleTickChunkDivisions = (whatToAppend: Partial<_singleTickChunkDivision>, prop: IPositioned) => {
+  private $appendToChunkedUpdates = (
+    partialChunk: Partial<chunkUpdate>,
+    prop: IPositioned
+  ) => {
     const coordID = `${Math.floor(
       prop.positioned.posX / this.chunkSize
     )}_${Math.floor(prop.positioned.posY / this.chunkSize)}`;
-    if (!this._singleTickChunkDivisions[coordID])
-      this._singleTickChunkDivisions[coordID] = {}
-    this._singleTickChunkDivisions[coordID] = {...whatToAppend, ...this._singleTickChunkDivisions[coordID]};
-  }
+
+    if (!this.$chunkedUpdates[coordID]) this.$chunkedUpdates[coordID] = {};
+    const chunk = this.$chunkedUpdates[coordID];
+    this.$chunkedUpdates[coordID] = {
+      props: [(chunk?.props ?? []).concat(partialChunk.props ?? [])],
+      update: { ...(chunk?.update ?? {}), ...(partialChunk.update ?? []) },
+      load: [(chunk?.load ?? []).concat(partialChunk.load ?? [])],
+      delete: [(chunk?.delete ?? []).concat(partialChunk.delete ?? [])],
+    } satisfies chunkUpdate;
+  };
 
   tick = async () => {
-    this._singleTickChunkDivisions = [];
+    // load all props $chunkedUpdates
+    this.$chunkedUpdates = [];
     this.propList.forEach((prop) => {
-      if (prop.positioned) {
-        const coordID = `${Math.floor(
-          prop.positioned.posX / this.chunkSize
-        )}_${Math.floor(prop.positioned.posY / this.chunkSize)}`;
-        if (!this._singleTickChunkDivisions[coordID])
-          this._singleTickChunkDivisions[coordID] = {
-            props: [prop],
-            update: {},
-            load: {},
-            delete: {},
-          };
-        else this._singleTickChunkDivisions[coordID].props.push(prop);
-      }
+      if (prop.positioned)
+        this.$appendToChunkedUpdates({ props: [prop] }, prop as IPositioned);
     });
 
+    // do all the game logic here
+    ("Hello World!");
+
+    // fire all internal even handlers
     if (this.internalEventQueueMutex.value.length) {
       const unlock = await this.internalEventQueueMutex.acquire();
       try {
@@ -75,6 +75,8 @@ export class Scene implements IScene {
         unlock();
       }
     }
+
+    // transform $chunkedUpdates to list of external events and send them to the subscriber
   };
 
   private spawnPropHandler = (data: ISpawnPropEvent["data"]) => {
@@ -83,40 +85,37 @@ export class Scene implements IScene {
       const prop = new propType(this) as IProp & PropBehaviours;
       this.propList.unshift(prop);
       severityLog(`created new prop ${data.propName}`);
-      if (prop.positioned) {
-        const coordID = `${Math.floor(
-          prop.positioned.posX / this.chunkSize
-        )}_${Math.floor(prop.positioned.posY / this.chunkSize)}`;
-        if (!this._singleTickChunkDivisions[coordID])
-          this._singleTickChunkDivisions[coordID] = {
-            props: [],
-            update: {},
-            load: [prop],
-            delete: {},
-          };
-        else this._singleTickChunkDivisions[coordID].load.push(prop);
-      }
+      if (prop.positioned)
+        this.$appendToChunkedUpdates({ props: [prop] }, prop as IPositioned);
     }
   };
-  private spawnControlledPropHandler = (data: ISpawnControlledPropEvent["data"]) => {
+  private spawnControlledPropHandler = (
+    data: ISpawnControlledPropEvent["data"]
+  ) => {
     const propType = propsMap[data.propName];
     if (propType) {
-      const prop = new propsMap[data.propName](data.clientID, this) as Prop;
-      if ((prop as unknown as IControlled).controlled) {
+      const prop = new propsMap[data.propName](data.clientID, this) as IProp &
+        PropBehaviours;
+      if (prop.controlled) {
         this.propList.unshift(prop);
         severityLog(
           `created new controlled prop ${data.propName} for ${data.clientID}`
         );
+        this.$appendToChunkedUpdates({ props: [prop] }, prop as IPositioned);
       }
     }
   };
   private destroyPropHandler = (data: IDestroyPropEvent["data"]) => {
     for (let i = 0; i < this.propList.length; i++) {
       if (this.propList[i].ID == data.ID) {
+        this.$appendToChunkedUpdates(
+          { delete: [data.ID] },
+          this.propList[i] as IPositioned
+        );
         this.propList.splice(i, 1);
+        severityLog(`destroyed prop ${this.propList[i].ID}`);
+        return;
       }
-      severityLog(`destroyed prop ${this.propList[i].ID}`);
-      return;
     }
   };
   private destroyControlledPropHandler = (
@@ -132,9 +131,13 @@ export class Scene implements IScene {
             (this.propList[i] as unknown as IControlled)?.controlled.clientID
           }`
         );
+        this.$appendToChunkedUpdates(
+          { delete: [this.propList[i].ID] },
+          this.propList[i] as IPositioned
+        );
         this.propList.splice(i, 1);
+        return;
       }
-      return;
     }
   };
 
@@ -178,7 +181,11 @@ export class Scene implements IScene {
         ? this.propList.find((prop) => prop.ID == propOrID)
         : propOrID;
     prop[behaviour.name] = behaviour.newValue;
-    // todo external event factory
+    if (prop.positioned)
+      this.$appendToChunkedUpdates(
+        { update: { [prop.ID]: { [behaviour.name]: behaviour.newValue } } },
+        prop as IPositioned
+      );
   };
 
   makeSubscribe = (subscriber: ISceneSubscriber) => {

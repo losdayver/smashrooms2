@@ -60,13 +60,17 @@ export interface ISceneSubscriber {
 
 export type IExternalEvent = {
   clientID: string;
-  update: IChunk[];
-  load: IChunk[];
+  update: ExternalUpdateChunks;
+  load: ExternalLoadChunk[];
+  delete: string[];
 };
 
-export interface IChunk {
-  props: (IProp & PropBehaviours)[];
-}
+export type ExternalUpdateChunks = Record<
+  string,
+  Record<string, PropBehaviours>
+>;
+
+export type ExternalLoadChunk = IProp & PropBehaviours;
 
 export interface ISceneTemplate {
   props?: IProp[];
