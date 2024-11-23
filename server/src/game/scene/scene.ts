@@ -76,8 +76,36 @@ export class Scene implements IScene {
           });
         }
       });
+    } else if (type == "everyUpdate") {
+      const tempUpdate = {};
+      const tempLoad = [];
+
+      Object.values(this.$chunkedUpdates).forEach((chunkedUpdate) => {
+        if (chunkedUpdate.update) {
+          Object.entries(chunkedUpdate.update).forEach(([propID, update]) => {
+            if (!update.positioned) return;
+            tempUpdate[propID] = { positioned: update.positioned };
+          });
+        }
+
+        if (chunkedUpdate.load) {
+          chunkedUpdate.load.forEach((prop) => {
+            if (!prop.drawable) return;
+            const tempProp = {
+              ID: prop.ID,
+              drawable: prop.drawable,
+              positioned: prop.positioned,
+            } as IProp & PropBehaviours;
+            if (prop.nameTagged)
+              tempProp.nameTagged = { tag: prop.nameTagged.tag };
+            tempLoad.push(tempProp);
+          });
+        }
+      });
+      if (Object.keys(tempUpdate).length) batch.update = tempUpdate;
+      if (tempLoad.length) batch.load = tempLoad;
     }
-    this.eventHandler(batch, clientID);
+    if (Object.keys(batch).length) this.eventHandler(batch, clientID);
   };
 
   tick = async () => {
@@ -104,7 +132,8 @@ export class Scene implements IScene {
       }
     }
 
-    // transform $chunkedUpdates to list of external events and send them to the subscriber
+    // todo this is inefficient
+    this.$generateExternalEventBatch("all", "everyUpdate");
   };
 
   private spawnPropHandler = (data: ISpawnPropEvent["data"]) => {
@@ -127,6 +156,7 @@ export class Scene implements IScene {
     if (propType) {
       const prop = new propsMap[data.propName](data.clientID, this) as IProp &
         PropBehaviours;
+      if (data.nameTag) prop.nameTagged = { tag: data.nameTag };
       if (prop.controlled) {
         this.propList.unshift(prop);
         severityLog(
@@ -199,14 +229,13 @@ export class Scene implements IScene {
       });
     } finally {
       unlock();
-      this.$generateExternalEventBatch(clientID, "currentState");
     }
   };
-  connectAction = async (clientID: string) => {
+  connectAction = async (clientID: string, nameTag?: string) => {
     const unlock = await this.internalEventQueueMutex.acquire();
     try {
       severityLog(`scene connected client ${clientID}`);
-      this.internalEventQueueMutex.value.unshift({
+      const event = {
         name: "spawnControlledProp",
         data: {
           clientID,
@@ -214,7 +243,9 @@ export class Scene implements IScene {
           posY: 0,
           propName: "player",
         },
-      });
+      } as ISpawnControlledPropEvent;
+      if (nameTag) event.data.nameTag = nameTag;
+      this.internalEventQueueMutex.value.unshift(event);
     } finally {
       unlock();
       this.$generateExternalEventBatch(clientID, "currentState");

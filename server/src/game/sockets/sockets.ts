@@ -29,8 +29,13 @@ export class WSSocketServer implements ISocketServer {
   }
   handlerForCommunicatorEvents = (
     event: ICommunicatorEvent,
-    clientID: ClientID
+    clientID: ClientID | "all"
   ) => {
+    if (clientID == "all") {
+      for (const [_, client] of this.clientMap.entries())
+        client.socket.send(JSON.stringify(event));
+      return;
+    }
     this.clientMap.get(clientID)?.socket.send(JSON.stringify(event));
   };
 
@@ -97,6 +102,7 @@ export class WSSocketServer implements ISocketServer {
       name: "connRes",
       status: "allowed",
       clientID,
+      nameTag: message.clientName,
     } satisfies IConnectResponseMessage;
     wslogSend(
       clientSocket,

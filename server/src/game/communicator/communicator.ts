@@ -25,7 +25,10 @@ export class Communicatior implements ICommunicatior {
       | IGenericMessage
   ) => {
     if (msg.name == "connRes") {
-      this.scene.connectAction(msg.clientID);
+      this.scene.connectAction(
+        msg.clientID,
+        (msg as IConnectResponseMessage).nameTag
+      );
     } else if (msg.name == "disc") {
       this.scene.disconnectAction(msg.clientID);
     } else if (msg.name == "clientAct") {

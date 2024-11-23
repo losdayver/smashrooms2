@@ -31,8 +31,6 @@ export class Player
     speed: 10,
     jumpSpeed: 10,
     onReceive: (code: ClientActionCodes, status: ClientActionStatus) => {
-      console.log(`i am the player and i just ${status} an action "${code}"`);
-      // todo mutate action
       this.scene.mutatePropBehaviourAction(this as Prop, {
         name: "positioned",
         newValue: {

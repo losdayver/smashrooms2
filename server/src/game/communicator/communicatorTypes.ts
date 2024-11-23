@@ -50,7 +50,7 @@ export interface IClientSceneMessageRequest {
 export interface ICommunicatorSubscriber {
   handlerForCommunicatorEvents: (
     event: ICommunicatorEvent,
-    cleintID: ClientID
+    cleintID: ClientID | "all"
   ) => void;
 }
 

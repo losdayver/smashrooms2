@@ -15,7 +15,7 @@ export interface ISceneActions {
     code: ClientActionCodes,
     status?: ClientActionStatus
   ) => void | Promise<void>;
-  connectAction: (clientID: string) => void | Promise<void>;
+  connectAction: (clientID: string, nameTag?: string) => void | Promise<void>;
   disconnectAction: (clientID: string) => void | Promise<void>;
   mutatePropBehaviourAction: (
     propOrID: (IProp & PropBehaviours) | string,
@@ -45,6 +45,7 @@ export interface ISpawnControlledPropEvent {
     posY: number;
     propName: string;
     clientID: ClientID;
+    nameTag?: string;
   };
 }
 export interface IDestroyControlledPropEvent {
@@ -81,7 +82,10 @@ export type IExternalEvent = {
   delete?: string[];
 };
 
-export type ExternalUpdateBehaviours = Record<PropID, PropBehaviours>;
+export type ExternalUpdateBehaviours = Record<
+  PropID,
+  Record<string, PropBehaviours>
+>;
 
 export type ExternalLoadChunk = Omit<IProp, "scene"> & PropBehaviours;
 

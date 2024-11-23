@@ -7,6 +7,7 @@ export interface IConnectResponseMessage {
   status: "allowed" | "restricted";
   cause?: string;
   clientID?: string;
+  nameTag?: string;
 }
 
 export interface IDisconnectMessage {
