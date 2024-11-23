@@ -49,7 +49,7 @@ export class Scene implements IScene {
     const chunk = this.$chunkedUpdates[coordID];
     this.$chunkedUpdates[coordID] = {
       props: (chunk?.props ?? []).concat(partialChunk.props ?? []),
-      update: { ...(chunk?.update ?? {}), ...(partialChunk.update ?? []) },
+      update: { ...(chunk?.update ?? {}), ...(partialChunk.update ?? {}) },
       load: (chunk?.load ?? []).concat(partialChunk.load ?? []),
       delete: (chunk?.delete ?? []).concat(partialChunk.delete ?? []),
     } satisfies ChunkUpdate;
@@ -114,7 +114,10 @@ export class Scene implements IScene {
       this.propList.unshift(prop);
       severityLog(`created new prop ${data.propName}`);
       if (prop.positioned)
-        this.$appendToChunkedUpdates({ props: [prop] }, prop as IPositioned);
+        this.$appendToChunkedUpdates(
+          { props: [prop], load: [prop] },
+          prop as IPositioned
+        );
     }
   };
   private spawnControlledPropHandler = (
@@ -129,7 +132,10 @@ export class Scene implements IScene {
         severityLog(
           `created new controlled prop ${data.propName} for ${data.clientID}`
         );
-        this.$appendToChunkedUpdates({ props: [prop] }, prop as IPositioned);
+        this.$appendToChunkedUpdates(
+          { props: [prop], load: [prop] },
+          prop as IPositioned
+        );
       }
     }
   };
