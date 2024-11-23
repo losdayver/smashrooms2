@@ -1,5 +1,8 @@
+import { ClientID } from "../commonTypes";
 import { ClientActionCodes } from "../sockets/messageMeta";
 import { IProp, PropBehaviours } from "./propTypes";
+
+export type PropID = ClientID;
 
 export interface IScene extends ISceneActions {
   makeSubscribe: (sceneSubscriber: ISceneSubscriber) => void;
@@ -35,13 +38,13 @@ export interface ISpawnControlledPropEvent {
     posX: number;
     posY: number;
     propName: string;
-    clientID: string;
+    clientID: ClientID;
   };
 }
 export interface IDestroyControlledPropEvent {
   name: "destroyControlledProp";
   data: {
-    clientID: string;
+    clientID: ClientID;
   };
 }
 export interface IDestroyPropEvent {
@@ -54,23 +57,19 @@ export interface IDestroyPropEvent {
 export interface ISceneSubscriber {
   handlerForSceneExternalEvents: (
     event: IExternalEvent,
-    sceneClientID: string
+    clientID: ClientID | "all"
   ) => void;
 }
 
 export type IExternalEvent = {
-  clientID: string;
-  update: ExternalUpdateChunks;
-  load: ExternalLoadChunk[];
-  delete: string[];
+  update?: ExternalUpdateBehaviours;
+  load?: ExternalLoadChunk[];
+  delete?: string[];
 };
 
-export type ExternalUpdateChunks = Record<
-  string,
-  Record<string, PropBehaviours>
->;
+export type ExternalUpdateBehaviours = Record<PropID, PropBehaviours>;
 
-export type ExternalLoadChunk = IProp & PropBehaviours;
+export type ExternalLoadChunk = Omit<IProp, "scene"> & PropBehaviours;
 
 export interface ISceneTemplate {
   props?: IProp[];

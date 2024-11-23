@@ -14,11 +14,8 @@ export class Communicatior implements ICommunicatior {
   makeSubscribe = (subscriber: ICommunicatorSubscriber) => {
     this.eventHandler = subscriber.handlerForCommunicatorEvents;
   };
-  handlerForSceneExternalEvents = (
-    event: IExternalEvent,
-    sceneClientID: string
-  ) => {
-    // todo implement
+  handlerForSceneExternalEvents = (event: IExternalEvent, clientID: string) => {
+    this.eventHandler(event, clientID);
   };
   processMessage = (
     msg:

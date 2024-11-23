@@ -3,7 +3,6 @@ import { randomUUID } from "crypto";
 
 import {
   ICommunicatior,
-  ICommunicatorClient,
   ICommunicatorEvent,
 } from "../communicator/communicatorTypes";
 import { ISocketServer } from "./socketsTypes";
@@ -15,6 +14,7 @@ import {
   IGenericNotRegisteredResponseMessage,
 } from "./messageMeta";
 import { bufferFromObj, severityLog, wslogSend } from "./../../utils";
+import { ClientID } from "../commonTypes";
 
 export class WSSocketServer implements ISocketServer {
   private communicator: ICommunicatior;
@@ -29,7 +29,7 @@ export class WSSocketServer implements ISocketServer {
   }
   handlerForCommunicatorEvents = (
     event: ICommunicatorEvent,
-    clientID: ICommunicatorClient["ID"]
+    clientID: ClientID
   ) => {
     this.clientMap.get(clientID)?.socket.send(JSON.stringify(event));
   };

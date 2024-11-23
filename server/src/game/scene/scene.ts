@@ -2,23 +2,25 @@ import { ClientActionCodes } from "../sockets/messageMeta";
 import {
   IDestroyControlledPropEvent,
   IDestroyPropEvent,
+  IExternalEvent,
   IInternalEvent,
   IScene,
   ISceneSubscriber,
   ISceneTemplate,
   ISpawnControlledPropEvent,
   ISpawnPropEvent,
+  PropID,
 } from "./sceneTypes";
 import { Mutex, severityLog } from "./../../utils";
 import { Prop, propsMap } from "./props";
 import { IControlled, IPositioned, IProp, PropBehaviours } from "./propTypes";
 
-type chunkedUpdatesType = Record<string, chunkUpdate>[];
-type chunkUpdate = {
-  props: IProp[];
+type ChunkedUpdateMap = Record<`${number}_${number}`, ChunkUpdate>;
+type ChunkUpdate = {
+  props: (IProp & PropBehaviours)[];
   /** prop ID followed by behaviour that was mutated */
-  update: Record<string, Record<string, PropBehaviours>>;
-  load: IProp[];
+  update: Record<PropID, Record<string, PropBehaviours>>;
+  load: (IProp & PropBehaviours)[];
   delete: string[];
 };
 
@@ -26,16 +28,16 @@ export class Scene implements IScene {
   eventHandler: ISceneSubscriber["handlerForSceneExternalEvents"];
 
   private chunkSize = 256;
-  private propList: (Prop & PropBehaviours)[] = []; // todo wrap it up in mutex
+  private propList: (IProp & PropBehaviours)[] = []; // todo wrap it up in mutex
   private internalEventQueueMutex = new Mutex<IInternalEvent[]>([]);
   private internalEventHandlerMap: Record<
     IInternalEvent["name"],
     (data: any) => void
   >;
-  private $chunkedUpdates: chunkedUpdatesType = [];
+  private $chunkedUpdates: ChunkedUpdateMap = {};
 
   private $appendToChunkedUpdates = (
-    partialChunk: Partial<chunkUpdate>,
+    partialChunk: Partial<ChunkUpdate>,
     prop: IPositioned
   ) => {
     const coordID = `${Math.floor(
@@ -45,16 +47,41 @@ export class Scene implements IScene {
     if (!this.$chunkedUpdates[coordID]) this.$chunkedUpdates[coordID] = {};
     const chunk = this.$chunkedUpdates[coordID];
     this.$chunkedUpdates[coordID] = {
-      props: [(chunk?.props ?? []).concat(partialChunk.props ?? [])],
+      props: (chunk?.props ?? []).concat(partialChunk.props ?? []),
       update: { ...(chunk?.update ?? {}), ...(partialChunk.update ?? []) },
-      load: [(chunk?.load ?? []).concat(partialChunk.load ?? [])],
-      delete: [(chunk?.delete ?? []).concat(partialChunk.delete ?? [])],
-    } satisfies chunkUpdate;
+      load: (chunk?.load ?? []).concat(partialChunk.load ?? []),
+      delete: (chunk?.delete ?? []).concat(partialChunk.delete ?? []),
+    } satisfies ChunkUpdate;
+  };
+
+  private $generateExternalEventBatch = (
+    clientID: string | "all",
+    type: "currentState" | "everyUpdate" | "localUpdates"
+  ) => {
+    let batch: IExternalEvent = {};
+    if (type == "currentState") {
+      Object.values(this.$chunkedUpdates).forEach((chunkedUpdate) => {
+        if (chunkedUpdate.props) {
+          if (!batch.load) batch.load = [];
+          chunkedUpdate.props.forEach((prop) => {
+            if (!prop.drawable) return;
+            const partialProp: Omit<IProp, "scene"> & PropBehaviours = {
+              ID: prop.ID,
+              drawable: prop.drawable,
+              positioned: prop.positioned,
+            };
+            if (prop.nameTagged) partialProp.nameTagged = prop.nameTagged;
+            batch.load.push(partialProp);
+          });
+        }
+      });
+    }
+    this.eventHandler(batch, clientID);
   };
 
   tick = async () => {
     // load all props $chunkedUpdates
-    this.$chunkedUpdates = [];
+    this.$chunkedUpdates = {};
     this.propList.forEach((prop) => {
       if (prop.positioned)
         this.$appendToChunkedUpdates({ props: [prop] }, prop as IPositioned);
@@ -159,6 +186,7 @@ export class Scene implements IScene {
       });
     } finally {
       unlock();
+      this.$generateExternalEventBatch(clientID, "currentState");
     }
   };
   disconnectAction = async (clientID: string) => {

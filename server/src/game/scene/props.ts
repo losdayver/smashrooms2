@@ -1,6 +1,7 @@
 import {
   IControlled,
   IDamagable,
+  IDrawable,
   INameTagged,
   IProp,
   PropBehaviours,
@@ -51,10 +52,16 @@ export class Player
   }
 }
 
-export class Crate extends Prop implements IDamagable {
+export class Crate extends Prop implements IDamagable, IDrawable {
   damagable = { health: 10 };
   collidable = { sizeX: 64, sizeY: 64, pivotOffsetX: 0, pivotOffsetY: 0 };
   positioned;
+  drawable = {
+    animationCode: "crate",
+    facing: "right",
+    pivotOffsetX: 0,
+    pivotOffsetY: 0,
+  };
 
   constructor(scene: IScene, behaviourPresets?: PropBehaviours) {
     super(scene, behaviourPresets);

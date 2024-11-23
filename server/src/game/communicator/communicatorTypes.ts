@@ -1,3 +1,4 @@
+import { ClientID } from "../commonTypes";
 import { ISceneSubscriber } from "../scene/sceneTypes";
 import {
   ClientActionCodes,
@@ -30,7 +31,7 @@ export interface IConnectionRequest {
 export interface IDisconnectionRequest {
   name: "disconnectionReq";
   body: {
-    clientID: ICommunicatorClient["ID"];
+    clientID: ClientID;
   };
 }
 export interface IClientSceneActionRequest {
@@ -46,14 +47,10 @@ export interface IClientSceneMessageRequest {
   };
 }
 
-export interface ICommunicatorClient {
-  ID: string;
-}
-
 export interface ICommunicatorSubscriber {
   handlerForCommunicatorEvents: (
     event: ICommunicatorEvent,
-    sceneClientID: ICommunicatorClient["ID"]
+    cleintID: ClientID
   ) => void;
 }
 
