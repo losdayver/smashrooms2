@@ -1,5 +1,6 @@
-import { ClientActionCodes } from "../sockets/messageMeta";
+import { ClientActionCodes, ClientActionStatus } from "../sockets/messageMeta";
 import {
+  IClientActionEvent,
   IDestroyControlledPropEvent,
   IDestroyPropEvent,
   IExternalEvent,
@@ -167,9 +168,33 @@ export class Scene implements IScene {
       }
     }
   };
+  private clientActionHandler = (data: IClientActionEvent["data"]) => {
+    const prop = this.propList.find(
+      (prop) => prop.controlled?.clientID == data.clientID
+    ) as IProp & IControlled;
+    prop.controlled.onReceive?.(data.code, data.status);
+  };
 
-  clientAction = (clientID: string, code: ClientActionCodes) => {
+  clientAction = async (
+    clientID: string,
+    code: ClientActionCodes,
+    status?: ClientActionStatus
+  ) => {
     severityLog(`client ${clientID} preformed action ${code}`);
+    const unlock = await this.internalEventQueueMutex.acquire();
+    try {
+      this.internalEventQueueMutex.value.unshift({
+        name: "clientAction",
+        data: {
+          clientID,
+          code,
+          status,
+        },
+      });
+    } finally {
+      unlock();
+      this.$generateExternalEventBatch(clientID, "currentState");
+    }
   };
   connectAction = async (clientID: string) => {
     const unlock = await this.internalEventQueueMutex.acquire();
@@ -230,6 +255,7 @@ export class Scene implements IScene {
       spawnProp: this.spawnPropHandler,
       destroyProp: this.destroyPropHandler,
       destroyControlledProp: this.destroyControlledPropHandler,
+      clientAction: this.clientActionHandler,
     };
   }
 }

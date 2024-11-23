@@ -1,5 +1,5 @@
 import { ClientID } from "../commonTypes";
-import { ClientActionCodes } from "../sockets/messageMeta";
+import { ClientActionCodes, ClientActionStatus } from "../sockets/messageMeta";
 import { IProp, PropBehaviours } from "./propTypes";
 
 export type PropID = ClientID;
@@ -12,10 +12,15 @@ export interface IScene extends ISceneActions {
 export interface ISceneActions {
   clientAction: (
     clientID: string,
-    code: ClientActionCodes
+    code: ClientActionCodes,
+    status?: ClientActionStatus
   ) => void | Promise<void>;
   connectAction: (clientID: string) => void | Promise<void>;
   disconnectAction: (clientID: string) => void | Promise<void>;
+  mutatePropBehaviourAction: (
+    propOrID: (IProp & PropBehaviours) | string,
+    behaviour: { name: string; newValue: PropBehaviours }
+  ) => void;
 }
 
 /** describes event that is put into event queue upon receiving action from outside */
@@ -23,7 +28,8 @@ export type IInternalEvent =
   | ISpawnPropEvent
   | ISpawnControlledPropEvent
   | IDestroyPropEvent
-  | IDestroyControlledPropEvent;
+  | IDestroyControlledPropEvent
+  | IClientActionEvent;
 export interface ISpawnPropEvent {
   name: "spawnProp";
   data: {
@@ -51,6 +57,14 @@ export interface IDestroyPropEvent {
   name: "destroyProp";
   data: {
     ID: string;
+  };
+}
+export interface IClientActionEvent {
+  name: "clientAction";
+  data: {
+    clientID: ClientID;
+    code: ClientActionCodes;
+    status?: ClientActionStatus;
   };
 }
 

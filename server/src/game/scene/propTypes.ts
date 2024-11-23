@@ -1,4 +1,4 @@
-import { ClientActionCodes } from "../sockets/messageMeta";
+import { ClientActionCodes, ClientActionStatus } from "../sockets/messageMeta";
 import { Prop } from "./props";
 import { IScene } from "./sceneTypes";
 
@@ -30,7 +30,7 @@ export interface IControlled {
     clientID: string;
     speed: number;
     jumpSpeed: number;
-    callback?: (code: ClientActionCodes, status: "press" | "release") => void;
+    onReceive?: (code: ClientActionCodes, status: ClientActionStatus) => void;
   };
 }
 

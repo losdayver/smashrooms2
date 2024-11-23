@@ -29,6 +29,7 @@ export interface IClientActionMessage extends IGenericMessage {
   };
 }
 export type ClientActionCodes = "left" | "right" | "jump" | "fire" | "duck";
+export type ClientActionStatus = "pressed" | "released";
 export interface IGenericResponseMessage {
   data: any;
 }

@@ -8,6 +8,7 @@ import {
 } from "./propTypes";
 import { randomUUID } from "crypto";
 import { IScene } from "./sceneTypes";
+import { ClientActionCodes, ClientActionStatus } from "../sockets/messageMeta";
 
 export abstract class Prop implements IProp {
   ID: string;
@@ -25,7 +26,22 @@ export class Player
   extends Prop
   implements IDamagable, IControlled, INameTagged
 {
-  controlled = { clientID: null, speed: 10, jumpSpeed: 10 };
+  controlled = {
+    clientID: null,
+    speed: 10,
+    jumpSpeed: 10,
+    onReceive: (code: ClientActionCodes, status: ClientActionStatus) => {
+      console.log(`i am the player and i just ${status} an action "${code}"`);
+      // todo mutate action
+      this.scene.mutatePropBehaviourAction(this as Prop, {
+        name: "positioned",
+        newValue: {
+          ...this.positioned,
+          posX: this.positioned.posX + 10,
+        } as any, // todo fix types
+      });
+    },
+  };
   damagable = { health: 100 };
   collidable = {
     sizeX: 64,

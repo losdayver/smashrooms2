@@ -29,7 +29,7 @@ export class Communicatior implements ICommunicatior {
     } else if (msg.name == "disc") {
       this.scene.disconnectAction(msg.clientID);
     } else if (msg.name == "clientAct") {
-      this.scene.clientAction(msg.clientID, msg.data.code);
+      this.scene.clientAction(msg.clientID, msg.data.code, msg.data.status);
     }
   };
 
