@@ -79,6 +79,7 @@ export class Scene implements IScene {
     } else if (type == "everyUpdate") {
       const tempUpdate = {};
       const tempLoad = [];
+      // todo deleted props
 
       Object.values(this.$chunkedUpdates).forEach((chunkedUpdate) => {
         if (chunkedUpdate.update) {
