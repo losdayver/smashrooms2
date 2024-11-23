@@ -1,20 +1,19 @@
 {
-  "name": "server",
+  "name": "staticserver",
   "version": "1.0.0",
-  "main": "dist/index.js",
+  "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "prod": "node dist/index.js",
-    "dev": "nodemon -L -e ts,json --exec \"tsc & node dist/index.js\""
+    "dev": "nodemon -L -e js,json --exec node index.js\""
   },
+  "keywords": [],
   "author": "",
   "license": "ISC",
   "description": "",
   "dependencies": {
-    "ws": "^8.18.0"
+    "express": "^4.21.1"
   },
   "devDependencies": {
-    "@types/node": "^22.9.3",
     "nodemon": "^3.1.7"
   }
 }
