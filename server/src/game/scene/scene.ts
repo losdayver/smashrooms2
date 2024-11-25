@@ -13,7 +13,7 @@ import {
   PropID,
 } from "./sceneTypes";
 import { Mutex, severityLog } from "./../../utils";
-import { Prop, propsMap } from "./props";
+import { propsMap } from "./props";
 import { IControlled, IPositioned, IProp, PropBehaviours } from "./propTypes";
 
 type ChunkedUpdateMap = Record<`${number}_${number}`, ChunkUpdate>;

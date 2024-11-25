@@ -15,7 +15,7 @@ export class Communicatior implements ICommunicatior {
     this.eventHandler = subscriber.handlerForCommunicatorEvents;
   };
   handlerForSceneExternalEvents = (event: IExternalEvent, clientID: string) => {
-    this.eventHandler(event, clientID);
+    this.eventHandler({ name: "scene", data: event }, clientID);
   };
   processMessage = (
     msg:

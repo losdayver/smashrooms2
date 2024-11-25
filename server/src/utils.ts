@@ -29,7 +29,7 @@ export const wslogSend = (
   severity: "info" | "warning" | "error" = "info"
 ) => {
   if (logMsg) severityLog(logMsg, severity);
-  socket.send(bufferFromObj(socketMsg));
+  socket.send(JSON.stringify(socketMsg));
 };
 export class Mutex<T> {
   value: T;
