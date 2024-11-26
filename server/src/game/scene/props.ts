@@ -31,11 +31,14 @@ export class Player
     speed: 10,
     jumpSpeed: 10,
     onReceive: (code: ClientActionCodes, status: ClientActionStatus) => {
+      let move = 0;
+      if (code == "right") move = 5;
+      if (code == "left") move = -5;
       this.scene.mutatePropBehaviourAction(this as Prop, {
         name: "positioned",
         newValue: {
           ...this.positioned,
-          posX: this.positioned.posX + 10,
+          posX: this.positioned.posX + move,
         } as any, // todo fix types
       });
     },

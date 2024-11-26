@@ -15,6 +15,19 @@ export class Client {
     );
   };
 
+  sendInput = (code: "left" | "right" | "jump" | "fire" | "duck") => {
+    this.socket.send(
+      JSON.stringify({
+        name: "clientAct",
+        clientID: this.ID,
+        data: {
+          code,
+          status: "pressed",
+        },
+      })
+    );
+  };
+
   onmessage = (message: MessageEvent) => {
     let parsedMsg: Message;
     try {

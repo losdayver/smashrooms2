@@ -17,16 +17,29 @@ client.init(
   (data) => {
     data.load?.forEach((prop: any) => {
       if (prop.drawable) {
-        pivot.appendChild(
-          Object.assign(document.createElement("img"), {
-            class: "prop-sprite",
-            src: "img/props/crate.png",
-            position: "fixed",
-            left: prop.positioned.posX,
-            top: prop.positioned.posY,
-          })
-        );
+        const img = document.createElement("img");
+        img.id = prop.ID;
+        img.src = `img/props/${prop.drawable.animationCode}.png`;
+        img.style.top = prop.positioned.posY;
+        img.style.left = prop.positioned.posX;
+        img.className = "prop-sprite";
+        pivot.appendChild(img);
       }
+    });
+    if (data.update) {
+      Object.entries(data.update)?.forEach(([propID, changes]: any) => {
+        const el = document.getElementById(propID);
+        if (!el) return;
+        if (changes.positioned) {
+          el.style.top = changes.positioned.posY;
+          el.style.left = changes.positioned.posX;
+        }
+      });
+    }
+    data.delete?.forEach((propID: string) => {
+      const el = document.getElementById(propID);
+      if (!el) return;
+      pivot.removeChild(el);
     });
   }
 );
@@ -35,3 +48,13 @@ regForm.addEventListener("submit", (event) => {
   event.preventDefault();
   client.connectByClientName(clientNameInput.value);
 });
+
+document.addEventListener(
+  "keydown",
+  (e) => {
+    console.log(e.code);
+    if (e.code == "ArrowRight") client.sendInput("right");
+    else if (e.code == "ArrowLeft") client.sendInput("left");
+  },
+  false
+);
