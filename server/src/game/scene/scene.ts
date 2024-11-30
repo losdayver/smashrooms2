@@ -112,7 +112,10 @@ export class Scene implements IScene {
     if (Object.keys(batch).length) this.eventHandler(batch, clientID);
   };
 
+  $isProcessingTick = false;
   tick = async () => {
+    if (this.$isProcessingTick) return;
+    this.$isProcessingTick = true;
     // load all props $chunkedUpdates
     this.$chunkedUpdates = {};
     this.propList.forEach((prop) => {
@@ -122,6 +125,9 @@ export class Scene implements IScene {
 
     // do all the game logic here
     ("Hello World!");
+    this.propList.forEach((prop) => {
+      if (prop.onTick) prop.onTick();
+    });
 
     // fire all internal even handlers
     if (this.internalEventQueueMutex.value.length) {
@@ -138,6 +144,7 @@ export class Scene implements IScene {
 
     // todo this is inefficient
     this.$generateExternalEventBatch("all", "everyUpdate");
+    this.$isProcessingTick = false;
   };
 
   private spawnPropHandler = (data: ISpawnPropEvent["data"]) => {
@@ -220,7 +227,6 @@ export class Scene implements IScene {
     code: ClientActionCodesExt,
     status?: ClientActionStatusExt
   ) => {
-    severityLog(`client ${clientID} preformed action ${code}`);
     const unlock = await this.internalEventQueueMutex.acquire();
     try {
       this.internalEventQueueMutex.value.unshift({

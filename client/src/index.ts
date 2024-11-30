@@ -22,9 +22,21 @@ regForm.addEventListener("submit", (event) => {
 document.addEventListener(
   "keydown",
   (e) => {
-    console.log(e.code);
-    if (e.code == "ArrowRight") client.sendInput("right");
-    else if (e.code == "ArrowLeft") client.sendInput("left");
+    if (e.repeat) return;
+    const status = "pressed";
+    if (e.code == "ArrowRight") client.sendInput("right", status);
+    else if (e.code == "ArrowLeft") client.sendInput("left", status);
+  },
+  false
+);
+
+document.addEventListener(
+  "keyup",
+  (e) => {
+    if (e.repeat) return;
+    const status = "released";
+    if (e.code == "ArrowRight") client.sendInput("right", status);
+    else if (e.code == "ArrowLeft") client.sendInput("left", status);
   },
   false
 );

@@ -1,4 +1,8 @@
-import { ClientActionCodesExt, IMessageExt } from "../../../types/messages";
+import {
+  ClientActionCodesExt,
+  ClientActionStatusExt,
+  IMessageExt,
+} from "../../../types/messages";
 import { IExternalEvent, PropIDExt } from "../../../types/sceneTypes";
 
 export class Client {
@@ -18,14 +22,14 @@ export class Client {
     );
   };
 
-  sendInput = (code: ClientActionCodesExt) => {
+  sendInput = (code: ClientActionCodesExt, status: ClientActionStatusExt) => {
     this.socket.send(
       JSON.stringify({
         name: "clientAct",
         clientID: this.ID,
         data: {
           code,
-          status: "pressed",
+          status,
         },
       })
     );

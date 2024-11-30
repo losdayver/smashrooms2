@@ -13,7 +13,7 @@ export class Server {
   private socketServer: ISocketServer;
 
   run = () => {
-    global.setInterval(this.scene.tick, 100); // todo make fps based timing with locking
+    global.setInterval(this.scene.tick, 50); // todo make fps based timing with locking
   };
 
   constructor(

@@ -34,16 +34,15 @@ export class Player
     speed: 10,
     jumpSpeed: 10,
     onReceive: (code: ClientActionCodesExt, status: ClientActionStatusExt) => {
-      let move = 0;
-      if (code == "right") move = 5;
-      if (code == "left") move = -5;
-      this.scene.mutatePropBehaviourAction(this as Prop, {
-        name: "positioned",
-        newValue: {
-          ...this.positioned,
-          posX: this.positioned.posX + move,
-        } as any, // todo fix types
-      });
+      if (status == "pressed") {
+        if (code == "right") this.movingTickSpeed = this.controlled.speed;
+        else if (code == "left") this.movingTickSpeed = -this.controlled.speed;
+      } else {
+        if (code == "right" && this.movingTickSpeed > 0)
+          this.movingTickSpeed = 0;
+        else if (code == "left" && this.movingTickSpeed < 0)
+          this.movingTickSpeed = 0;
+      }
     },
   };
   damagable = { health: 100 };
@@ -60,6 +59,18 @@ export class Player
     facing: "right",
     pivotOffsetX: 32,
     pivotOffsetY: 64,
+  };
+
+  private movingTickSpeed = 0;
+
+  onTick = () => {
+    this.scene.mutatePropBehaviourAction(this as Prop, {
+      name: "positioned",
+      newValue: {
+        ...this.positioned,
+        posX: (this.positioned.posX += this.movingTickSpeed),
+      } as any, // todo fix types
+    });
   };
 
   constructor(
