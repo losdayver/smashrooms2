@@ -13,12 +13,15 @@ export class EaselManager {
 
   private loadProp = (prop: IBehaviouredPropExt) => {
     const img = document.createElement("img");
-    img.id = prop.ID;
+    const span = document.createElement("span");
     img.src = `${imgRoutes}${prop.drawable.animationCode}.png`;
-    img.style.top = prop.positioned.posY as unknown as string;
-    img.style.left = prop.positioned.posX as unknown as string;
-    img.className = "prop-sprite";
-    this.pivot.appendChild(img);
+    span.setAttribute("tag", prop?.nameTagged?.tag ?? "");
+    span.className = "prop-sprite";
+    span.style.top = prop.positioned.posY as unknown as string;
+    span.style.left = prop.positioned.posX as unknown as string;
+    span.id = prop.ID;
+    span.appendChild(img);
+    this.pivot.appendChild(span);
     const easelProp = {
       ...prop,
       container: img,

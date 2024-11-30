@@ -26,6 +26,8 @@ document.addEventListener(
     const status = "pressed";
     if (e.code == "ArrowRight") client.sendInput("right", status);
     else if (e.code == "ArrowLeft") client.sendInput("left", status);
+    if (e.code == "ArrowUp") client.sendInput("jump", status);
+    else if (e.code == "ArrowDown") client.sendInput("duck", status);
   },
   false
 );
@@ -37,6 +39,8 @@ document.addEventListener(
     const status = "released";
     if (e.code == "ArrowRight") client.sendInput("right", status);
     else if (e.code == "ArrowLeft") client.sendInput("left", status);
+    if (e.code == "ArrowUp") client.sendInput("jump", status);
+    else if (e.code == "ArrowDown") client.sendInput("duck", status);
   },
   false
 );

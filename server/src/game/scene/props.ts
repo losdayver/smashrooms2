@@ -37,11 +37,17 @@ export class Player
       if (status == "pressed") {
         if (code == "right") this.movingTickSpeed = this.controlled.speed;
         else if (code == "left") this.movingTickSpeed = -this.controlled.speed;
+        if (code == "jump") this.movingTickSpeedV = this.controlled.speed;
+        else if (code == "duck") this.movingTickSpeedV = -this.controlled.speed;
       } else {
         if (code == "right" && this.movingTickSpeed > 0)
           this.movingTickSpeed = 0;
         else if (code == "left" && this.movingTickSpeed < 0)
           this.movingTickSpeed = 0;
+        if (code == "jump" && this.movingTickSpeedV > 0)
+          this.movingTickSpeedV = 0;
+        else if (code == "duck" && this.movingTickSpeedV < 0)
+          this.movingTickSpeedV = 0;
       }
     },
   };
@@ -62,15 +68,19 @@ export class Player
   };
 
   private movingTickSpeed = 0;
+  private movingTickSpeedV = 0; // remove (this one is temporary)
 
   onTick = () => {
-    this.scene.mutatePropBehaviourAction(this as Prop, {
-      name: "positioned",
-      newValue: {
-        ...this.positioned,
-        posX: (this.positioned.posX += this.movingTickSpeed),
-      } as any, // todo fix types
-    });
+    if (this.movingTickSpeed || this.movingTickSpeedV) {
+      this.scene.mutatePropBehaviourAction(this as Prop, {
+        name: "positioned",
+        newValue: {
+          ...this.positioned,
+          posX: (this.positioned.posX += this.movingTickSpeed),
+          posY: (this.positioned.posY -= this.movingTickSpeedV),
+        } as any, // todo fix types
+      });
+    }
   };
 
   constructor(
