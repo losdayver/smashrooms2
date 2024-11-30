@@ -1,5 +1,8 @@
 import { ClientID } from "../commonTypes";
-import { ClientActionCodes, ClientActionStatus } from "../sockets/messageMeta";
+import {
+  ClientActionCodesExt,
+  ClientActionStatusExt,
+} from "../../../../types/messages";
 import { IProp, PropBehaviours } from "./propTypes";
 
 export type PropID = ClientID;
@@ -12,8 +15,8 @@ export interface IScene extends ISceneActions {
 export interface ISceneActions {
   clientAction: (
     clientID: string,
-    code: ClientActionCodes,
-    status?: ClientActionStatus
+    code: ClientActionCodesExt,
+    status?: ClientActionStatusExt
   ) => void | Promise<void>;
   connectAction: (clientID: string, nameTag?: string) => void | Promise<void>;
   disconnectAction: (clientID: string) => void | Promise<void>;
@@ -64,8 +67,8 @@ export interface IClientActionEvent {
   name: "clientAction";
   data: {
     clientID: ClientID;
-    code: ClientActionCodes;
-    status?: ClientActionStatus;
+    code: ClientActionCodesExt;
+    status?: ClientActionStatusExt;
   };
 }
 
@@ -79,7 +82,7 @@ export interface ISceneSubscriber {
 export type IExternalEvent = {
   update?: ExternalUpdateBehaviours;
   load?: ExternalLoadChunk[];
-  delete?: string[];
+  delete?: PropID[];
 };
 
 export type ExternalUpdateBehaviours = Record<

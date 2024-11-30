@@ -8,19 +8,6 @@ html {
   background-color: black;
 }
 
-.easel {
-  display: block;
-  position: fixed;
-  top: 0;
-  right: 0;
-  left: 0;
-  bottom: 0;
-}
-
-.easel-pivot {
-  position: relative;
-}
-
 .prop-sprite {
   position: absolute;
   transition: all 0.1s ease-in-out;

@@ -1,10 +1,13 @@
+import { ClientActionCodesExt, IMessageExt } from "../../../types/messages";
+import { IExternalEvent, PropIDExt } from "../../../types/sceneTypes";
+
 export class Client {
   private socket: WebSocket;
-  private ID: string;
+  private ID: PropIDExt;
   private connString: string;
 
   private onConnect: (success: boolean) => void;
-  private onSceneEvent: (data: any) => void;
+  private onSceneEvent: (data: IExternalEvent) => void;
 
   connectByClientName = (clientName: string) => {
     this.socket.send(
@@ -15,7 +18,7 @@ export class Client {
     );
   };
 
-  sendInput = (code: "left" | "right" | "jump" | "fire" | "duck") => {
+  sendInput = (code: ClientActionCodesExt) => {
     this.socket.send(
       JSON.stringify({
         name: "clientAct",
@@ -28,12 +31,12 @@ export class Client {
     );
   };
 
-  onmessage = (message: MessageEvent) => {
-    let parsedMsg: Message;
+  onmessage = (message: MessageEvent<string>) => {
+    let parsedMsg: IMessageExt;
     try {
       parsedMsg = JSON.parse(message.data);
     } catch {
-      return;
+      return; // todo: error handling
     }
 
     if (parsedMsg.name == "connRes") {
@@ -48,7 +51,7 @@ export class Client {
 
   init = (
     onConnect?: (status: boolean) => void,
-    onSceneEvent?: (data: any) => void
+    onSceneEvent?: (data: IExternalEvent) => void
   ) => {
     this.onConnect = onConnect;
     this.onSceneEvent = onSceneEvent;
@@ -59,9 +62,4 @@ export class Client {
   constructor(connString: string) {
     this.connString = connString;
   }
-}
-
-interface Message {
-  name: string;
-  [key: string]: any;
 }

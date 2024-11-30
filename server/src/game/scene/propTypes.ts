@@ -1,6 +1,19 @@
-import { ClientActionCodes, ClientActionStatus } from "../sockets/messageMeta";
+import {
+  ClientActionCodesExt,
+  ClientActionStatusExt,
+} from "../../../../types/messages";
 import { Prop } from "./props";
 import { IScene } from "./sceneTypes";
+import {
+  ICollidableExt,
+  IControlledExt,
+  IDamagableExt,
+  IDamagingExt,
+  IDrawableExt,
+  IPropExt,
+  INameTaggedExt,
+  IPositionedExt,
+} from "../../../../types/sceneTypes";
 
 export type PropBehaviours = Partial<
   IPositioned &
@@ -12,64 +25,53 @@ export type PropBehaviours = Partial<
     INameTagged
 >;
 
-export interface IProp {
+export interface IProp extends IPropExt {
   scene: IScene;
-  ID: string;
 }
 
-export interface IPositioned {
+export type IPositioned = {
   positioned: {
-    posX: number;
-    posY: number;
     callback?: (newPos: { posX: number; posY: number }) => void;
   };
-}
+} & IPositionedExt;
 
-export interface IControlled {
+export type IControlled = {
   controlled: {
-    clientID: string;
-    speed: number;
-    jumpSpeed: number;
-    onReceive?: (code: ClientActionCodes, status: ClientActionStatus) => void;
+    onReceive?: (
+      code: ClientActionCodesExt,
+      status: ClientActionStatusExt
+    ) => void;
   };
-}
+} & IControlledExt;
 
-export interface IDrawable extends IPositioned {
+export type IDrawable = IPositioned & {
   drawable: {
-    animationCode: string;
-    facing: "right" | "left" | string; // todo wtf
-    pivotOffsetX: number;
-    pivotOffsetY: number;
     callback?: () => void;
   };
-}
+} & IDrawableExt;
 
-export interface ICollidable extends IPositioned {
+export type ICollidable = IPositioned & {
   collidable: {
-    sizeX: number;
-    sizeY: number;
-    pivotOffsetX: number;
-    pivotOffsetY: number;
     callback?: () => void;
   };
-}
+} & ICollidableExt;
 
-export interface IDamagable extends ICollidable {
+export type IDamagable = ICollidable & {
   damagable: {
     health: number;
     callback?: (damage: number, attacker: Prop) => void;
   };
-}
+} & IDamagableExt;
 
-export interface IDamaging extends ICollidable {
+export type IDamaging = ICollidable & {
   damagable: {
     damage: number;
     callback?: (health: number, victim: Prop) => void;
   };
-}
+} & IDamagingExt;
 
-export interface INameTagged extends IDrawable {
+export type INameTagged = IDrawable & {
   nameTagged: {
     tag: string;
   };
-}
+} & INameTaggedExt;

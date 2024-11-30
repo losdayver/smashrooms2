@@ -1,10 +1,10 @@
 import { IExternalEvent, IScene } from "../scene/sceneTypes";
 import {
-  IClientActionMessage,
-  IConnectResponseMessage,
-  IDisconnectMessage,
-  IGenericMessage,
-} from "../sockets/messageMeta";
+  IClientActionMessageExt,
+  IConnectResponseMessageExt,
+  IDisconnectMessageExt,
+  IGenericMessageExt,
+} from "../../../../types/messages";
 import { ICommunicatior, ICommunicatorSubscriber } from "./communicatorTypes";
 
 export class Communicatior implements ICommunicatior {
@@ -19,15 +19,15 @@ export class Communicatior implements ICommunicatior {
   };
   processMessage = (
     msg:
-      | IConnectResponseMessage
-      | IDisconnectMessage
-      | IClientActionMessage
-      | IGenericMessage
+      | IConnectResponseMessageExt
+      | IDisconnectMessageExt
+      | IClientActionMessageExt
+      | IGenericMessageExt
   ) => {
     if (msg.name == "connRes") {
       this.scene.connectAction(
         msg.clientID,
-        (msg as IConnectResponseMessage).nameTag
+        (msg as IConnectResponseMessageExt).nameTag
       );
     } else if (msg.name == "disc") {
       this.scene.disconnectAction(msg.clientID);

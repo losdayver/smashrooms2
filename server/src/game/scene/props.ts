@@ -8,7 +8,10 @@ import {
 } from "./propTypes";
 import { randomUUID } from "crypto";
 import { IScene } from "./sceneTypes";
-import { ClientActionCodes, ClientActionStatus } from "../sockets/messageMeta";
+import {
+  ClientActionCodesExt,
+  ClientActionStatusExt,
+} from "../../../../types/messages";
 
 export abstract class Prop implements IProp {
   ID: string;
@@ -30,7 +33,7 @@ export class Player
     clientID: null,
     speed: 10,
     jumpSpeed: 10,
-    onReceive: (code: ClientActionCodes, status: ClientActionStatus) => {
+    onReceive: (code: ClientActionCodesExt, status: ClientActionStatusExt) => {
       let move = 0;
       if (code == "right") move = 5;
       if (code == "left") move = -5;

@@ -1,4 +1,7 @@
-import { ClientActionCodes, ClientActionStatus } from "../sockets/messageMeta";
+import {
+  ClientActionCodesExt,
+  ClientActionStatusExt,
+} from "../../../../types/messages";
 import {
   IClientActionEvent,
   IDestroyControlledPropEvent,
@@ -214,8 +217,8 @@ export class Scene implements IScene {
 
   clientAction = async (
     clientID: string,
-    code: ClientActionCodes,
-    status?: ClientActionStatus
+    code: ClientActionCodesExt,
+    status?: ClientActionStatusExt
   ) => {
     severityLog(`client ${clientID} preformed action ${code}`);
     const unlock = await this.internalEventQueueMutex.acquire();

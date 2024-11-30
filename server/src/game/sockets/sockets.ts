@@ -7,12 +7,12 @@ import {
 } from "../communicator/communicatorTypes";
 import { ISocketServer } from "./socketsTypes";
 import {
-  IConnectMessage,
-  IConnectResponseMessage,
-  IDisconnectMessage,
-  IGenericMessage,
-  IGenericNotRegisteredResponseMessage,
-} from "./messageMeta";
+  IGenericNotRegisteredResponseMessageExt,
+  IConnectResponseMessageExt,
+  IDisconnectMessageExt,
+  IGenericMessageExt,
+  IConnectMessageExt,
+} from "../../../../types/messages";
 import { bufferFromObj, severityLog, wslogSend } from "./../../utils";
 import { ClientID } from "../commonTypes";
 
@@ -60,7 +60,7 @@ export class WSSocketServer implements ISocketServer {
 
   private resolveConnectMessage = (
     clientSocket: WebSocket,
-    message: IConnectMessage
+    message: IConnectMessageExt
   ) => {
     for (const [_, client] of this.clientMap.entries()) {
       if (clientSocket == client.socket) {
@@ -70,7 +70,7 @@ export class WSSocketServer implements ISocketServer {
             name: "connRes",
             status: "restricted",
             cause: "already connected",
-          } satisfies IConnectResponseMessage,
+          } satisfies IConnectResponseMessageExt,
           `sockets client ${message.clientName} is already connected`,
           "warning"
         );
@@ -83,7 +83,7 @@ export class WSSocketServer implements ISocketServer {
             name: "connRes",
             status: "restricted",
             cause: "name is already occupied",
-          } satisfies IConnectResponseMessage,
+          } satisfies IConnectResponseMessageExt,
           `sockets rejected client connection ${message.clientName} due to name already being occupied`,
           "warning"
         );
@@ -103,7 +103,7 @@ export class WSSocketServer implements ISocketServer {
       status: "allowed",
       clientID,
       nameTag: message.clientName,
-    } satisfies IConnectResponseMessage;
+    } satisfies IConnectResponseMessageExt;
     wslogSend(
       clientSocket,
       connectRes,
@@ -118,7 +118,7 @@ export class WSSocketServer implements ISocketServer {
         this.communicator.processMessage({
           name: "disc",
           clientID,
-        } satisfies IDisconnectMessage);
+        } satisfies IDisconnectMessageExt);
         this.clientMap.delete(clientID);
         severityLog(`sockets disconnected client ${clientID} ${client.name}`);
         return;
@@ -128,13 +128,13 @@ export class WSSocketServer implements ISocketServer {
 
   private resolveGenericMessage = (
     clientSocket: WebSocket,
-    message: IGenericMessage
+    message: IGenericMessageExt
   ) => {
     if (!this.clientMap.has(message.clientID)) {
       clientSocket.send(
         bufferFromObj({
           name: "notReg",
-        } satisfies IGenericNotRegisteredResponseMessage)
+        } satisfies IGenericNotRegisteredResponseMessageExt)
       );
       return;
     }
