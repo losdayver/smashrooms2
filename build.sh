@@ -1,3 +1,4 @@
+#!/bin/bash
 npm i -g typescript
 cd server
 npm i
