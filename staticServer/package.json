@@ -4,7 +4,8 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "nodemon -L -e js,json --exec node index.js\""
+    "dev": "nodemon -L -e js,json --exec node index.js\"",
+    "prod": "node index.js"
   },
   "keywords": [],
   "author": "",
