@@ -29,7 +29,8 @@ export class Toast {
   };
 
   notify = (message: string, type: ToastIconTypes) => {
-    if (this.toastEl.children.length >= 5) this.toastEl.children[0].remove();
+    if (this.toastEl.children.length >= this.maxCount)
+      this.toastEl.children[0].remove();
     else if (this.toastEl.children.length == 0) this.restartRemoveTimeout();
 
     const notification = document.createElement("div");
