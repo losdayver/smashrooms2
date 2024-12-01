@@ -4,7 +4,7 @@ import {
   UpdateBehavioursExt,
 } from "../../../types/sceneTypes";
 import { Client } from "../client/client.js";
-import { imgRoutes } from "../routes.js";
+import { propSpriteRoute } from "../routes.js";
 
 export class EaselManager {
   private pivot: HTMLDivElement;
@@ -14,7 +14,7 @@ export class EaselManager {
   private loadProp = (prop: IBehaviouredPropExt) => {
     const img = document.createElement("img");
     const span = document.createElement("span");
-    img.src = `${imgRoutes}${prop.drawable.animationCode}.png`;
+    img.src = `${propSpriteRoute}${prop.drawable.animationCode}.png`;
     span.setAttribute("tag", prop?.nameTagged?.tag ?? "");
     span.className = "prop-sprite";
     span.style.top = prop.positioned.posY as unknown as string;

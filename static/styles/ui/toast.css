@@ -1,0 +1,18 @@
+.toast {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  width: 300px;
+}
+
+.toast__notification {
+  background-color: white;
+  height: 2em;
+  display: flex;
+  gap: 0.5em;
+  padding: 5px;
+}
+
+.toast__notification + .toast__notification {
+  margin-top: 20px;
+}

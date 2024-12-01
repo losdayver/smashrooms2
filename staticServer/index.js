@@ -15,6 +15,10 @@ app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, staticRoot, "html", "index.html"));
 });
 
+app.get("/components", (req, res) => {
+  res.sendFile(path.join(__dirname, staticRoot, "html", "components.html"));
+});
+
 app.listen(5890, "0.0.0.0", () => {
   console.log(`static server listening on port ${5890}!`);
 });

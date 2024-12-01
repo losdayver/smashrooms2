@@ -4,6 +4,12 @@ body {
   padding: 0;
 }
 
+*,
+*::after,
+*::before {
+  box-sizing: border-box;
+}
+
 html {
   background-color: black;
 }
