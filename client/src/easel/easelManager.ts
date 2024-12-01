@@ -48,20 +48,14 @@ export class EaselManager {
     if (data.update) this.updateProps(data.update);
   };
 
-  constructor(
-    easelDiv: HTMLDivElement | HTMLSpanElement,
-    client: Client,
-    onAfterConnect?: (status: boolean) => void
-  ) {
+  constructor(easelDiv: HTMLDivElement | HTMLSpanElement, client: Client) {
     this.pivot = document.createElement("div");
     easelDiv.appendChild(this.pivot);
     this.pivot.style.position = "relative";
     this.client = client;
 
-    client.init((status) => {
-      this.onConnectHandler(status);
-      onAfterConnect?.(status);
-    }, this.onSceneEventHandler);
+    client.onConnectHandlers.easel = this.onConnectHandler;
+    client.onSceneEventHandlers.easel = this.onSceneEventHandler;
   }
 }
 

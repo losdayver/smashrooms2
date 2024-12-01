@@ -1,19 +1,27 @@
 import { Client } from "./client/client.js";
 import { EaselManager } from "./easel/easelManager.js";
+import { Toast } from "./ui/toast.js";
+
+const toast = new Toast(document.querySelector(".toast-container"), 2000);
+
+const client = new Client("ws://127.0.0.1:5889");
+client.onConnectHandlers.index = (status) => {
+  if (status) {
+    regModal.style.display = "none";
+  }
+};
+client.onConnectHandlers.toast = (status) => {
+  if (status) toast.notify("successfully connected!", "info");
+  else toast.notify("failed to connect!", "warning");
+};
+
+const easel = document.querySelector<HTMLDivElement>(".easel");
+const easelManager = new EaselManager(easel, client);
 
 const regModal = document.querySelector<HTMLDivElement>(".reg-modal");
 const clientNameInput =
   regModal.querySelector<HTMLInputElement>(".client-name-input");
 const regForm = regModal.querySelector("form");
-
-const client = new Client("ws://127.0.0.1:5889");
-const easel = document.querySelector<HTMLDivElement>(".easel");
-const easelManager = new EaselManager(easel, client, (status) => {
-  if (status) {
-    regModal.style.display = "none";
-  }
-});
-
 regForm.addEventListener("submit", (event) => {
   event.preventDefault();
   client.connectByClientName(clientNameInput.value);

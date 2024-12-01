@@ -10,8 +10,12 @@ export class Client {
   private ID: PropIDExt;
   private connString: string;
 
-  private onConnect: (success: boolean) => void;
-  private onSceneEvent: (data: IExternalEvent) => void;
+  onConnectHandlers: Record<string, (status: boolean) => void | Promise<void>> =
+    {};
+  onSceneEventHandlers: Record<
+    string,
+    (data: IExternalEvent) => void | Promise<void>
+  > = {};
 
   connectByClientName = (clientName: string) => {
     this.socket.send(
@@ -35,7 +39,7 @@ export class Client {
     );
   };
 
-  onmessage = (message: MessageEvent<string>) => {
+  onmessage = async (message: MessageEvent<string>) => {
     let parsedMsg: IMessageExt;
     try {
       parsedMsg = JSON.parse(message.data);
@@ -46,24 +50,29 @@ export class Client {
     if (parsedMsg.name == "connRes") {
       if (parsedMsg.status == "allowed") {
         this.ID = parsedMsg.clientID;
-        this.onConnect?.(true);
-      } else this.onConnect?.(false);
+        Promise.all(
+          Object.values(this.onConnectHandlers).map(
+            async (callback) => await callback(true)
+          )
+        );
+      } else
+        Promise.all(
+          Object.values(this.onConnectHandlers).map(
+            async (callback) => await callback(false)
+          )
+        );
     } else if (parsedMsg.name == "scene") {
-      this.onSceneEvent?.(parsedMsg.data);
+      Promise.all(
+        Object.values(this.onSceneEventHandlers).map(
+          async (callback) => await callback(parsedMsg.data)
+        )
+      );
     }
-  };
-
-  init = (
-    onConnect?: (status: boolean) => void,
-    onSceneEvent?: (data: IExternalEvent) => void
-  ) => {
-    this.onConnect = onConnect;
-    this.onSceneEvent = onSceneEvent;
-    this.socket = new WebSocket(this.connString);
-    this.socket.onmessage = this.onmessage;
   };
 
   constructor(connString: string) {
     this.connString = connString;
+    this.socket = new WebSocket(this.connString);
+    this.socket.onmessage = this.onmessage;
   }
 }
