@@ -82,6 +82,7 @@ export class Scene implements IScene {
     } else if (type == "everyUpdate") {
       const tempUpdate = {};
       const tempLoad = [];
+      let tempDelete = [];
       // todo deleted props
 
       Object.values(this.$chunkedUpdates).forEach((chunkedUpdate) => {
@@ -105,9 +106,14 @@ export class Scene implements IScene {
             tempLoad.push(tempProp);
           });
         }
+
+        if (chunkedUpdate.delete)
+          tempDelete = tempDelete.concat(chunkedUpdate.delete);
       });
+
       if (Object.keys(tempUpdate).length) batch.update = tempUpdate;
       if (tempLoad.length) batch.load = tempLoad;
+      if (tempDelete.length) batch.delete = tempDelete;
     }
     if (Object.keys(batch).length) this.eventHandler(batch, clientID);
   };
@@ -201,11 +207,6 @@ export class Scene implements IScene {
         (this.propList[i] as unknown as IControlled)?.controlled.clientID ==
         data.clientID
       ) {
-        severityLog(
-          `destroyed controlled prop with clientID ${
-            (this.propList[i] as unknown as IControlled)?.controlled.clientID
-          }`
-        );
         this.$appendToChunkedUpdates(
           { delete: [this.propList[i].ID] },
           this.propList[i] as IPositioned

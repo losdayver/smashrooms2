@@ -24,7 +24,7 @@ export class EaselManager {
     this.pivot.appendChild(span);
     const easelProp = {
       ...prop,
-      container: img,
+      container: span,
     } satisfies IEaselProp;
     this.propList.push(easelProp);
   };
@@ -40,12 +40,23 @@ export class EaselManager {
     });
   };
 
+  private deleteProps = (del: IExternalEvent["delete"]) => {
+    for (let i = 0; i < del.length; i++)
+      for (let j = 0; j < this.propList.length; j++)
+        if (del.includes(this.propList[j].ID)) {
+          this.propList[j].container.remove();
+          this.propList.splice(j, 1);
+          return; // todo optimise this list traversal
+        }
+  };
+
   private onConnectHandler = (status: boolean) => {};
   private onSceneEventHandler = (data: IExternalEvent) => {
     data.load?.forEach((prop) => {
       if (prop.drawable) this.loadProp(prop);
     });
     if (data.update) this.updateProps(data.update);
+    if (data.delete) this.deleteProps(data.delete);
   };
 
   constructor(easelDiv: HTMLDivElement | HTMLSpanElement, client: Client) {
