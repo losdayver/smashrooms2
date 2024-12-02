@@ -1,0 +1,20 @@
+.chat {
+}
+
+.chat__message {
+  color: white;
+}
+
+.chat__message-container {
+}
+
+.chat__input {
+}
+
+.chat__submit {
+}
+
+.chat__controls-container {
+  display: flex;
+  gap: 1em;
+}

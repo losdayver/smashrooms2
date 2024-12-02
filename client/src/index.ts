@@ -1,5 +1,6 @@
 import { Client } from "./client/client.js";
 import { EaselManager } from "./easel/easelManager.js";
+import { Chat } from "./ui/chat.js";
 import { Toast } from "./ui/toast.js";
 
 const toast = new Toast(document.querySelector(".toast-container"), 2000);
@@ -14,6 +15,13 @@ client.onConnectHandlers.toast = (status) => {
   if (status) toast.notify("successfully connected!", "info");
   else toast.notify("failed to connect!", "warning");
 };
+
+const chat = new Chat(
+  document.querySelector(".chat-container"),
+  client.sendChatMessage
+);
+
+client.onChatEventHandlers.chat = chat.receiveMessage;
 
 const easel = document.querySelector<HTMLDivElement>(".easel");
 const easelManager = new EaselManager(easel, client);

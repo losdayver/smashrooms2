@@ -12,6 +12,7 @@ import {
   IDisconnectMessageExt,
   IGenericMessageExt,
   IConnectMessageExt,
+  IServerChatMessageExt,
 } from "../../../../types/messages";
 import { bufferFromObj, severityLog, wslogSend } from "./../../utils";
 import { ClientID } from "../commonTypes";
@@ -32,11 +33,15 @@ export class WSSocketServer implements ISocketServer {
     clientID: ClientID | "all"
   ) => {
     if (clientID == "all") {
-      for (const [_, client] of this.clientMap.entries())
-        client.socket.send(JSON.stringify(event));
+      this.sendToAll(JSON.stringify(event));
       return;
     }
     this.clientMap.get(clientID)?.socket.send(JSON.stringify(event));
+  };
+
+  private sendToAll = (message: string) => {
+    for (const [_, client] of this.clientMap.entries())
+      client.socket.send(message);
   };
 
   private init = () => {
@@ -49,6 +54,16 @@ export class WSSocketServer implements ISocketServer {
           msg = JSON.parse(buffer.toString()) as any;
           if (msg.name == "conn") {
             this.resolveConnectMessage(clientSocket, msg);
+          } else if (msg.name == "clientChat") {
+            // todo handler map
+            let senderName: string;
+            for (const [_, client] of this.clientMap.entries())
+              if (client.socket == clientSocket) {
+                senderName = client.name;
+                break;
+              }
+            if (senderName)
+              this.resolveClientChatMessage(senderName, msg.message);
           } else this.resolveGenericMessage(clientSocket, msg);
         } catch (e) {
           severityLog(e as Error);
@@ -124,6 +139,16 @@ export class WSSocketServer implements ISocketServer {
         return;
       }
     }
+  };
+
+  private resolveClientChatMessage = (sender: string, message: string) => {
+    const msg: IServerChatMessageExt = {
+      name: "serverChat",
+      sender,
+      message,
+    };
+    const stringMsg = JSON.stringify(msg);
+    this.sendToAll(stringMsg);
   };
 
   private resolveGenericMessage = (

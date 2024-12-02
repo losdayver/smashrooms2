@@ -1,6 +1,9 @@
 import {
   ClientActionCodesExt,
   ClientActionStatusExt,
+  IClientChatMessageExt,
+  IClientActionMessageExt,
+  IConnectMessageExt,
   IMessageExt,
 } from "../../../types/messages";
 import { IExternalEvent, PropIDExt } from "../../../types/sceneTypes";
@@ -16,13 +19,17 @@ export class Client {
     string,
     (data: IExternalEvent) => void | Promise<void>
   > = {};
+  onChatEventHandlers: Record<
+    string,
+    (sender: string, message: string) => void | Promise<void>
+  > = {};
 
   connectByClientName = (clientName: string) => {
     this.socket.send(
       JSON.stringify({
         name: "conn",
         clientName: clientName,
-      })
+      } satisfies IConnectMessageExt)
     );
   };
 
@@ -35,7 +42,16 @@ export class Client {
           code,
           status,
         },
-      })
+      } satisfies IClientActionMessageExt)
+    );
+  };
+
+  sendChatMessage = (message: string) => {
+    this.socket.send(
+      JSON.stringify({
+        name: "clientChat",
+        message,
+      } satisfies IClientChatMessageExt)
     );
   };
 
@@ -48,6 +64,7 @@ export class Client {
     }
 
     if (parsedMsg.name == "connRes") {
+      // todo handler map
       if (parsedMsg.status == "allowed") {
         this.ID = parsedMsg.clientID;
         Promise.all(
@@ -65,6 +82,13 @@ export class Client {
       Promise.all(
         Object.values(this.onSceneEventHandlers).map(
           async (callback) => await callback(parsedMsg.data)
+        )
+      );
+    } else if (parsedMsg.name == "serverChat") {
+      Promise.all(
+        Object.values(this.onChatEventHandlers).map(
+          async (callback) =>
+            await callback(parsedMsg.sender, parsedMsg.message)
         )
       );
     }

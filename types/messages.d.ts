@@ -23,8 +23,18 @@ export interface IGenericNotRegisteredResponseMessageExt {
 
 export interface ISceneUpdatesMessageExt {
   name: "scene";
-  clientID: string;
   data: IExternalEvent;
+}
+
+export interface IClientChatMessageExt {
+  name: "clientChat";
+  message: string;
+}
+
+export interface IServerChatMessageExt {
+  name: "serverChat";
+  sender: string;
+  message: string;
 }
 
 export interface IGenericMessageExt {
@@ -38,12 +48,15 @@ export type IMessageExt =
   | IConnectResponseMessageExt
   | IDisconnectMessageExt
   | IGenericNotRegisteredResponseMessageExt
-  | ISceneUpdatesMessageExt;
+  | ISceneUpdatesMessageExt
+  | IClientChatMessageExt
+  | IServerChatMessageExt;
 
 export interface IClientActionMessageExt extends IGenericMessageExt {
   name: "clientAct";
   data: {
     code: ClientActionCodesExt;
+    status: ClientActionStatusExt;
   };
 }
 export type ClientActionCodesExt = "left" | "right" | "jump" | "fire" | "duck";
