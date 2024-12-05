@@ -105,7 +105,7 @@ export class Player
           ...this.positioned,
           posX: (this.positioned.posX += this.movingTickSpeed),
           posY: (this.positioned.posY -= this.movingTickSpeedV),
-        } as any, // todo fix types
+        },
       });
     }
   };
@@ -148,7 +148,7 @@ export class DummyBullet extends Prop implements IDrawable {
       newValue: {
         ...this.positioned,
         posX: (this.positioned.posX += this.movingTickSpeed),
-      } as any, // todo fix types
+      },
     });
   };
 
