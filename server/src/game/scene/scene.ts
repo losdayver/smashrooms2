@@ -15,8 +15,8 @@ import {
   ISpawnPropEvent,
   PropID,
 } from "./sceneTypes";
-import { Mutex, severityLog } from "./../../utils";
-import { propsMap } from "./props";
+import { Mutex, RecursivePartial, severityLog } from "./../../utils";
+import { Prop, propsMap } from "./props";
 import { IControlled, IPositioned, IProp, PropBehaviours } from "./propTypes";
 
 type ChunkedUpdateMap = Record<`${number}_${number}`, ChunkUpdate>;
@@ -38,6 +38,7 @@ export class Scene implements IScene {
     IInternalEvent["name"],
     (data: any) => void
   >;
+  private tickNum = 0;
   private $chunkedUpdates: ChunkedUpdateMap = {};
 
   private $appendToChunkedUpdates = (
@@ -132,7 +133,7 @@ export class Scene implements IScene {
     // do all the game logic here
     ("Hello World!");
     this.propList.forEach((prop) => {
-      if (prop.onTick) prop.onTick();
+      if (prop.onTick) prop.onTick(this.tickNum);
     });
 
     // fire all internal even handlers
@@ -150,15 +151,23 @@ export class Scene implements IScene {
 
     // todo this is inefficient
     this.$generateExternalEventBatch("all", "everyUpdate");
+    this.tickNum++;
     this.$isProcessingTick = false;
   };
 
   private spawnPropHandler = (data: ISpawnPropEvent["data"]) => {
     const propType = propsMap[data.propName];
     if (propType) {
-      const prop = new propType(this) as IProp & PropBehaviours;
+      const prop = new propType(this) as Prop & PropBehaviours;
+      if (data.behaviours) {
+        for (const [key, val] of Object.entries(data.behaviours)) {
+          if (prop[key]) prop[key] = { ...prop[key], ...val };
+          else prop[key] = val;
+        }
+      }
       this.propList.unshift(prop);
       severityLog(`created new prop ${data.propName}`);
+      prop.onCreated?.(this.tickNum);
       if (prop.positioned)
         this.$appendToChunkedUpdates(
           { props: [prop], load: [prop] },
@@ -171,14 +180,14 @@ export class Scene implements IScene {
   ) => {
     const propType = propsMap[data.propName];
     if (propType) {
-      const prop = new propsMap[data.propName](data.clientID, this) as IProp &
-        PropBehaviours;
+      const prop = new propType(data.clientID, this) as IProp & PropBehaviours;
       if (data.nameTag) prop.nameTagged = { tag: data.nameTag };
       if (prop.controlled) {
         this.propList.unshift(prop);
         severityLog(
           `created new controlled prop ${data.propName} for ${data.clientID}`
         );
+        prop.onCreated?.(this.tickNum);
         this.$appendToChunkedUpdates(
           { props: [prop], load: [prop] },
           prop as IPositioned
@@ -204,7 +213,7 @@ export class Scene implements IScene {
   ) => {
     for (let i = 0; i < this.propList.length; i++) {
       if (
-        (this.propList[i] as unknown as IControlled)?.controlled.clientID ==
+        (this.propList[i] as unknown as IControlled).controlled?.clientID ==
         data.clientID
       ) {
         this.$appendToChunkedUpdates(
@@ -223,11 +232,7 @@ export class Scene implements IScene {
     prop.controlled.onReceive?.(data.code, data.status);
   };
 
-  clientAction = async (
-    clientID: string,
-    code: ClientActionCodesExt,
-    status?: ClientActionStatusExt
-  ) => {
+  clientAction: IScene["clientAction"] = async (clientID, code, status?) => {
     const unlock = await this.internalEventQueueMutex.acquire();
     try {
       this.internalEventQueueMutex.value.unshift({
@@ -242,7 +247,7 @@ export class Scene implements IScene {
       unlock();
     }
   };
-  connectAction = async (clientID: string, nameTag?: string) => {
+  connectAction: IScene["connectAction"] = async (clientID, nameTag?) => {
     const unlock = await this.internalEventQueueMutex.acquire();
     try {
       severityLog(`scene connected client ${clientID}`);
@@ -262,7 +267,7 @@ export class Scene implements IScene {
       this.$generateExternalEventBatch(clientID, "currentState");
     }
   };
-  disconnectAction = async (clientID: string) => {
+  disconnectAction: IScene["disconnectAction"] = async (clientID) => {
     const unlock = await this.internalEventQueueMutex.acquire();
     try {
       this.internalEventQueueMutex.value.unshift({
@@ -273,23 +278,51 @@ export class Scene implements IScene {
       unlock();
     }
   };
-  mutatePropBehaviourAction = (
-    propOrID: (IProp & PropBehaviours) | string,
-    behaviour: { name: string; newValue: PropBehaviours }
+  mutatePropBehaviourAction: IScene["mutatePropBehaviourAction"] = (
+    propOrID,
+    behaviour
   ) => {
     const prop =
       typeof propOrID == "string"
         ? this.propList.find((prop) => prop.ID == propOrID)
         : propOrID;
-    prop[behaviour.name] = behaviour.newValue;
+    prop[behaviour.name] = { ...prop[behaviour.name], ...behaviour.newValue };
     if (prop.positioned)
       this.$appendToChunkedUpdates(
         { update: { [prop.ID]: { [behaviour.name]: behaviour.newValue } } },
         prop as IPositioned
       );
   };
+  spawnPropAction: IScene["spawnPropAction"] = async (
+    propName,
+    behaviours?
+  ) => {
+    const unlock = await this.internalEventQueueMutex.acquire();
+    const event = {
+      name: "spawnProp",
+      data: {
+        posX: 0,
+        posY: 0,
+        propName,
+        behaviours,
+      },
+    } satisfies ISpawnPropEvent;
+    this.internalEventQueueMutex.value.unshift(event);
+    unlock();
+  };
+  destroyPropAction: IScene["destroyPropAction"] = async (propID) => {
+    const unlock = await this.internalEventQueueMutex.acquire();
+    try {
+      this.internalEventQueueMutex.value.unshift({
+        name: "destroyProp",
+        data: { ID: propID },
+      } satisfies IDestroyPropEvent);
+    } finally {
+      unlock();
+    }
+  };
 
-  makeSubscribe = (subscriber: ISceneSubscriber) => {
+  makeSubscribe: IScene["makeSubscribe"] = (subscriber) => {
     this.eventHandler = subscriber.handlerForSceneExternalEvents;
   };
 

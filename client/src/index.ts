@@ -44,6 +44,8 @@ document.addEventListener(
     else if (e.code == "ArrowLeft") client.sendInput("left", status);
     if (e.code == "ArrowUp") client.sendInput("jump", status);
     else if (e.code == "ArrowDown") client.sendInput("duck", status);
+
+    if (e.code == "Space") client.sendInput("fire", status);
   },
   false
 );

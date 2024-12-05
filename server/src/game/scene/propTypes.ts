@@ -27,7 +27,8 @@ export type PropBehaviours = Partial<
 
 export interface IProp extends IPropExt {
   scene: IScene;
-  onTick?: () => void;
+  onTick?: (tickNum: number) => void;
+  onCreated?: (tickNum: number) => void;
 }
 
 export type IPositioned = {

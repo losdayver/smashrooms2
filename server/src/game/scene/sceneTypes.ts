@@ -4,6 +4,8 @@ import {
   ClientActionStatusExt,
 } from "../../../../types/messages";
 import { IProp, PropBehaviours } from "./propTypes";
+import { propsMap } from "./props";
+import { RecursivePartial } from "../../utils";
 
 export type PropID = ClientID;
 
@@ -22,8 +24,13 @@ export interface ISceneActions {
   disconnectAction: (clientID: string) => void | Promise<void>;
   mutatePropBehaviourAction: (
     propOrID: (IProp & PropBehaviours) | string,
-    behaviour: { name: string; newValue: PropBehaviours }
+    behaviour: { name: string; newValue: any }
   ) => void;
+  spawnPropAction: (
+    propName: string,
+    behaviours?: RecursivePartial<PropBehaviours>
+  ) => Promise<void>;
+  destroyPropAction: (propID: PropID) => Promise<void>;
 }
 
 /** describes event that is put into event queue upon receiving action from outside */
@@ -39,6 +46,7 @@ export interface ISpawnPropEvent {
     posX: number;
     posY: number;
     propName: string;
+    behaviours?: RecursivePartial<PropBehaviours>;
   };
 }
 export interface ISpawnControlledPropEvent {

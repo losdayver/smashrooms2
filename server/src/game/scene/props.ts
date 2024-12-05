@@ -16,6 +16,7 @@ import {
 export abstract class Prop implements IProp {
   ID: string;
   scene: IScene;
+  onCreated?: IProp["onCreated"];
   constructor(scene: IScene, behaviourPresets?: PropBehaviours) {
     this.ID = randomUUID();
     this.scene = scene;
@@ -35,10 +36,36 @@ export class Player
     jumpSpeed: 10,
     onReceive: (code: ClientActionCodesExt, status: ClientActionStatusExt) => {
       if (status == "pressed") {
-        if (code == "right") this.movingTickSpeed = this.controlled.speed;
-        else if (code == "left") this.movingTickSpeed = -this.controlled.speed;
-        if (code == "jump") this.movingTickSpeedV = this.controlled.speed;
+        if (code == "right") {
+          this.movingTickSpeed = this.controlled.speed;
+          this.scene.mutatePropBehaviourAction(this as IProp, {
+            name: "drawable",
+            newValue: {
+              facing: "right",
+            },
+          });
+        } else if (code == "left") {
+          this.movingTickSpeed = -this.controlled.speed;
+          this.scene.mutatePropBehaviourAction(this as IProp, {
+            name: "drawable",
+            newValue: {
+              facing: "left",
+            },
+          });
+        } else if (code == "jump")
+          this.movingTickSpeedV = this.controlled.speed;
         else if (code == "duck") this.movingTickSpeedV = -this.controlled.speed;
+        else if (code == "fire") {
+          this.scene.spawnPropAction("bullet", {
+            positioned: {
+              posX: this.positioned.posX,
+              posY: this.positioned.posY,
+            },
+            drawable: {
+              facing: this.drawable.facing,
+            },
+          });
+        }
       } else {
         if (code == "right" && this.movingTickSpeed > 0)
           this.movingTickSpeed = 0;
@@ -93,6 +120,43 @@ export class Player
   }
 }
 
+export class DummyBullet extends Prop implements IDrawable {
+  positioned = { posX: 100, posY: 100 };
+  drawable = {
+    animationCode: "bullet",
+    facing: "right",
+    pivotOffsetX: 0,
+    pivotOffsetY: 0,
+  };
+
+  private movingTickSpeed = 50;
+
+  createdOn: number;
+
+  onCreated = (tickNum: number) => {
+    this.createdOn = tickNum;
+    if (this.drawable.facing == "left") this.movingTickSpeed *= -1;
+  };
+
+  onTick = (tickNum: number) => {
+    if (tickNum - this.createdOn > 20) {
+      this.scene.destroyPropAction(this.ID);
+      return;
+    }
+    this.scene.mutatePropBehaviourAction(this as Prop, {
+      name: "positioned",
+      newValue: {
+        ...this.positioned,
+        posX: (this.positioned.posX += this.movingTickSpeed),
+      } as any, // todo fix types
+    });
+  };
+
+  constructor(scene: IScene) {
+    super(scene);
+  }
+}
+
 export class Crate extends Prop implements IDamagable, IDrawable {
   damagable = { health: 10 };
   collidable = { sizeX: 64, sizeY: 64, pivotOffsetX: 0, pivotOffsetY: 0 };
@@ -104,6 +168,10 @@ export class Crate extends Prop implements IDamagable, IDrawable {
     pivotOffsetY: 0,
   };
 
+  onCreated = () => {
+    console.log(123123123123);
+  };
+
   constructor(scene: IScene, behaviourPresets?: PropBehaviours) {
     super(scene, behaviourPresets);
   }
@@ -112,4 +180,5 @@ export class Crate extends Prop implements IDamagable, IDrawable {
 export const propsMap = {
   player: Player,
   crate: Crate,
+  bullet: DummyBullet,
 };
