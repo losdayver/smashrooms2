@@ -54,7 +54,7 @@ export type IDrawable = IPositioned & {
 
 export type ICollidable = IPositioned & {
   collidable: {
-    callback?: () => void;
+    onCollide?: (prop: Prop & PropBehaviours) => void;
   };
 } & ICollidableExt;
 

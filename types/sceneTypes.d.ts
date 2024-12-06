@@ -43,8 +43,8 @@ export interface ICollidableExt extends IPositionedExt {
   collidable: {
     sizeX: number;
     sizeY: number;
-    pivotOffsetX: number;
-    pivotOffsetY: number;
+    offsetX: number;
+    offsetY: number;
   };
 }
 

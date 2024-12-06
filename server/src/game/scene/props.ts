@@ -81,9 +81,12 @@ export class Player
   damagable = { health: 100 };
   collidable = {
     sizeX: 64,
-    sizeY: 128,
-    pivotOffsetX: 32,
-    pivotOffsetY: 64,
+    sizeY: 64,
+    offsetX: 0,
+    offsetY: 0,
+    onCollide: (prop: Prop & PropBehaviours) => {
+      console.log("i am the player an i have just collided with something");
+    },
   };
   positioned = { posX: 100, posY: 100 };
   nameTagged = { tag: "player" };
@@ -128,6 +131,16 @@ export class DummyBullet extends Prop implements IDrawable {
     pivotOffsetX: 0,
     pivotOffsetY: 0,
   };
+  collidable = {
+    sizeX: 64,
+    sizeY: 64,
+    offsetX: 0,
+    offsetY: 0,
+    onCollide: (prop: Prop & PropBehaviours) => {
+      console.log("i am the bullet an i have just collided with something");
+      this.scene.destroyPropAction(this.ID);
+    },
+  };
 
   private movingTickSpeed = 50;
 
@@ -159,7 +172,7 @@ export class DummyBullet extends Prop implements IDrawable {
 
 export class Crate extends Prop implements IDamagable, IDrawable {
   damagable = { health: 10 };
-  collidable = { sizeX: 64, sizeY: 64, pivotOffsetX: 0, pivotOffsetY: 0 };
+  collidable = { sizeX: 64, sizeY: 64, offsetX: 0, offsetY: 0 };
   positioned;
   drawable = {
     animationCode: "crate",

@@ -15,10 +15,18 @@ export class EaselManager {
     const img = document.createElement("img");
     const span = document.createElement("span");
     img.src = `${propSpriteRoute}${prop.drawable.animationCode}.png`;
+
+    img.style.maxWidth = "100%";
+    img.style.height = "auto";
+
     span.setAttribute("tag", prop?.nameTagged?.tag ?? "");
     span.className = "prop-sprite";
+
     span.style.top = prop.positioned.posY as unknown as string;
-    span.style.left = prop.positioned.posX as unknown as string;
+    span.style.left = prop.positioned.posX as unknown as string; // todo fix types
+    span.style.transform = `translate(${-prop.drawable.pivotOffsetX} ${-prop
+      .drawable.pivotOffsetY})`;
+
     span.id = prop.ID;
     span.appendChild(img);
     this.pivot.appendChild(span);

@@ -13,17 +13,17 @@ import {
   ISceneTemplate,
   ISpawnControlledPropEvent,
   ISpawnPropEvent,
-  PropID,
 } from "./sceneTypes";
 import { Mutex, RecursivePartial, severityLog } from "./../../utils";
 import { Prop, propsMap } from "./props";
 import { IControlled, IPositioned, IProp, PropBehaviours } from "./propTypes";
+import { PropIDExt } from "../../../../types/sceneTypes";
 
 type ChunkedUpdateMap = Record<`${number}_${number}`, ChunkUpdate>;
 type ChunkUpdate = {
   props: (IProp & PropBehaviours)[];
   /** prop ID followed by behaviour that was mutated */
-  update: Record<PropID, Record<string, PropBehaviours>>;
+  update: Record<PropIDExt, Record<string, PropBehaviours>>;
   load: (IProp & PropBehaviours)[];
   delete: string[];
 };
@@ -131,7 +131,62 @@ export class Scene implements IScene {
     });
 
     // do all the game logic here
-    ("Hello World!");
+
+    // collision detection
+    const checkedCollisions: PropIDExt[] = [];
+    for (const [coord, chunk] of Object.entries(this.$chunkedUpdates)) {
+      const [x, y] = coord.split("_").map(Number);
+      const adjecentChunks: ChunkUpdate[] = [];
+
+      for (const [coordAdj, chunkAdj] of Object.entries(this.$chunkedUpdates)) {
+        const [xAdj, yAdj] = coordAdj.split("_").map(Number);
+
+        if (
+          chunkAdj != chunk &&
+          Math.abs(xAdj - x) <= 1 &&
+          Math.abs(yAdj - y) <= 1
+        )
+          adjecentChunks.push(chunkAdj);
+      }
+
+      for (const prop of chunk.props) {
+        if (prop.collidable) {
+          for (const adjecentChunk of adjecentChunks) {
+            for (const adjecentProp of adjecentChunk.props) {
+              if (
+                adjecentProp.collidable &&
+                !checkedCollisions.includes(adjecentProp.ID)
+              ) {
+                const left1 = prop.positioned.posX + prop.collidable.offsetX;
+                const top1 = prop.positioned.posY + prop.collidable.offsetY;
+                const width1 = prop.collidable.sizeX;
+                const height1 = prop.collidable.sizeY;
+
+                const left2 =
+                  adjecentProp.positioned.posX +
+                  adjecentProp.collidable.offsetX;
+                const top2 =
+                  adjecentProp.positioned.posY +
+                  adjecentProp.collidable.offsetY;
+                const width2 = adjecentProp.collidable.sizeX;
+                const height2 = adjecentProp.collidable.sizeY;
+
+                const isLeft = left1 + width1 <= left2;
+                const isRight = left1 >= left2 + width2;
+                const isAbove = top1 - height1 >= top2;
+                const isBelow = top1 <= top2 - height2;
+
+                if (!(isLeft || isRight || isAbove || isBelow)) {
+                  prop.collidable.onCollide?.(adjecentProp);
+                  adjecentProp.collidable.onCollide?.(prop);
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+
     this.propList.forEach((prop) => {
       if (prop.onTick) prop.onTick(this.tickNum);
     });

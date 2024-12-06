@@ -6,8 +6,7 @@ import {
 import { IProp, PropBehaviours } from "./propTypes";
 import { propsMap } from "./props";
 import { RecursivePartial } from "../../utils";
-
-export type PropID = ClientID;
+import { PropIDExt } from "../../../../types/sceneTypes";
 
 export interface IScene extends ISceneActions {
   makeSubscribe: (sceneSubscriber: ISceneSubscriber) => void;
@@ -30,7 +29,7 @@ export interface ISceneActions {
     propName: string,
     behaviours?: RecursivePartial<PropBehaviours>
   ) => Promise<void>;
-  destroyPropAction: (propID: PropID) => Promise<void>;
+  destroyPropAction: (propID: PropIDExt) => Promise<void>;
 }
 
 /** describes event that is put into event queue upon receiving action from outside */
@@ -90,11 +89,11 @@ export interface ISceneSubscriber {
 export type IExternalEvent = {
   update?: ExternalUpdateBehaviours;
   load?: ExternalLoadChunk[];
-  delete?: PropID[];
+  delete?: PropIDExt[];
 };
 
 export type ExternalUpdateBehaviours = Record<
-  PropID,
+  PropIDExt,
   Record<string, PropBehaviours>
 >;
 
