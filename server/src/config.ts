@@ -1,3 +1,3 @@
 export const config = {
-  logSeverityLevels: ["info", "error", "warning"],
+  logSeverityLevels: ["error", "warning"],
 };

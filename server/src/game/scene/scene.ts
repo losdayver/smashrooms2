@@ -14,7 +14,12 @@ import {
   ISpawnControlledPropEvent,
   ISpawnPropEvent,
 } from "./sceneTypes";
-import { Mutex, RecursivePartial, severityLog } from "./../../utils";
+import {
+  doBenchmark,
+  Mutex,
+  RecursivePartial,
+  severityLog,
+} from "./../../utils";
 import { Prop, propsMap } from "./props";
 import { IControlled, IPositioned, IProp, PropBehaviours } from "./propTypes";
 import { PropIDExt } from "../../../../types/sceneTypes";
@@ -121,6 +126,7 @@ export class Scene implements IScene {
 
   $isProcessingTick = false;
   tick = async () => {
+    const tickLoop = doBenchmark();
     if (this.$isProcessingTick) return;
     this.$isProcessingTick = true;
     // load all props $chunkedUpdates
@@ -130,13 +136,28 @@ export class Scene implements IScene {
         this.$appendToChunkedUpdates({ props: [prop] }, prop as IPositioned);
     });
 
-    // do all the game logic here
+    this.propList.forEach((prop) => {
+      if (prop.onTick) prop.onTick(this.tickNum);
+    });
+
+    // fire all internal even handlers
+    if (this.internalEventQueueMutex.value.length) {
+      const unlock = await this.internalEventQueueMutex.acquire();
+      try {
+        while (this.internalEventQueueMutex.value.length) {
+          const event = this.internalEventQueueMutex.value.pop();
+          this.internalEventHandlerMap[event.name]?.(event.data);
+        }
+      } finally {
+        unlock();
+      }
+    }
 
     // collision detection
     const checkedCollisions: PropIDExt[] = [];
     for (const [coord, chunk] of Object.entries(this.$chunkedUpdates)) {
       const [x, y] = coord.split("_").map(Number);
-      const adjecentChunks: ChunkUpdate[] = [];
+      const adjecentChunks: ChunkUpdate[] = [chunk];
 
       for (const [coordAdj, chunkAdj] of Object.entries(this.$chunkedUpdates)) {
         const [xAdj, yAdj] = coordAdj.split("_").map(Number);
@@ -154,6 +175,7 @@ export class Scene implements IScene {
           for (const adjecentChunk of adjecentChunks) {
             for (const adjecentProp of adjecentChunk.props) {
               if (
+                adjecentProp != prop &&
                 adjecentProp.collidable &&
                 !checkedCollisions.includes(adjecentProp.ID)
               ) {
@@ -173,8 +195,8 @@ export class Scene implements IScene {
 
                 const isLeft = left1 + width1 <= left2;
                 const isRight = left1 >= left2 + width2;
-                const isAbove = top1 - height1 >= top2;
-                const isBelow = top1 <= top2 - height2;
+                const isAbove = top1 + height1 <= top2;
+                const isBelow = top1 >= top2 + height2;
 
                 if (!(isLeft || isRight || isAbove || isBelow)) {
                   prop.collidable.onCollide?.(adjecentProp);
@@ -183,24 +205,8 @@ export class Scene implements IScene {
               }
             }
           }
+          checkedCollisions.push(prop.ID);
         }
-      }
-    }
-
-    this.propList.forEach((prop) => {
-      if (prop.onTick) prop.onTick(this.tickNum);
-    });
-
-    // fire all internal even handlers
-    if (this.internalEventQueueMutex.value.length) {
-      const unlock = await this.internalEventQueueMutex.acquire();
-      try {
-        while (this.internalEventQueueMutex.value.length) {
-          const event = this.internalEventQueueMutex.value.pop();
-          this.internalEventHandlerMap[event.name]?.(event.data);
-        }
-      } finally {
-        unlock();
       }
     }
 
@@ -208,6 +214,7 @@ export class Scene implements IScene {
     this.$generateExternalEventBatch("all", "everyUpdate");
     this.tickNum++;
     this.$isProcessingTick = false;
+    severityLog(`time enlapsed to calcultae stuff in tick loop ${tickLoop()}`);
   };
 
   private spawnPropHandler = (data: ISpawnPropEvent["data"]) => {

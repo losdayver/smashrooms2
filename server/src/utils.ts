@@ -75,3 +75,7 @@ export type RecursivePartial<T> = {
     ? RecursivePartial<T[P]>
     : T[P];
 };
+export const doBenchmark = () => {
+  const start = new Date().getTime();
+  return () => new Date().getTime() - start;
+};

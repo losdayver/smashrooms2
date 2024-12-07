@@ -82,13 +82,11 @@ export class Player
   collidable = {
     sizeX: 64,
     sizeY: 64,
-    offsetX: 0,
-    offsetY: 0,
-    onCollide: (prop: Prop & PropBehaviours) => {
-      console.log("i am the player an i have just collided with something");
-    },
+    offsetX: -32,
+    offsetY: -64,
+    onCollide: (prop: Prop & PropBehaviours) => {},
   };
-  positioned = { posX: 100, posY: 100 };
+  positioned = { posX: 0, posY: 0 };
   nameTagged = { tag: "player" };
   drawable = {
     animationCode: "playerIdle",
@@ -128,8 +126,8 @@ export class DummyBullet extends Prop implements IDrawable {
   drawable = {
     animationCode: "bullet",
     facing: "right",
-    pivotOffsetX: 0,
-    pivotOffsetY: 0,
+    pivotOffsetX: 16,
+    pivotOffsetY: 16,
   };
   collidable = {
     sizeX: 64,
@@ -137,7 +135,6 @@ export class DummyBullet extends Prop implements IDrawable {
     offsetX: 0,
     offsetY: 0,
     onCollide: (prop: Prop & PropBehaviours) => {
-      console.log("i am the bullet an i have just collided with something");
       this.scene.destroyPropAction(this.ID);
     },
   };
@@ -181,9 +178,7 @@ export class Crate extends Prop implements IDamagable, IDrawable {
     pivotOffsetY: 0,
   };
 
-  onCreated = () => {
-    console.log(123123123123);
-  };
+  onCreated = () => {};
 
   constructor(scene: IScene, behaviourPresets?: PropBehaviours) {
     super(scene, behaviourPresets);
