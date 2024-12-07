@@ -1,3 +1,4 @@
+import { LayoutMetaExt } from "./stage";
 import { IExternalEvent } from "./sceneTypes";
 
 export interface IConnectMessageExt {
@@ -26,6 +27,15 @@ export interface ISceneUpdatesMessageExt {
   data: IExternalEvent;
 }
 
+export interface IClientSceneMetaMessageExt {
+  name: "clientSceneMeta";
+}
+
+export interface IServerSceneMetaMessageExt {
+  name: "serverSceneMeta";
+  stageSystemName: LayoutMetaExt["stageSystemName"];
+}
+
 export interface IClientChatMessageExt {
   name: "clientChat";
   message: string;
@@ -50,7 +60,9 @@ export type IMessageExt =
   | IGenericNotRegisteredResponseMessageExt
   | ISceneUpdatesMessageExt
   | IClientChatMessageExt
-  | IServerChatMessageExt;
+  | IServerChatMessageExt
+  | IServerSceneMetaMessageExt
+  | IClientSceneMetaMessageExt;
 
 export interface IClientActionMessageExt extends IGenericMessageExt {
   name: "clientAct";

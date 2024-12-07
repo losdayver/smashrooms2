@@ -6,6 +6,8 @@ import { Scene } from "../scene/scene";
 import { IScene } from "../scene/sceneTypes";
 import { WSSocketServer } from "../sockets/sockets";
 import { ISocketServer } from "../sockets/socketsTypes";
+import fs from "fs";
+import path from "path";
 
 export class Server {
   private scene: IScene;
@@ -40,16 +42,52 @@ export const createWSServer = (port: number) => {
 };
 
 export const createWSTestingServer = (port: number) => {
+  const layoutData = fs
+    .readFileSync(
+      path.resolve(
+        __dirname,
+        "..",
+        "..",
+        "..",
+        "..",
+        "static",
+        "stages",
+        "testing",
+        "testing.layout"
+      )
+    )
+    .toString(); // todo change this
+  const layoutMeta = JSON.parse(
+    fs
+      .readFileSync(
+        path.resolve(
+          __dirname,
+          "..",
+          "..",
+          "..",
+          "..",
+          "static",
+          "stages",
+          "testing",
+          "testing.meta.json"
+        )
+      )
+      .toString()
+  ); // todo change this
+
   severityLog(`starting server on port ${port}`);
-  const scene = new Scene();
+  const scene = new Scene({
+    meta: layoutMeta,
+    layoutData,
+  });
   const template = {
     props: [
       ...[...Array(10).keys()].map(
         (i) =>
           new Crate(scene, {
             positioned: {
-              posX: 10 + i * 100,
-              posY: 10,
+              posX: 100 + i * 100,
+              posY: 100,
             },
           })
       ),

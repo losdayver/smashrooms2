@@ -1,8 +1,4 @@
 import {
-  ClientActionCodesExt,
-  ClientActionStatusExt,
-} from "../../../../types/messages";
-import {
   IClientActionEvent,
   IDestroyControlledPropEvent,
   IDestroyPropEvent,
@@ -14,15 +10,11 @@ import {
   ISpawnControlledPropEvent,
   ISpawnPropEvent,
 } from "./sceneTypes";
-import {
-  doBenchmark,
-  Mutex,
-  RecursivePartial,
-  severityLog,
-} from "./../../utils";
+import { doBenchmark, Mutex, severityLog } from "./../../utils";
 import { Prop, propsMap } from "./props";
 import { IControlled, IPositioned, IProp, PropBehaviours } from "./propTypes";
 import { PropIDExt } from "../../../../types/sceneTypes";
+import { StageExt } from "../../../../types/stage";
 
 type ChunkedUpdateMap = Record<`${number}_${number}`, ChunkUpdate>;
 type ChunkUpdate = {
@@ -44,6 +36,8 @@ export class Scene implements IScene {
     (data: any) => void
   >;
   private tickNum = 0;
+  private stage: StageExt;
+
   private $chunkedUpdates: ChunkedUpdateMap = {};
 
   private $appendToChunkedUpdates = (
@@ -386,6 +380,12 @@ export class Scene implements IScene {
       unlock();
     }
   };
+  getSceneMeta: IScene["getSceneMeta"] = () => {
+    return {
+      name: "serverSceneMeta",
+      stageSystemName: this.stage?.meta.stageSystemName,
+    };
+  };
 
   makeSubscribe: IScene["makeSubscribe"] = (subscriber) => {
     this.eventHandler = subscriber.handlerForSceneExternalEvents;
@@ -395,7 +395,8 @@ export class Scene implements IScene {
     this.propList = [...template?.props];
   };
 
-  constructor() {
+  constructor(stage?: StageExt) {
+    this.stage = stage;
     this.internalEventHandlerMap = {
       spawnControlledProp: this.spawnControlledPropHandler,
       spawnProp: this.spawnPropHandler,

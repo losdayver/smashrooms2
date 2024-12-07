@@ -7,12 +7,12 @@
   bottom: 0;
 }
 
-.prop-sprite {
+.easel__prop-sprite {
   position: absolute;
   /* transition: all 0.1s ease-in-out; */
 }
 
-.prop-sprite::after {
+.easel__prop-sprite::after {
   content: attr(tag);
 
   position: absolute;
@@ -26,4 +26,10 @@
 
   background-color: #33fbb8aa;
   z-index: 99;
+}
+
+.easel__layout-tile {
+  position: absolute;
+  border: 2px solid black;
+  border-radius: 5px;
 }

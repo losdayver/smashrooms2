@@ -6,6 +6,7 @@ import {
   IDisconnectMessageExt,
   IGenericMessageExt,
   ClientActionCodesExt,
+  IClientSceneMetaMessageExt,
 } from "../../../../types/messages";
 
 export interface ICommunicatior extends ISceneSubscriber {
@@ -16,6 +17,7 @@ export interface ICommunicatior extends ISceneSubscriber {
       | IClientActionMessageExt
       | IGenericMessageExt
   ) => void;
+  processMessageSync: (msg: IClientSceneMetaMessageExt) => any;
   makeSubscribe: (communiucatorSubscriber: ICommunicatorSubscriber) => void;
 }
 

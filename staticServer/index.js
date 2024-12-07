@@ -10,6 +10,7 @@ app.use(express.static(staticRoot));
 
 app.set("styles", path.resolve(__dirname + staticRoot + "styles"));
 app.set("img", path.resolve(__dirname + staticRoot + "img"));
+app.set("stages", path.resolve(__dirname + staticRoot + "stages"));
 
 app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, staticRoot, "html", "index.html"));

@@ -64,6 +64,9 @@ export class WSSocketServer implements ISocketServer {
               }
             if (senderName)
               this.resolveClientChatMessage(senderName, msg.message);
+          } else if (msg.name == "clientSceneMeta") {
+            const data = this.communicator.processMessageSync(msg);
+            wslogSend(clientSocket, data);
           } else this.resolveGenericMessage(clientSocket, msg);
         } catch (e) {
           severityLog(e as Error);

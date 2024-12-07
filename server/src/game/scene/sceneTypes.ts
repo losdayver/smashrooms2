@@ -2,15 +2,16 @@ import { ClientID } from "../commonTypes";
 import {
   ClientActionCodesExt,
   ClientActionStatusExt,
+  IServerSceneMetaMessageExt,
 } from "../../../../types/messages";
 import { IProp, PropBehaviours } from "./propTypes";
-import { propsMap } from "./props";
 import { RecursivePartial } from "../../utils";
 import { PropIDExt } from "../../../../types/sceneTypes";
 
 export interface IScene extends ISceneActions {
   makeSubscribe: (sceneSubscriber: ISceneSubscriber) => void;
   tick: () => void;
+  getSceneMeta: () => IServerSceneMetaMessageExt;
 }
 
 export interface ISceneActions {

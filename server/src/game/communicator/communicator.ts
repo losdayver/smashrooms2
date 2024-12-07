@@ -33,6 +33,14 @@ export class Communicatior implements ICommunicatior {
       this.scene.disconnectAction(msg.clientID);
     } else if (msg.name == "clientAct") {
       this.scene.clientAction(msg.clientID, msg.data.code, msg.data.status);
+    } else if (msg.name == "clientAct") {
+      this.scene.clientAction(msg.clientID, msg.data.code, msg.data.status);
+    }
+  };
+
+  processMessageSync: ICommunicatior["processMessageSync"] = (msg) => {
+    if (msg.name == "clientSceneMeta") {
+      return this.scene.getSceneMeta();
     }
   };
 

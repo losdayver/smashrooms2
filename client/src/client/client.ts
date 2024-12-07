@@ -5,6 +5,7 @@ import {
   IClientActionMessageExt,
   IConnectMessageExt,
   IMessageExt,
+  IClientSceneMetaMessageExt,
 } from "../../../types/messages";
 import { IExternalEvent, PropIDExt } from "../../../types/sceneTypes";
 
@@ -22,6 +23,10 @@ export class Client {
   onChatEventHandlers: Record<
     string,
     (sender: string, message: string) => void | Promise<void>
+  > = {};
+  onSceneMetaEventHandlers: Record<
+    string,
+    (stageSystemName: string) => void | Promise<void>
   > = {};
 
   connectByClientName = (clientName: string) => {
@@ -43,6 +48,14 @@ export class Client {
           status,
         },
       } satisfies IClientActionMessageExt)
+    );
+  };
+
+  getSceneMeta = () => {
+    this.socket.send(
+      JSON.stringify({
+        name: "clientSceneMeta",
+      } satisfies IClientSceneMetaMessageExt)
     );
   };
 
@@ -89,6 +102,12 @@ export class Client {
         Object.values(this.onChatEventHandlers).map(
           async (callback) =>
             await callback(parsedMsg.sender, parsedMsg.message)
+        )
+      );
+    } else if (parsedMsg.name == "serverSceneMeta") {
+      Promise.all(
+        Object.values(this.onSceneMetaEventHandlers).map(
+          async (callback) => await callback(parsedMsg.stageSystemName)
         )
       );
     }
