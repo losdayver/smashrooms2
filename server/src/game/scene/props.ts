@@ -1,4 +1,5 @@
 import {
+  ICollidable,
   IControlled,
   IDamagable,
   IDrawable,
@@ -8,10 +9,6 @@ import {
 } from "./propTypes";
 import { randomUUID } from "crypto";
 import { IScene } from "./sceneTypes";
-import {
-  ClientActionCodesExt,
-  ClientActionStatusExt,
-} from "../../../../types/messages";
 
 export abstract class Prop implements IProp {
   ID: string;
@@ -30,11 +27,11 @@ export class Player
   extends Prop
   implements IDamagable, IControlled, INameTagged
 {
-  controlled = {
+  controlled: IControlled["controlled"] = {
     clientID: null,
     speed: 10,
     jumpSpeed: 10,
-    onReceive: (code: ClientActionCodesExt, status: ClientActionStatusExt) => {
+    onReceive: (code, status) => {
       if (status == "pressed") {
         if (code == "right") {
           this.movingTickSpeed = this.controlled.speed;
@@ -59,10 +56,13 @@ export class Player
           this.scene.spawnPropAction("bullet", {
             positioned: {
               posX: this.positioned.posX,
-              posY: this.positioned.posY,
+              posY: this.positioned.posY - this.drawable.pivotOffsetY / 2,
             },
             drawable: {
               facing: this.drawable.facing,
+            },
+            collidable: {
+              colGroup: this.ID,
             },
           });
         }
@@ -79,7 +79,7 @@ export class Player
     },
   };
   damagable = { health: 100 };
-  collidable = {
+  collidable: ICollidable["collidable"] = {
     sizeX: 64,
     sizeY: 64,
     offsetX: -32,
@@ -111,6 +111,10 @@ export class Player
     }
   };
 
+  onCreated = (tickNum: number) => {
+    this.collidable.colGroup = this.ID;
+  };
+
   constructor(
     clientID: string,
     scene: IScene,
@@ -129,13 +133,14 @@ export class DummyBullet extends Prop implements IDrawable {
     pivotOffsetX: 16,
     pivotOffsetY: 16,
   };
-  collidable = {
+  collidable: ICollidable["collidable"] = {
     sizeX: 64,
     sizeY: 64,
     offsetX: 0,
     offsetY: 0,
     onCollide: (prop: Prop & PropBehaviours) => {
-      this.scene.destroyPropAction(this.ID);
+      if (prop.collidable.colGroup != this.collidable.colGroup)
+        this.scene.destroyPropAction(this.ID);
     },
   };
 

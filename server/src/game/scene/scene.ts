@@ -28,7 +28,7 @@ type ChunkedUpdateMap = Record<`${number}_${number}`, ChunkUpdate>;
 type ChunkUpdate = {
   props: (IProp & PropBehaviours)[];
   /** prop ID followed by behaviour that was mutated */
-  update: Record<PropIDExt, Record<string, PropBehaviours>>;
+  update: Record<PropIDExt, PropBehaviours>;
   load: (IProp & PropBehaviours)[];
   delete: string[];
 };
@@ -89,13 +89,16 @@ export class Scene implements IScene {
       const tempUpdate = {};
       const tempLoad = [];
       let tempDelete = [];
-      // todo deleted props
 
       Object.values(this.$chunkedUpdates).forEach((chunkedUpdate) => {
         if (chunkedUpdate.update) {
           Object.entries(chunkedUpdate.update).forEach(([propID, update]) => {
-            if (!update.positioned) return;
-            tempUpdate[propID] = { positioned: update.positioned };
+            if ((update.positioned || update.drawable) && !tempUpdate[propID])
+              tempUpdate[propID] = {};
+
+            if (update.positioned)
+              tempUpdate[propID].positioned = update.positioned;
+            if (update.drawable) tempUpdate[propID].drawable = update.drawable;
           });
         }
 

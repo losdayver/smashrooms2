@@ -10,10 +10,7 @@ export type IExternalEvent = {
   delete?: PropIDExt[];
 };
 
-export type UpdateBehavioursExt = Record<
-  PropIDExt,
-  Record<string, PropBehavioursExt>
->;
+export type UpdateBehavioursExt = Record<PropIDExt, PropBehavioursExt>;
 
 export interface IPositionedExt {
   positioned: {
@@ -45,6 +42,7 @@ export interface ICollidableExt extends IPositionedExt {
     sizeY: number;
     offsetX: number;
     offsetY: number;
+    colGroup?: string;
   };
 }
 

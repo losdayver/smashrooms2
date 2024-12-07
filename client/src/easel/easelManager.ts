@@ -13,57 +13,81 @@ export class EaselManager {
 
   private loadProp = (prop: IBehaviouredPropExt) => {
     const img = document.createElement("img");
-    const span = document.createElement("span");
+    const container = document.createElement("span");
     img.src = `${propSpriteRoute}${prop.drawable.animationCode}.png`;
 
-    img.style.transform = `translate(${-prop.drawable.pivotOffsetX}px, ${-prop
-      .drawable.pivotOffsetY}px)`;
+    container.style.transform = `translate(${-prop.drawable
+      .pivotOffsetX}px, ${-prop.drawable.pivotOffsetY}px)`;
 
-    span.setAttribute("tag", prop?.nameTagged?.tag ?? "");
-    span.className = "prop-sprite";
+    container.setAttribute("tag", prop?.nameTagged?.tag ?? "");
 
-    span.style.top = prop.positioned.posY as unknown as string;
-    span.style.left = prop.positioned.posX as unknown as string; // todo fix types
+    container.className = "prop-sprite";
 
-    span.id = prop.ID;
-    span.appendChild(img);
-    this.pivot.appendChild(span);
+    container.style.top = prop.positioned.posY.toString();
+    container.style.left = prop.positioned.posX.toString();
+
+    container.id = prop.ID;
+    container.appendChild(img);
+    this.pivot.appendChild(container);
+
     const easelProp = {
       ...prop,
-      container: span,
+      container,
+      img,
       lastMoved: new Date(),
     } satisfies IEaselProp;
     this.propList.push(easelProp);
   };
 
-  private updateProps = (update: UpdateBehavioursExt) => {
+  private updateProps = (update: IExternalEvent["update"]) => {
     Object.entries(update)?.forEach(([propID, changes]) => {
       const prop = this.propList.find((prop) => prop.ID == propID);
       if (!prop) return;
+
       if (changes.positioned) {
         const dateMoved = new Date();
+        const transitionTime =
+          dateMoved.getTime() - prop.lastMoved.getTime() || 0;
         prop.container.style.transition = `all ${
-          dateMoved.getTime() - prop.lastMoved.getTime()
+          transitionTime > 100 ? 0 : transitionTime
         }ms linear`;
-        prop.container.style.top = (changes.positioned as any).posY;
-        prop.container.style.left = (changes.positioned as any).posX;
+
+        if (changes.positioned.posY)
+          prop.container.style.top = changes.positioned.posY.toString();
+
+        if (changes.positioned.posX)
+          prop.container.style.left = changes.positioned.posX.toString();
+
         prop.lastMoved = dateMoved;
+      }
+
+      if (changes.drawable) {
+        if (changes.drawable.animationCode)
+          prop.img.src = `${propSpriteRoute}${changes.drawable.animationCode}.png`;
+
+        if (changes.drawable.facing) {
+          if (changes.drawable.facing == "left")
+            prop.img.style.transform = "scaleX(-1)";
+          else prop.img.style.transform = "";
+        }
       }
     });
   };
 
   private deleteProps = (del: IExternalEvent["delete"]) => {
-    for (let i = 0; i < this.propList.length; i++)
-      if (del.includes(this.propList[i].ID)) {
-        this.propList[i].container.remove();
-        this.propList.splice(i, 1);
-        return; // todo optimise this list traversal
-      }
+    for (const propToDeleteID of del) {
+      this.propList.forEach((prop, index) => {
+        if (propToDeleteID == prop.ID) {
+          prop.container.remove();
+          this.propList.splice(index, 1);
+          return;
+        }
+      });
+    }
   };
 
   private onConnectHandler = (status: boolean) => {};
   private onSceneEventHandler = (data: IExternalEvent) => {
-    console.log(data);
     data.load?.forEach((prop) => {
       if (prop.drawable) this.loadProp(prop);
     });
@@ -83,6 +107,7 @@ export class EaselManager {
 }
 
 interface IEaselProp extends IBehaviouredPropExt {
-  container: HTMLElement;
+  container: HTMLSpanElement;
+  img: HTMLImageElement;
   lastMoved: Date;
 }
