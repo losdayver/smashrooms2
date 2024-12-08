@@ -9,7 +9,7 @@ const tempTopLevelFunciton = async () => {
   // todo this function is certified spagetti fest. Some kind of architecture pattern is needed
   const toast = new Toast(document.querySelector(".toast-container"), 2000);
 
-  const client = new Client("ws://127.0.0.1:5889");
+  const client = new Client(`ws://${window.location.hostname}:5889`);
 
   client.onConnectHandlers.index = (status) => {
     if (status) {
