@@ -12,6 +12,7 @@ export interface IScene extends ISceneActions {
   makeSubscribe: (sceneSubscriber: ISceneSubscriber) => void;
   tick: () => void;
   getSceneMeta: () => IServerSceneMetaMessageExt;
+  getLayoutAt: (x: number, y: number) => { solid: boolean };
 }
 
 export interface ISceneActions {

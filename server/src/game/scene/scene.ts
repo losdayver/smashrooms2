@@ -384,6 +384,7 @@ export class Scene implements IScene {
     return {
       name: "serverSceneMeta",
       stageSystemName: this.stage?.meta.stageSystemName,
+      gridSize: this.stage?.meta.gridSize,
     };
   };
 
@@ -395,8 +396,21 @@ export class Scene implements IScene {
     this.propList = [...template?.props];
   };
 
+  getLayoutAt: IScene["getLayoutAt"] = (x, y) => {
+    x = Math.floor(x / this.stage.meta.gridSize);
+    y = Math.floor(y / this.stage.meta.gridSize);
+    try {
+      const layout = this.stage.layoutData.split(/\r\n|\r|\n/);
+      if (layout[y][x] != " ") {
+        return { solid: true };
+      }
+    } catch {}
+    return { solid: false };
+  };
+
   constructor(stage?: StageExt) {
     this.stage = stage;
+    this.stage.layoutData;
     this.internalEventHandlerMap = {
       spawnControlledProp: this.spawnControlledPropHandler,
       spawnProp: this.spawnPropHandler,

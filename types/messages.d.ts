@@ -34,6 +34,7 @@ export interface IClientSceneMetaMessageExt {
 export interface IServerSceneMetaMessageExt {
   name: "serverSceneMeta";
   stageSystemName: LayoutMetaExt["stageSystemName"];
+  gridSize: LayoutMetaExt["gridSize"];
 }
 
 export interface IClientChatMessageExt {

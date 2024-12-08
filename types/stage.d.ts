@@ -1,6 +1,7 @@
 export interface LayoutMetaExt {
   stageName: string;
   stageSystemName: string;
+  gridSize: number;
   author?: string;
 }
 

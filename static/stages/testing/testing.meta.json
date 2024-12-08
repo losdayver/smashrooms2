@@ -1,5 +1,6 @@
 {
   "stageName": "testing",
   "stageSystemName": "testing",
+  "gridSize": 32,
   "author": "losdayver"
 }

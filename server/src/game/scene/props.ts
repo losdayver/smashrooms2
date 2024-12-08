@@ -34,7 +34,7 @@ export class Player
     onReceive: (code, status) => {
       if (status == "pressed") {
         if (code == "right") {
-          this.movingTickSpeed = this.controlled.speed;
+          this.hSpeed = this.controlled.speed;
           this.scene.mutatePropBehaviourAction(this as IProp, {
             name: "drawable",
             newValue: {
@@ -42,17 +42,14 @@ export class Player
             },
           });
         } else if (code == "left") {
-          this.movingTickSpeed = -this.controlled.speed;
+          this.hSpeed = -this.controlled.speed;
           this.scene.mutatePropBehaviourAction(this as IProp, {
             name: "drawable",
             newValue: {
               facing: "left",
             },
           });
-        } else if (code == "jump")
-          this.movingTickSpeedV = this.controlled.speed;
-        else if (code == "duck") this.movingTickSpeedV = -this.controlled.speed;
-        else if (code == "fire") {
+        } else if (code == "fire") {
           this.scene.spawnPropAction("bullet", {
             positioned: {
               posX: this.positioned.posX,
@@ -65,16 +62,12 @@ export class Player
               colGroup: this.ID,
             },
           });
+        } else if (code == "jump" && !this.isFalling) {
+          this.vSpeed = -this.jumpSpeed;
         }
       } else {
-        if (code == "right" && this.movingTickSpeed > 0)
-          this.movingTickSpeed = 0;
-        else if (code == "left" && this.movingTickSpeed < 0)
-          this.movingTickSpeed = 0;
-        if (code == "jump" && this.movingTickSpeedV > 0)
-          this.movingTickSpeedV = 0;
-        else if (code == "duck" && this.movingTickSpeedV < 0)
-          this.movingTickSpeedV = 0;
+        if (code == "right" && this.hSpeed > 0) this.hSpeed = 0;
+        else if (code == "left" && this.hSpeed < 0) this.hSpeed = 0;
       }
     },
   };
@@ -86,7 +79,7 @@ export class Player
     offsetY: -64,
     onCollide: (prop: Prop & PropBehaviours) => {},
   };
-  positioned = { posX: 0, posY: 0 };
+  positioned = { posX: 100, posY: 100 };
   nameTagged = { tag: "player" };
   drawable = {
     animationCode: "playerIdle",
@@ -95,17 +88,93 @@ export class Player
     pivotOffsetY: 64,
   };
 
-  private movingTickSpeed = 0;
-  private movingTickSpeedV = 0; // remove (this one is temporary)
+  private hSpeed = 0;
+  private vSpeed = 0;
+  private vAcc = 0.7;
+  private jumpSpeed = 14;
+  private isFalling = true;
 
   onTick = () => {
-    if (this.movingTickSpeed || this.movingTickSpeedV) {
+    // todo this is a temporary implementation
+    if (this.isFalling) {
+      this.vSpeed += this.vAcc;
+      if (this.vSpeed > 20) this.vSpeed = 20;
+    }
+
+    let leftX = this.positioned.posX + this.collidable.offsetX;
+    let rightX =
+      this.positioned.posX + this.collidable.offsetX + this.collidable.sizeX;
+    let middleX = leftX + (rightX - leftX) / 2;
+
+    let downY =
+      this.positioned.posY + this.collidable.offsetY + this.collidable.sizeY;
+    let topY = this.positioned.posY + this.collidable.offsetY;
+    let middleY = topY + (downY - topY) / 2;
+
+    let newX: number;
+    let newY: number;
+
+    const grid = this.scene.getSceneMeta().gridSize;
+
+    // when moving right
+    if (
+      (this.hSpeed > 0 &&
+        this.scene.getLayoutAt(rightX + this.hSpeed, topY + 1).solid) ||
+      this.scene.getLayoutAt(rightX + this.hSpeed, middleY).solid ||
+      this.scene.getLayoutAt(rightX + this.hSpeed, downY).solid
+    ) {
+      newX = Math.floor(this.positioned.posX / grid + 1) * grid - 1;
+      leftX = newX + this.collidable.offsetX;
+      rightX = newX + this.collidable.offsetX + this.collidable.sizeX;
+      middleX = leftX + (rightX - leftX) / 2;
+    } else if (
+      (this.hSpeed < 0 &&
+        this.scene.getLayoutAt(leftX + this.hSpeed, topY + 1).solid) ||
+      this.scene.getLayoutAt(leftX + this.hSpeed, middleY).solid ||
+      this.scene.getLayoutAt(leftX + this.hSpeed, downY).solid
+    ) {
+      newX = Math.floor(this.positioned.posX / grid) * grid + 1;
+      leftX = newX + this.collidable.offsetX;
+      rightX = newX + this.collidable.offsetX + this.collidable.sizeX;
+      middleX = leftX + (rightX - leftX) / 2;
+    }
+
+    // when falling
+    if (
+      (this.vSpeed > 0 &&
+        this.scene.getLayoutAt(leftX, downY + this.vSpeed + 1).solid) ||
+      this.scene.getLayoutAt(middleX, downY + this.vSpeed + 1).solid ||
+      this.scene.getLayoutAt(rightX - 1, downY + this.vSpeed + 1).solid
+    ) {
+      this.vSpeed = 0;
+      newY = Math.floor(this.positioned.posY / grid + 1) * grid - 1;
+      this.isFalling = false;
+    }
+    // when jumping
+    else if (
+      (this.vSpeed < 0 &&
+        this.scene.getLayoutAt(leftX, topY + this.vSpeed).solid) ||
+      this.scene.getLayoutAt(middleX, topY + this.vSpeed).solid ||
+      this.scene.getLayoutAt(rightX - 1, topY + this.vSpeed).solid
+    ) {
+      this.vSpeed = this.vAcc;
+      newY = Math.floor(this.positioned.posY / grid + 1) * grid - 1;
+      this.isFalling = true;
+    } else {
+      this.isFalling = true;
+    }
+
+    if (
+      this.hSpeed ||
+      this.vSpeed ||
+      (newX && newX != this.positioned.posX) ||
+      (newY && newY != this.positioned.posY)
+    ) {
       this.scene.mutatePropBehaviourAction(this as Prop, {
         name: "positioned",
         newValue: {
-          ...this.positioned,
-          posX: (this.positioned.posX += this.movingTickSpeed),
-          posY: (this.positioned.posY -= this.movingTickSpeedV),
+          posX: newX ?? (this.positioned.posX += this.hSpeed),
+          posY: newY ?? (this.positioned.posY += this.vSpeed),
         },
       });
     }
@@ -154,7 +223,19 @@ export class DummyBullet extends Prop implements IDrawable {
   };
 
   onTick = (tickNum: number) => {
-    if (tickNum - this.createdOn > 20) {
+    if (
+      tickNum - this.createdOn > 20 ||
+      this.scene.getLayoutAt(this.positioned.posX, this.positioned.posY)
+        .solid ||
+      this.scene.getLayoutAt(
+        this.positioned.posX + this.movingTickSpeed / 2,
+        this.positioned.posY
+      ).solid ||
+      this.scene.getLayoutAt(
+        this.positioned.posX + this.movingTickSpeed,
+        this.positioned.posY
+      ).solid
+    ) {
       this.scene.destroyPropAction(this.ID);
       return;
     }
