@@ -29,7 +29,7 @@ export class Player
 {
   controlled: IControlled["controlled"] = {
     clientID: null,
-    speed: 10,
+    speed: 15,
     jumpSpeed: 10,
     onReceive: (code, status) => {
       if (status == "pressed") {
@@ -62,7 +62,7 @@ export class Player
               colGroup: this.ID,
             },
           });
-        } else if (code == "jump" && !this.isFalling) {
+        } else if (code == "jump" && !this.isInAir) {
           this.vSpeed = -this.jumpSpeed;
         }
       } else {
@@ -73,10 +73,10 @@ export class Player
   };
   damagable = { health: 100 };
   collidable: ICollidable["collidable"] = {
-    sizeX: 64,
+    sizeX: 32,
     sizeY: 64,
-    offsetX: -32,
-    offsetY: -64,
+    offsetX: 0,
+    offsetY: 0,
     onCollide: (prop: Prop & PropBehaviours) => {},
   };
   positioned = { posX: 100, posY: 100 };
@@ -84,100 +84,91 @@ export class Player
   drawable = {
     animationCode: "playerIdle",
     facing: "right",
-    pivotOffsetX: 32,
-    pivotOffsetY: 64,
+    pivotOffsetX: 16,
+    pivotOffsetY: 0,
   };
 
+  private hSpeedAirTimeCoeff = 0.8;
+  private vJumpMargin = 10;
   private hSpeed = 0;
   private vSpeed = 0;
-  private vAcc = 0.7;
-  private jumpSpeed = 14;
-  private isFalling = true;
+  private maxVSpeed = 20;
+  private vAcc = 1;
+  private jumpSpeed = 20;
+  private isInAir = true;
 
-  onTick = () => {
-    // todo this is a temporary implementation
-    if (this.isFalling) {
-      this.vSpeed += this.vAcc;
-      if (this.vSpeed > 20) this.vSpeed = 20;
-    }
+  doLayoutPhysics = () => {
+    this.vSpeed = Math.min(this.vSpeed + this.vAcc, this.maxVSpeed);
+    const frameHSpeed = this.isInAir
+      ? this.hSpeed * this.hSpeedAirTimeCoeff
+      : this.hSpeed;
 
-    let leftX = this.positioned.posX + this.collidable.offsetX;
-    let rightX =
-      this.positioned.posX + this.collidable.offsetX + this.collidable.sizeX;
-    let middleX = leftX + (rightX - leftX) / 2;
+    let newPosX = this.positioned.posX + frameHSpeed;
+    let newPosY = this.positioned.posY + this.vSpeed;
 
-    let downY =
-      this.positioned.posY + this.collidable.offsetY + this.collidable.sizeY;
-    let topY = this.positioned.posY + this.collidable.offsetY;
-    let middleY = topY + (downY - topY) / 2;
-
-    let newX: number;
-    let newY: number;
+    this.isInAir = true;
 
     const grid = this.scene.getSceneMeta().gridSize;
 
-    // when moving right
-    if (
-      (this.hSpeed > 0 &&
-        this.scene.getLayoutAt(rightX + this.hSpeed, topY + 1).solid) ||
-      this.scene.getLayoutAt(rightX + this.hSpeed, middleY).solid ||
-      this.scene.getLayoutAt(rightX + this.hSpeed, downY).solid
-    ) {
-      newX = Math.floor(this.positioned.posX / grid + 1) * grid - 1;
-      leftX = newX + this.collidable.offsetX;
-      rightX = newX + this.collidable.offsetX + this.collidable.sizeX;
-      middleX = leftX + (rightX - leftX) / 2;
-    } else if (
-      (this.hSpeed < 0 &&
-        this.scene.getLayoutAt(leftX + this.hSpeed, topY + 1).solid) ||
-      this.scene.getLayoutAt(leftX + this.hSpeed, middleY).solid ||
-      this.scene.getLayoutAt(leftX + this.hSpeed, downY).solid
-    ) {
-      newX = Math.floor(this.positioned.posX / grid) * grid + 1;
-      leftX = newX + this.collidable.offsetX;
-      rightX = newX + this.collidable.offsetX + this.collidable.sizeX;
-      middleX = leftX + (rightX - leftX) / 2;
+    if (frameHSpeed) {
+      const isCollidingH = this.scene.checkLayoutCollision({
+        positioned: {
+          posY: this.positioned.posY,
+          posX: this.positioned.posX + frameHSpeed,
+        },
+        collidable: this.collidable,
+      });
+
+      if (isCollidingH) {
+        if (frameHSpeed > 0) newPosX = Math.floor(newPosX / grid) * grid;
+        else if (frameHSpeed < 0)
+          newPosX = Math.floor(newPosX / grid + 1) * grid;
+      }
     }
 
-    // when falling
-    if (
-      (this.vSpeed > 0 &&
-        this.scene.getLayoutAt(leftX, downY + this.vSpeed + 1).solid) ||
-      this.scene.getLayoutAt(middleX, downY + this.vSpeed + 1).solid ||
-      this.scene.getLayoutAt(rightX - 1, downY + this.vSpeed + 1).solid
-    ) {
-      this.vSpeed = 0;
-      newY = Math.floor(this.positioned.posY / grid + 1) * grid - 1;
-      this.isFalling = false;
-    }
-    // when jumping
-    else if (
-      (this.vSpeed < 0 &&
-        this.scene.getLayoutAt(leftX, topY + this.vSpeed).solid) ||
-      this.scene.getLayoutAt(middleX, topY + this.vSpeed).solid ||
-      this.scene.getLayoutAt(rightX - 1, topY + this.vSpeed).solid
-    ) {
-      this.vSpeed = this.vAcc;
-      newY = Math.floor(this.positioned.posY / grid + 1) * grid - 1;
-      this.isFalling = true;
-    } else {
-      this.isFalling = true;
+    if (this.vSpeed) {
+      const isCollidingV = this.scene.checkLayoutCollision({
+        positioned: {
+          posY: this.positioned.posY + this.vSpeed,
+          posX: newPosX,
+        },
+        collidable: this.collidable,
+      });
+
+      if (isCollidingV) {
+        if (this.vSpeed > 0) newPosY = Math.floor(newPosY / grid) * grid;
+        else if (this.vSpeed < 0)
+          newPosY = Math.floor(newPosY / grid + 1) * grid;
+        this.vSpeed = 0;
+      }
     }
 
     if (
-      this.hSpeed ||
-      this.vSpeed ||
-      (newX && newX != this.positioned.posX) ||
-      (newY && newY != this.positioned.posY)
-    ) {
+      this.scene.checkLayoutCollision({
+        positioned: {
+          posY: newPosY + this.vJumpMargin,
+          posX: newPosX,
+        },
+        collidable: this.collidable,
+      })
+    )
+      this.isInAir = false;
+
+    if (
+      newPosX != this.positioned.posX ||
+      newPosY != Math.floor(this.positioned.posY)
+    )
       this.scene.mutatePropBehaviourAction(this as Prop, {
         name: "positioned",
         newValue: {
-          posX: newX ?? (this.positioned.posX += this.hSpeed),
-          posY: newY ?? (this.positioned.posY += this.vSpeed),
+          posX: newPosX,
+          posY: newPosY,
         },
       });
-    }
+  };
+
+  onTick = () => {
+    this.doLayoutPhysics();
   };
 
   onCreated = (tickNum: number) => {

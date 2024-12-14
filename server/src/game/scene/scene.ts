@@ -13,7 +13,7 @@ import {
 import { doBenchmark, Mutex, severityLog } from "./../../utils";
 import { Prop, propsMap } from "./props";
 import { IControlled, IPositioned, IProp, PropBehaviours } from "./propTypes";
-import { PropIDExt } from "../../../../types/sceneTypes";
+import { ICollidableExt, PropIDExt } from "../../../../types/sceneTypes";
 import { StageExt } from "../../../../types/stage";
 
 type ChunkedUpdateMap = Record<`${number}_${number}`, ChunkUpdate>;
@@ -37,6 +37,7 @@ export class Scene implements IScene {
   >;
   private tickNum = 0;
   private stage: StageExt;
+  private layoutLines: string[];
 
   private $chunkedUpdates: ChunkedUpdateMap = {};
 
@@ -122,7 +123,7 @@ export class Scene implements IScene {
   };
 
   $isProcessingTick = false;
-  tick = async () => {
+  tick: IScene["tick"] = async () => {
     const tickLoop = doBenchmark();
     if (this.$isProcessingTick) return;
     this.$isProcessingTick = true;
@@ -211,7 +212,7 @@ export class Scene implements IScene {
     this.$generateExternalEventBatch("all", "everyUpdate");
     this.tickNum++;
     this.$isProcessingTick = false;
-    severityLog(`time enlapsed to calcultae stuff in tick loop ${tickLoop()}`);
+    // severityLog(`time enlapsed to calcultae stuff in tick loop ${tickLoop()}`);
   };
 
   private spawnPropHandler = (data: ISpawnPropEvent["data"]) => {
@@ -399,18 +400,40 @@ export class Scene implements IScene {
   getLayoutAt: IScene["getLayoutAt"] = (x, y) => {
     x = Math.floor(x / this.stage.meta.gridSize);
     y = Math.floor(y / this.stage.meta.gridSize);
+    return this.getLayoutAtNormalized(x, y);
+  };
+
+  getLayoutAtNormalized: IScene["getLayoutAtNormalized"] = (x, y) => {
     try {
-      const layout = this.stage.layoutData.split(/\r\n|\r|\n/);
-      if (layout[y][x] != " ") {
+      if (this.layoutLines[y][x] != " ") {
         return { solid: true };
       }
     } catch {}
     return { solid: false };
   };
 
+  checkLayoutCollision: IScene["checkLayoutCollision"] = (prop) => {
+    const left = prop.positioned.posX + prop.collidable.offsetX;
+    const right = left + prop.collidable.sizeX - 1;
+    const leftN = Math.floor(left / this.stage.meta.gridSize);
+    const rightN = Math.floor(right / this.stage.meta.gridSize);
+
+    const top = prop.positioned.posY + prop.collidable.offsetY;
+    const bottom = top + prop.collidable.sizeY - 1;
+    const topN = Math.floor(top / this.stage.meta.gridSize);
+    const bottomN = Math.floor(bottom / this.stage.meta.gridSize);
+
+    for (let x = leftN; x <= rightN; x++) {
+      for (let y = topN; y <= bottomN; y++) {
+        if (this.getLayoutAtNormalized(x, y).solid) return true;
+      }
+    }
+    return false;
+  };
+
   constructor(stage?: StageExt) {
     this.stage = stage;
-    this.stage.layoutData;
+    this.layoutLines = this.stage.layoutData.split(/\r\n|\r|\n/);
     this.internalEventHandlerMap = {
       spawnControlledProp: this.spawnControlledPropHandler,
       spawnProp: this.spawnPropHandler,

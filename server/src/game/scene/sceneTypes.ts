@@ -6,13 +6,15 @@ import {
 } from "../../../../types/messages";
 import { IProp, PropBehaviours } from "./propTypes";
 import { RecursivePartial } from "../../utils";
-import { PropIDExt } from "../../../../types/sceneTypes";
+import { ICollidableExt, PropIDExt } from "../../../../types/sceneTypes";
 
 export interface IScene extends ISceneActions {
   makeSubscribe: (sceneSubscriber: ISceneSubscriber) => void;
   tick: () => void;
   getSceneMeta: () => IServerSceneMetaMessageExt;
   getLayoutAt: (x: number, y: number) => { solid: boolean };
+  getLayoutAtNormalized: (x: number, y: number) => { solid: boolean };
+  checkLayoutCollision: (prop: ICollidableExt) => boolean;
 }
 
 export interface ISceneActions {
