@@ -2,7 +2,7 @@ import {
   IClientActionEvent,
   IDestroyControlledPropEvent,
   IDestroyPropEvent,
-  IExternalEvent,
+  IExternalEventBatch,
   IInternalEvent,
   IScene,
   ISceneSubscriber,
@@ -15,11 +15,11 @@ import { Prop, propsMap } from "./props";
 import { IControlled, IPositioned, IProp, PropBehaviours } from "./propTypes";
 import { ICollidableExt, PropIDExt } from "../../../../types/sceneTypes";
 import { StageExt } from "../../../../types/stage";
+import { ClientID } from "../commonTypes";
 
 type ChunkedUpdateMap = Record<`${number}_${number}`, ChunkUpdate>;
 type ChunkUpdate = {
   props: (IProp & PropBehaviours)[];
-  /** prop ID followed by behaviour that was mutated */
   update: Record<PropIDExt, PropBehaviours>;
   load: (IProp & PropBehaviours)[];
   delete: string[];
@@ -29,7 +29,7 @@ export class Scene implements IScene {
   eventHandler: ISceneSubscriber["handlerForSceneExternalEvents"];
 
   private chunkSize = 256;
-  private propList: (IProp & PropBehaviours)[] = []; // todo wrap it up in mutex
+  private propList: (IProp & PropBehaviours)[] = [];
   private internalEventQueueMutex = new Mutex<IInternalEvent[]>([]);
   private internalEventHandlerMap: Record<
     IInternalEvent["name"],
@@ -41,29 +41,44 @@ export class Scene implements IScene {
 
   private $chunkedUpdates: ChunkedUpdateMap = {};
 
-  private $appendToChunkedUpdates = (
-    partialChunk: Partial<ChunkUpdate>,
-    prop: IPositioned
+  /** mutates $chunkedUpdates by mutating or creating new chunk with given properties
+   * @param partialChunkUpdate contains changes that are to be applied during mutation
+   * @param positionedProp is used to determine the coordinates of the chunk that needs
+   * to be mutated or created
+   */
+  private $mutateChunkedUpdates = (
+    partialChunkUpdate: Partial<ChunkUpdate>,
+    positionedProp: IPositioned
   ) => {
     const coordID = `${Math.floor(
-      prop.positioned.posX / this.chunkSize
-    )}_${Math.floor(prop.positioned.posY / this.chunkSize)}`;
+      positionedProp.positioned.posX / this.chunkSize
+    )}_${Math.floor(positionedProp.positioned.posY / this.chunkSize)}`;
 
     if (!this.$chunkedUpdates[coordID]) this.$chunkedUpdates[coordID] = {};
     const chunk = this.$chunkedUpdates[coordID];
     this.$chunkedUpdates[coordID] = {
-      props: (chunk?.props ?? []).concat(partialChunk.props ?? []),
-      update: { ...(chunk?.update ?? {}), ...(partialChunk.update ?? {}) },
-      load: (chunk?.load ?? []).concat(partialChunk.load ?? []),
-      delete: (chunk?.delete ?? []).concat(partialChunk.delete ?? []),
+      props: (chunk?.props ?? []).concat(partialChunkUpdate.props ?? []),
+      update: {
+        ...(chunk?.update ?? {}),
+        ...(partialChunkUpdate.update ?? {}),
+      },
+      load: (chunk?.load ?? []).concat(partialChunkUpdate.load ?? []),
+      delete: (chunk?.delete ?? []).concat(partialChunkUpdate.delete ?? []),
     } satisfies ChunkUpdate;
   };
 
+  /** aggregates data from $chunkedUpdates into the event batch and calls subscriber's callback on it
+   * @param clientID indicated who should get the batch. **all** stands for "every client gets data"
+   * @param type defines the filter rule:
+   * - currentState - send out the current state of the scene at this moment in time
+   * - everyUpdate - send out only the changes at this moment in time
+   * - localUpdates - send only local changes (in close proximity) unique to every client
+   */
   private $generateExternalEventBatch = (
-    clientID: string | "all",
+    clientID: ClientID | "all",
     type: "currentState" | "everyUpdate" | "localUpdates"
   ) => {
-    let batch: IExternalEvent = {};
+    let batch: IExternalEventBatch = {};
     if (type == "currentState") {
       Object.values(this.$chunkedUpdates).forEach((chunkedUpdate) => {
         if (chunkedUpdate.props) {
@@ -118,7 +133,7 @@ export class Scene implements IScene {
       if (Object.keys(tempUpdate).length) batch.update = tempUpdate;
       if (tempLoad.length) batch.load = tempLoad;
       if (tempDelete.length) batch.delete = tempDelete;
-    }
+    } else if (type == "localUpdates") throw new Error("not implemented");
     if (Object.keys(batch).length) this.eventHandler(batch, clientID);
   };
 
@@ -127,11 +142,10 @@ export class Scene implements IScene {
     const tickLoop = doBenchmark();
     if (this.$isProcessingTick) return;
     this.$isProcessingTick = true;
-    // load all props $chunkedUpdates
     this.$chunkedUpdates = {};
     this.propList.forEach((prop) => {
       if (prop.positioned)
-        this.$appendToChunkedUpdates({ props: [prop] }, prop as IPositioned);
+        this.$mutateChunkedUpdates({ props: [prop] }, prop as IPositioned);
     });
 
     this.propList.forEach((prop) => {
@@ -229,7 +243,7 @@ export class Scene implements IScene {
       severityLog(`created new prop ${data.propName}`);
       prop.onCreated?.(this.tickNum);
       if (prop.positioned)
-        this.$appendToChunkedUpdates(
+        this.$mutateChunkedUpdates(
           { props: [prop], load: [prop] },
           prop as IPositioned
         );
@@ -248,7 +262,7 @@ export class Scene implements IScene {
           `created new controlled prop ${data.propName} for ${data.clientID}`
         );
         prop.onCreated?.(this.tickNum);
-        this.$appendToChunkedUpdates(
+        this.$mutateChunkedUpdates(
           { props: [prop], load: [prop] },
           prop as IPositioned
         );
@@ -258,7 +272,7 @@ export class Scene implements IScene {
   private destroyPropHandler = (data: IDestroyPropEvent["data"]) => {
     for (let i = 0; i < this.propList.length; i++) {
       if (this.propList[i].ID == data.ID) {
-        this.$appendToChunkedUpdates(
+        this.$mutateChunkedUpdates(
           { delete: [data.ID] },
           this.propList[i] as IPositioned
         );
@@ -276,7 +290,7 @@ export class Scene implements IScene {
         (this.propList[i] as unknown as IControlled).controlled?.clientID ==
         data.clientID
       ) {
-        this.$appendToChunkedUpdates(
+        this.$mutateChunkedUpdates(
           { delete: [this.propList[i].ID] },
           this.propList[i] as IPositioned
         );
@@ -348,7 +362,7 @@ export class Scene implements IScene {
         : propOrID;
     prop[behaviour.name] = { ...prop[behaviour.name], ...behaviour.newValue };
     if (prop.positioned)
-      this.$appendToChunkedUpdates(
+      this.$mutateChunkedUpdates(
         { update: { [prop.ID]: { [behaviour.name]: behaviour.newValue } } },
         prop as IPositioned
       );

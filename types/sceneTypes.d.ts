@@ -46,14 +46,14 @@ export interface ICollidableExt extends IPositionedExt {
   };
 }
 
-export interface IDamagableExt extends ICollidableExt {
-  damagable: {
+export interface IDamageableExt extends ICollidableExt {
+  damageable: {
     health: number;
   };
 }
 
 export interface IDamagingExt extends ICollidableExt {
-  damagable: {
+  damageable: {
     damage: number;
   };
 }
@@ -69,7 +69,7 @@ export type PropBehavioursExt = Partial<
     IControlledExt &
     IDrawableExt &
     ICollidableExt &
-    IDamagableExt &
+    IDamageableExt &
     IDamagingExt &
     INameTaggedExt
 >;

@@ -85,12 +85,12 @@ export interface IClientActionEvent {
 
 export interface ISceneSubscriber {
   handlerForSceneExternalEvents: (
-    event: IExternalEvent,
+    event: IExternalEventBatch,
     clientID: ClientID | "all"
   ) => void;
 }
 
-export type IExternalEvent = {
+export type IExternalEventBatch = {
   update?: ExternalUpdateBehaviours;
   load?: ExternalLoadChunk[];
   delete?: PropIDExt[];

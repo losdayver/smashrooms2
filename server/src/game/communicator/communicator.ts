@@ -1,4 +1,4 @@
-import { IExternalEvent, IScene } from "../scene/sceneTypes";
+import { IExternalEventBatch, IScene } from "../scene/sceneTypes";
 import {
   IClientActionMessageExt,
   IConnectResponseMessageExt,
@@ -14,7 +14,10 @@ export class Communicatior implements ICommunicatior {
   makeSubscribe = (subscriber: ICommunicatorSubscriber) => {
     this.eventHandler = subscriber.handlerForCommunicatorEvents;
   };
-  handlerForSceneExternalEvents = (event: IExternalEvent, clientID: string) => {
+  handlerForSceneExternalEvents = (
+    event: IExternalEventBatch,
+    clientID: string
+  ) => {
     this.eventHandler({ name: "scene", data: event }, clientID);
   };
   processMessage = (

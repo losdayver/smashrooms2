@@ -1,7 +1,7 @@
 import {
   ICollidable,
   IControlled,
-  IDamagable,
+  IDamageable,
   IDrawable,
   INameTagged,
   IProp,
@@ -25,7 +25,7 @@ export abstract class Prop implements IProp {
 
 export class Player
   extends Prop
-  implements IDamagable, IControlled, INameTagged
+  implements IDamageable, IControlled, INameTagged
 {
   controlled: IControlled["controlled"] = {
     clientID: null,
@@ -34,7 +34,7 @@ export class Player
     onReceive: (code, status) => {
       if (status == "pressed") {
         if (code == "right") {
-          this.hSpeed = this.controlled.speed;
+          this.$hSpeed = this.controlled.speed;
           this.scene.mutatePropBehaviourAction(this as IProp, {
             name: "drawable",
             newValue: {
@@ -42,7 +42,7 @@ export class Player
             },
           });
         } else if (code == "left") {
-          this.hSpeed = -this.controlled.speed;
+          this.$hSpeed = -this.controlled.speed;
           this.scene.mutatePropBehaviourAction(this as IProp, {
             name: "drawable",
             newValue: {
@@ -62,16 +62,16 @@ export class Player
               colGroup: this.ID,
             },
           });
-        } else if (code == "jump" && !this.isInAir) {
-          this.vSpeed = -this.jumpSpeed;
+        } else if (code == "jump" && !this.$isInAir) {
+          this.$vSpeed = -this.jumpSpeed;
         }
       } else {
-        if (code == "right" && this.hSpeed > 0) this.hSpeed = 0;
-        else if (code == "left" && this.hSpeed < 0) this.hSpeed = 0;
+        if (code == "right" && this.$hSpeed > 0) this.$hSpeed = 0;
+        else if (code == "left" && this.$hSpeed < 0) this.$hSpeed = 0;
       }
     },
   };
-  damagable = { health: 100 };
+  damageable = { health: 100 };
   collidable: ICollidable["collidable"] = {
     sizeX: 32,
     sizeY: 64,
@@ -88,25 +88,28 @@ export class Player
     pivotOffsetY: 0,
   };
 
+  private $hSpeed = 0;
+  private $vSpeed = 0;
+  private $isInAir = true;
+
+  /** how being in air affect horizontal speed */
   private hSpeedAirTimeCoeff = 0.8;
+  /** how high above ground the prop needs to be for the jump to register */
   private vJumpMargin = 10;
-  private hSpeed = 0;
-  private vSpeed = 0;
   private maxVSpeed = 20;
   private vAcc = 1;
   private jumpSpeed = 20;
-  private isInAir = true;
 
   doLayoutPhysics = () => {
-    this.vSpeed = Math.min(this.vSpeed + this.vAcc, this.maxVSpeed);
-    const frameHSpeed = this.isInAir
-      ? this.hSpeed * this.hSpeedAirTimeCoeff
-      : this.hSpeed;
+    this.$vSpeed = Math.min(this.$vSpeed + this.vAcc, this.maxVSpeed);
+    const frameHSpeed = this.$isInAir
+      ? this.$hSpeed * this.hSpeedAirTimeCoeff
+      : this.$hSpeed;
 
     let newPosX = this.positioned.posX + frameHSpeed;
-    let newPosY = this.positioned.posY + this.vSpeed;
+    let newPosY = this.positioned.posY + this.$vSpeed;
 
-    this.isInAir = true;
+    this.$isInAir = true;
 
     const grid = this.scene.getSceneMeta().gridSize;
 
@@ -126,20 +129,20 @@ export class Player
       }
     }
 
-    if (this.vSpeed) {
+    if (this.$vSpeed) {
       const isCollidingV = this.scene.checkLayoutCollision({
         positioned: {
-          posY: this.positioned.posY + this.vSpeed,
+          posY: this.positioned.posY + this.$vSpeed,
           posX: newPosX,
         },
         collidable: this.collidable,
       });
 
       if (isCollidingV) {
-        if (this.vSpeed > 0) newPosY = Math.floor(newPosY / grid) * grid;
-        else if (this.vSpeed < 0)
+        if (this.$vSpeed > 0) newPosY = Math.floor(newPosY / grid) * grid;
+        else if (this.$vSpeed < 0)
           newPosY = Math.floor(newPosY / grid + 1) * grid;
-        this.vSpeed = 0;
+        this.$vSpeed = 0;
       }
     }
 
@@ -152,7 +155,7 @@ export class Player
         collidable: this.collidable,
       })
     )
-      this.isInAir = false;
+      this.$isInAir = false;
 
     if (
       newPosX != this.positioned.posX ||
@@ -244,8 +247,8 @@ export class DummyBullet extends Prop implements IDrawable {
   }
 }
 
-export class Crate extends Prop implements IDamagable, IDrawable {
-  damagable = { health: 10 };
+export class Crate extends Prop implements IDamageable, IDrawable {
+  damageable = { health: 10 };
   collidable = { sizeX: 64, sizeY: 64, offsetX: 0, offsetY: 0 };
   positioned;
   drawable = {

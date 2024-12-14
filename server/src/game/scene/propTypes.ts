@@ -7,7 +7,7 @@ import { IScene } from "./sceneTypes";
 import {
   ICollidableExt,
   IControlledExt,
-  IDamagableExt,
+  IDamageableExt,
   IDamagingExt,
   IDrawableExt,
   IPropExt,
@@ -20,7 +20,7 @@ export type PropBehaviours = Partial<
     IControlled &
     IDrawable &
     ICollidable &
-    IDamagable &
+    IDamageable &
     IDamaging &
     INameTagged
 >;
@@ -58,15 +58,15 @@ export type ICollidable = IPositioned & {
   };
 } & ICollidableExt;
 
-export type IDamagable = ICollidable & {
-  damagable: {
+export type IDamageable = ICollidable & {
+  damageable: {
     health: number;
     callback?: (damage: number, attacker: Prop) => void;
   };
-} & IDamagableExt;
+} & IDamageableExt;
 
 export type IDamaging = ICollidable & {
-  damagable: {
+  damageable: {
     damage: number;
     callback?: (health: number, victim: Prop) => void;
   };
