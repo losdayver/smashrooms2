@@ -29,7 +29,7 @@ export class Player
 {
   controlled: IControlled["controlled"] = {
     clientID: null,
-    speed: 15,
+    speed: 12,
     jumpSpeed: 10,
     onReceive: (code, status) => {
       if (status == "pressed") {
