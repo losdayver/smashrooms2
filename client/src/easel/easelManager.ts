@@ -130,6 +130,7 @@ export class EaselManager {
     this.easelDiv = easelDiv;
 
     this.pivot = document.createElement("div");
+    this.pivot.style.zIndex = "99";
 
     if (stage) this.constructStage(stage);
 

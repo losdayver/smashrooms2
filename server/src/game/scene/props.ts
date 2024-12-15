@@ -75,7 +75,7 @@ export class Player
   collidable: ICollidable["collidable"] = {
     sizeX: 32,
     sizeY: 64,
-    offsetX: 0,
+    offsetX: -16,
     offsetY: 0,
     onCollide: (prop: Prop & PropBehaviours) => {},
   };
@@ -84,7 +84,7 @@ export class Player
   drawable = {
     animationCode: "playerIdle",
     facing: "right",
-    pivotOffsetX: 0,
+    pivotOffsetX: 16,
     pivotOffsetY: 0,
   };
 
@@ -124,9 +124,11 @@ export class Player
       });
 
       if (isCollidingH) {
-        if (frameHSpeed > 0) newPosX = Math.floor(newPosX / grid) * grid;
+        if (frameHSpeed > 0)
+          newPosX = Math.floor(newPosX / grid) * grid - this.collidable.offsetX;
         else if (frameHSpeed < 0)
-          newPosX = Math.floor(newPosX / grid + 1) * grid;
+          newPosX =
+            Math.floor(newPosX / grid + 1) * grid + this.collidable.offsetX;
       }
     }
 
@@ -140,9 +142,11 @@ export class Player
       });
 
       if (isCollidingV) {
-        if (this.$vSpeed > 0) newPosY = Math.floor(newPosY / grid) * grid;
+        if (this.$vSpeed > 0)
+          newPosY = Math.floor(newPosY / grid) * grid - this.collidable.offsetY;
         else if (this.$vSpeed < 0)
-          newPosY = Math.floor(newPosY / grid + 1) * grid;
+          newPosY =
+            Math.floor(newPosY / grid + 1) * grid + this.collidable.offsetY;
         this.$vSpeed = 0;
       }
     }
