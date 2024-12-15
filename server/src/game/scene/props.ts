@@ -84,13 +84,14 @@ export class Player
   drawable = {
     animationCode: "playerIdle",
     facing: "right",
-    pivotOffsetX: 16,
+    pivotOffsetX: 0,
     pivotOffsetY: 0,
   };
 
   private $hSpeed = 0;
   private $vSpeed = 0;
   private $isInAir = true;
+  private $state: "playerIdle" | "playerWalk" | "playerJump" = "playerWalk";
 
   /** how being in air affect horizontal speed */
   private hSpeedAirTimeCoeff = 0.8;
@@ -161,7 +162,7 @@ export class Player
       newPosX != this.positioned.posX ||
       newPosY != Math.floor(this.positioned.posY)
     )
-      this.scene.mutatePropBehaviourAction(this as Prop, {
+      this.scene.mutatePropBehaviourAction(this as IProp, {
         name: "positioned",
         newValue: {
           posX: newPosX,
@@ -170,7 +171,26 @@ export class Player
       });
   };
 
+  doSpriteChange = () => {
+    let newState = this.$state;
+
+    if (this.$isInAir) newState = "playerJump";
+    else if (this.$hSpeed != 0) newState = "playerWalk";
+    else newState = "playerIdle";
+
+    if (newState != this.$state) {
+      this.$state = newState;
+      this.scene.mutatePropBehaviourAction(this as IProp, {
+        name: "drawable",
+        newValue: {
+          animationCode: newState,
+        },
+      });
+    }
+  };
+
   onTick = () => {
+    this.doSpriteChange();
     this.doLayoutPhysics();
   };
 

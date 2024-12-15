@@ -1,7 +1,6 @@
 import { severityLog } from "../../utils";
 import { Communicatior } from "../communicator/communicator";
 import { ICommunicatior } from "../communicator/communicatorTypes";
-import { Crate } from "../scene/props";
 import { Scene } from "../scene/scene";
 import { IScene } from "../scene/sceneTypes";
 import { WSSocketServer } from "../sockets/sockets";
@@ -80,20 +79,19 @@ export const createWSTestingServer = (port: number) => {
     meta: layoutMeta,
     layoutData,
   });
-  const template = {
-    props: [
-      ...[...Array(10).keys()].map(
-        (i) =>
-          new Crate(scene, {
-            positioned: {
-              posX: 100 + i * 100,
-              posY: 100,
-            },
-          })
-      ),
-    ],
-  };
-  scene.loadTemplate(template);
+  // const template = {
+  //   props: [
+  //     ...[...Array(10).keys()].map(
+  //       (i) =>
+  //         new Crate(scene, {
+  //           positioned: {
+  //             posX: 100 + i * 100,
+  //             posY: 100,
+  //           },
+  //         })
+  //     ),
+  //   ],
+  // };
   const communicator = new Communicatior(scene);
   const wsServer = new WSSocketServer(communicator, port);
   return new Server(wsServer, communicator, scene);

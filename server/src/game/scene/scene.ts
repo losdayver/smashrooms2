@@ -48,23 +48,40 @@ export class Scene implements IScene {
    */
   private $mutateChunkedUpdates = (
     partialChunkUpdate: Partial<ChunkUpdate>,
-    positionedProp: IPositioned
+    positionedProp: IProp & IPositioned
   ) => {
     const coordID = `${Math.floor(
       positionedProp.positioned.posX / this.chunkSize
     )}_${Math.floor(positionedProp.positioned.posY / this.chunkSize)}`;
 
     if (!this.$chunkedUpdates[coordID]) this.$chunkedUpdates[coordID] = {};
-    const chunk = this.$chunkedUpdates[coordID];
+    const chunk = this.$chunkedUpdates[coordID] as ChunkUpdate;
+
+    if (!chunk.load) chunk.load = [];
+    if (!chunk.props) chunk.props = [];
+    if (!chunk.delete) chunk.delete = [];
+    if (!chunk.update) chunk.update = {};
+
+    let update = chunk.update;
+    if (partialChunkUpdate.update) {
+      update = { ...chunk.update };
+      if (!update[positionedProp.ID]) update[positionedProp.ID] = {};
+      for (const behaviourName in partialChunkUpdate.update[
+        positionedProp.ID
+      ]) {
+        update[positionedProp.ID][behaviourName] = {
+          ...(update[positionedProp.ID]?.[behaviourName] || {}),
+          ...partialChunkUpdate.update[positionedProp.ID][behaviourName],
+        };
+      }
+    }
+
     this.$chunkedUpdates[coordID] = {
-      props: (chunk?.props ?? []).concat(partialChunkUpdate.props ?? []),
-      update: {
-        ...(chunk?.update ?? {}),
-        ...(partialChunkUpdate.update ?? {}),
-      },
-      load: (chunk?.load ?? []).concat(partialChunkUpdate.load ?? []),
-      delete: (chunk?.delete ?? []).concat(partialChunkUpdate.delete ?? []),
-    } satisfies ChunkUpdate;
+      update,
+      props: chunk.props.concat(partialChunkUpdate.props || []),
+      load: chunk.load.concat(partialChunkUpdate.load || []),
+      delete: chunk.delete.concat(partialChunkUpdate.delete || []),
+    } satisfies Partial<ChunkUpdate>;
   };
 
   /** aggregates data from $chunkedUpdates into the event batch and calls subscriber's callback on it
@@ -103,12 +120,14 @@ export class Scene implements IScene {
       Object.values(this.$chunkedUpdates).forEach((chunkedUpdate) => {
         if (chunkedUpdate.update) {
           Object.entries(chunkedUpdate.update).forEach(([propID, update]) => {
-            if ((update.positioned || update.drawable) && !tempUpdate[propID])
+            if (!tempUpdate[propID] && (update.drawable || update.positioned))
               tempUpdate[propID] = {};
 
             if (update.positioned)
               tempUpdate[propID].positioned = update.positioned;
-            if (update.drawable) tempUpdate[propID].drawable = update.drawable;
+            if (update.drawable) {
+              tempUpdate[propID].drawable = update.drawable;
+            }
           });
         }
 
@@ -145,14 +164,16 @@ export class Scene implements IScene {
     this.$chunkedUpdates = {};
     this.propList.forEach((prop) => {
       if (prop.positioned)
-        this.$mutateChunkedUpdates({ props: [prop] }, prop as IPositioned);
+        this.$mutateChunkedUpdates(
+          { props: [prop] },
+          prop as IProp & IPositioned
+        );
     });
 
     this.propList.forEach((prop) => {
       if (prop.onTick) prop.onTick(this.tickNum);
     });
 
-    // fire all internal even handlers
     if (this.internalEventQueueMutex.value.length) {
       const unlock = await this.internalEventQueueMutex.acquire();
       try {
@@ -226,7 +247,7 @@ export class Scene implements IScene {
     this.$generateExternalEventBatch("all", "everyUpdate");
     this.tickNum++;
     this.$isProcessingTick = false;
-    // severityLog(`time enlapsed to calcultae stuff in tick loop ${tickLoop()}`);
+    // severityLog(`time elapsed to calculate stuff in tick loop ${tickLoop()}`);
   };
 
   private spawnPropHandler = (data: ISpawnPropEvent["data"]) => {
@@ -245,7 +266,7 @@ export class Scene implements IScene {
       if (prop.positioned)
         this.$mutateChunkedUpdates(
           { props: [prop], load: [prop] },
-          prop as IPositioned
+          prop as IProp & IPositioned
         );
     }
   };
@@ -264,7 +285,7 @@ export class Scene implements IScene {
         prop.onCreated?.(this.tickNum);
         this.$mutateChunkedUpdates(
           { props: [prop], load: [prop] },
-          prop as IPositioned
+          prop as IProp & IPositioned
         );
       }
     }
@@ -274,7 +295,7 @@ export class Scene implements IScene {
       if (this.propList[i].ID == data.ID) {
         this.$mutateChunkedUpdates(
           { delete: [data.ID] },
-          this.propList[i] as IPositioned
+          this.propList[i] as IProp & IPositioned
         );
         this.propList.splice(i, 1);
         severityLog(`destroyed prop ${this.propList[i].ID}`);
@@ -292,7 +313,7 @@ export class Scene implements IScene {
       ) {
         this.$mutateChunkedUpdates(
           { delete: [this.propList[i].ID] },
-          this.propList[i] as IPositioned
+          this.propList[i] as IProp & IPositioned
         );
         this.propList.splice(i, 1);
         return;
@@ -364,7 +385,7 @@ export class Scene implements IScene {
     if (prop.positioned)
       this.$mutateChunkedUpdates(
         { update: { [prop.ID]: { [behaviour.name]: behaviour.newValue } } },
-        prop as IPositioned
+        prop as IProp & IPositioned
       );
   };
   spawnPropAction: IScene["spawnPropAction"] = async (

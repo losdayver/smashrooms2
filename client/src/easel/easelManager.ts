@@ -18,7 +18,7 @@ export class EaselManager {
   private loadProp = (prop: IBehaviouredPropExt) => {
     const img = document.createElement("img");
     const container = document.createElement("span");
-    img.src = `${propSpriteRoute}${prop.drawable.animationCode}.png`;
+    img.src = `${propSpriteRoute}${prop.drawable.animationCode}.gif`;
 
     container.style.transform = `translate(${-prop.drawable
       .pivotOffsetX}px, ${-prop.drawable.pivotOffsetY}px)`;
@@ -67,7 +67,7 @@ export class EaselManager {
 
       if (changes.drawable) {
         if (changes.drawable.animationCode)
-          prop.img.src = `${propSpriteRoute}${changes.drawable.animationCode}.png`;
+          prop.img.src = `${propSpriteRoute}${changes.drawable.animationCode}.gif`;
 
         if (changes.drawable.facing) {
           if (changes.drawable.facing == "left")
