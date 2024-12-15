@@ -53,7 +53,7 @@ export class Player
           this.scene.spawnPropAction("bullet", {
             positioned: {
               posX: this.positioned.posX,
-              posY: this.positioned.posY - this.drawable.pivotOffsetY / 2,
+              posY: this.positioned.posY + 32,
             },
             drawable: {
               facing: this.drawable.facing,
@@ -223,8 +223,8 @@ export class DummyBullet extends Prop implements IDrawable {
   collidable: ICollidable["collidable"] = {
     sizeX: 64,
     sizeY: 64,
-    offsetX: 0,
-    offsetY: 0,
+    offsetX: -16,
+    offsetY: -16,
     onCollide: (prop: Prop & PropBehaviours) => {
       if (prop.collidable.colGroup != this.collidable.colGroup)
         this.scene.destroyPropAction(this.ID);
