@@ -8,7 +8,7 @@ export class Chat {
   receiveMessage = (sender: string, message: string) => {
     const messageEl = document.createElement("div") as HTMLDivElement;
     messageEl.className = "chat__message";
-    messageEl.innerHTML = `${sender}: ${
+    messageEl.innerText = `${sender}: ${
       message.length > this.maxMessageLength
         ? message.substring(this.maxMessageLength) + "..."
         : message

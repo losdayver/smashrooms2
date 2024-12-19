@@ -5,7 +5,11 @@ import {
 } from "../../../types/sceneTypes";
 import { StageExt } from "../../../types/stage";
 import { Client } from "../client/client.js";
-import { layoutSpriteRoute, propSpriteRoute } from "../routes.js";
+import {
+  backgroundRoute,
+  layoutSpriteRoute,
+  propSpriteRoute,
+} from "../routes.js";
 
 export class EaselManager {
   private easelDiv: HTMLDivElement | HTMLSpanElement;
@@ -108,9 +112,9 @@ export class EaselManager {
     stage.layoutData.split(/\r\n|\r|\n/).forEach((line, y) => {
       for (let x = 0; x < line.length; x++) {
         const char = line[x];
-        if (char == "#") {
+        if (char != " ") {
           const img = document.createElement("img") as HTMLImageElement;
-          img.src = `${layoutSpriteRoute}bricks.png`;
+          img.src = `${layoutSpriteRoute}${layoutTileMap[char].imgSrc}`;
           img.className = "easel__layout-tile";
           img.style.top = (y * tileSize).toString();
           img.style.left = (x * tileSize).toString();
@@ -119,6 +123,7 @@ export class EaselManager {
       }
     });
 
+    this.easelDiv.style.backgroundImage = `url(${backgroundRoute}forest.png)`;
     this.easelDiv.appendChild(this.layoutPivot);
   };
 
@@ -148,3 +153,34 @@ interface IEaselProp extends IBehaviouredPropExt {
   img: HTMLImageElement;
   lastMoved: Date;
 }
+
+interface ILayoutTile {
+  imgSrc: string;
+}
+
+const layoutTileMap: Record<string, ILayoutTile> = {
+  "#": {
+    imgSrc: "bricks.png",
+  },
+  "=": {
+    imgSrc: "metalBeam.png",
+  },
+  G: {
+    imgSrc: "deepGround.png",
+  },
+  g: {
+    imgSrc: "grass.png",
+  },
+  l: {
+    imgSrc: "leaves.png",
+  },
+  s: {
+    imgSrc: "stone.png",
+  },
+  m: {
+    imgSrc: "metal.png",
+  },
+  b: {
+    imgSrc: "box.png",
+  },
+};

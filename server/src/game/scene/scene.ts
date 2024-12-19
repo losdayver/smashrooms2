@@ -4,6 +4,7 @@ import {
   IDestroyPropEvent,
   IExternalEventBatch,
   IInternalEvent,
+  ILayoutTile,
   IScene,
   ISceneSubscriber,
   ISceneTemplate,
@@ -440,14 +441,22 @@ export class Scene implements IScene {
 
   getLayoutAtNormalized: IScene["getLayoutAtNormalized"] = (x, y) => {
     try {
-      if (this.layoutLines[y][x] != " ") {
-        return { solid: true };
-      }
+      const char = this.layoutLines[y][x];
+      return {
+        solidity: (
+          layoutMap[char] || {
+            solidity: "solid",
+          }
+        ).solidity,
+      };
     } catch {}
-    return { solid: false };
+    return { solidity: "ghost" };
   };
 
-  checkLayoutCollision: IScene["checkLayoutCollision"] = (prop) => {
+  checkLayoutCollision: IScene["checkLayoutCollision"] = (
+    prop,
+    ignoreSemi?: boolean
+  ) => {
     const left = prop.positioned.posX + prop.collidable.offsetX;
     const right = left + prop.collidable.sizeX - 1;
     const leftN = Math.floor(left / this.stage.meta.gridSize);
@@ -460,7 +469,9 @@ export class Scene implements IScene {
 
     for (let x = leftN; x <= rightN; x++) {
       for (let y = topN; y <= bottomN; y++) {
-        if (this.getLayoutAtNormalized(x, y).solid) return true;
+        const solidity = this.getLayoutAtNormalized(x, y).solidity;
+        if (solidity == "solid" || (solidity == "semi" && !ignoreSemi))
+          return true;
       }
     }
     return false;
@@ -478,3 +489,15 @@ export class Scene implements IScene {
     };
   }
 }
+
+const layoutMap: Record<string, ILayoutTile> = {
+  "#": {
+    solidity: "solid",
+  },
+  "=": {
+    solidity: "semi",
+  },
+  " ": {
+    solidity: "ghost",
+  },
+};

@@ -64,6 +64,10 @@ export class Player
           });
         } else if (code == "jump" && !this.$isInAir) {
           this.$vSpeed = -this.jumpSpeed;
+        } else if (code == "duck") {
+          if (!this.$isInAir) {
+            this.$passSemi = true;
+          }
         }
       } else {
         if (code == "right" && this.$hSpeed > 0) this.$hSpeed = 0;
@@ -90,19 +94,24 @@ export class Player
 
   private $hSpeed = 0;
   private $vSpeed = 0;
+  private $lastVSpeed = 0;
   private $isInAir = true;
   private $state: "playerIdle" | "playerWalk" | "playerJump" = "playerWalk";
+  private $passSemi = false;
 
   /** how being in air affect horizontal speed */
   private hSpeedAirTimeCoeff = 0.8;
   /** how high above ground the prop needs to be for the jump to register */
   private vJumpMargin = 10;
   private maxVSpeed = 20;
-  private vAcc = 1;
-  private jumpSpeed = 20;
+  private vAcc = 1.5;
+  private jumpSpeed = 22;
 
   doLayoutPhysics = () => {
+    this.$lastVSpeed = this.$vSpeed;
+
     this.$vSpeed = Math.min(this.$vSpeed + this.vAcc, this.maxVSpeed);
+
     const frameHSpeed = this.$isInAir
       ? this.$hSpeed * this.hSpeedAirTimeCoeff
       : this.$hSpeed;
@@ -115,13 +124,16 @@ export class Player
     const grid = this.scene.getSceneMeta().gridSize;
 
     if (frameHSpeed) {
-      const isCollidingH = this.scene.checkLayoutCollision({
-        positioned: {
-          posY: this.positioned.posY,
-          posX: this.positioned.posX + frameHSpeed,
+      const isCollidingH = this.scene.checkLayoutCollision(
+        {
+          positioned: {
+            posY: this.positioned.posY,
+            posX: this.positioned.posX + frameHSpeed,
+          },
+          collidable: this.collidable,
         },
-        collidable: this.collidable,
-      });
+        true
+      );
 
       if (isCollidingH) {
         if (frameHSpeed > 0)
@@ -132,14 +144,25 @@ export class Player
       }
     }
 
-    if (this.$vSpeed) {
-      const isCollidingV = this.scene.checkLayoutCollision({
-        positioned: {
-          posY: this.positioned.posY + this.$vSpeed,
-          posX: newPosX,
+    const currentColliding = this.scene.checkLayoutCollision({
+      positioned: {
+        posY: this.positioned.posY,
+        posX: newPosX,
+      },
+      collidable: this.collidable,
+    });
+
+    {
+      const isCollidingV = this.scene.checkLayoutCollision(
+        {
+          positioned: {
+            posY: this.positioned.posY + this.$vSpeed,
+            posX: newPosX,
+          },
+          collidable: this.collidable,
         },
-        collidable: this.collidable,
-      });
+        this.$passSemi || this.$lastVSpeed < 0 || currentColliding
+      );
 
       if (isCollidingV) {
         if (this.$vSpeed > 0)
@@ -148,10 +171,11 @@ export class Player
           newPosY =
             Math.floor(newPosY / grid + 1) * grid + this.collidable.offsetY;
         this.$vSpeed = 0;
-      }
+      } else this.$isInAir = true;
     }
 
     if (
+      !currentColliding &&
       this.scene.checkLayoutCollision({
         positioned: {
           posY: newPosY + this.vJumpMargin,
@@ -159,8 +183,10 @@ export class Player
         },
         collidable: this.collidable,
       })
-    )
+    ) {
       this.$isInAir = false;
+      this.$passSemi = false;
+    }
 
     if (
       newPosX != this.positioned.posX ||
@@ -244,15 +270,15 @@ export class DummyBullet extends Prop implements IDrawable {
     if (
       tickNum - this.createdOn > 20 ||
       this.scene.getLayoutAt(this.positioned.posX, this.positioned.posY)
-        .solid ||
+        .solidity == "solid" ||
       this.scene.getLayoutAt(
         this.positioned.posX + this.movingTickSpeed / 2,
         this.positioned.posY
-      ).solid ||
+      ).solidity == "solid" ||
       this.scene.getLayoutAt(
         this.positioned.posX + this.movingTickSpeed,
         this.positioned.posY
-      ).solid
+      ).solidity == "solid"
     ) {
       this.scene.destroyPropAction(this.ID);
       return;

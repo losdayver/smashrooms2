@@ -12,9 +12,9 @@ export interface IScene extends ISceneActions {
   makeSubscribe: (sceneSubscriber: ISceneSubscriber) => void;
   tick: () => void;
   getSceneMeta: () => IServerSceneMetaMessageExt;
-  getLayoutAt: (x: number, y: number) => { solid: boolean };
-  getLayoutAtNormalized: (x: number, y: number) => { solid: boolean };
-  checkLayoutCollision: (prop: ICollidableExt) => boolean;
+  getLayoutAt: (x: number, y: number) => ILayoutTile;
+  getLayoutAtNormalized: (x: number, y: number) => ILayoutTile;
+  checkLayoutCollision: (prop: ICollidableExt, ignoreSemi?: boolean) => boolean;
 }
 
 export interface ISceneActions {
@@ -106,4 +106,8 @@ export type ExternalLoadChunk = Omit<IProp, "scene"> & PropBehaviours;
 export interface ISceneTemplate {
   props?: IProp[];
   layout?: any;
+}
+
+export interface ILayoutTile {
+  solidity: "solid" | "semi" | "ghost";
 }
