@@ -14,7 +14,9 @@ export class Server {
   private socketServer: ISocketServer;
 
   run = () => {
-    global.setInterval(this.scene.tick, 32); // todo make fps based timing with locking
+    setInterval(() => {
+      this.scene.tick;
+    }, 32);
   };
 
   constructor(
