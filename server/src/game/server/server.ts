@@ -13,11 +13,7 @@ export class Server {
   private communicatior: ICommunicatior;
   private socketServer: ISocketServer;
 
-  run = () => {
-    setInterval(() => {
-      this.scene.tick;
-    }, 32);
-  };
+  run = () => setInterval(this.scene.tick, 32);
 
   constructor(
     socketServer: ISocketServer,
