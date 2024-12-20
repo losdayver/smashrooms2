@@ -1,3 +1,3 @@
 #!/bin/bash
-./build.sh
+./build.bash
 ./runserver.bash & ./runstaticserver.bash &
