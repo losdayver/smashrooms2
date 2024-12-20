@@ -5,4 +5,4 @@ RUN chmod +x chmoder.bash
 RUN ./chmoder.bash
 EXPOSE 5889
 EXPOSE 5890
-CMD ["compactrun.bash"]
+CMD ["bash", "compactrun.bash"]
