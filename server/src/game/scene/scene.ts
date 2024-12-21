@@ -316,7 +316,7 @@ export class Scene implements IScene {
         );
         this.propList.splice(i, 1);
         this.sendNotification(
-          `${this.propList[i].nameTagged?.tag || "player"} disconnected.`,
+          `${this.propList[i]?.nameTagged?.tag || "player"} disconnected.`,
           "disconnected"
         );
         return;

@@ -47,7 +47,7 @@ export class Toast {
     notificationText.innerText = message;
 
     const notificationIcon = document.createElement("img");
-    notificationText.className = "toast__notification__icon";
+    notificationIcon.className = "toast__notification__icon";
     notificationIcon.src = `${iconRoute}${
       toastIconMap[type] || toastIconMap.info
     }`;

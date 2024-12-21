@@ -7,7 +7,7 @@ import { Toast } from "./ui/toast.js";
 
 const tempTopLevelFunciton = async () => {
   // todo this function is certified spagetti fest. Some kind of architecture pattern is needed
-  const toast = new Toast(document.querySelector(".toast-container"), 2000);
+  const toast = new Toast(document.querySelector(".toast-container"));
 
   const client = new Client(`ws://${window.location.hostname}:5889`);
 

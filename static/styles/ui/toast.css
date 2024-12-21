@@ -12,8 +12,13 @@
   gap: 0.5em;
   padding: 5px;
   image-rendering: pixelated;
+  animation: slideInRight 0.2s linear forwards;
 }
 
 .toast__notification + .toast__notification {
   margin-top: 20px;
+}
+
+.toast__notification__icon {
+  animation: jitter 0.4s ease-in-out infinite;
 }
