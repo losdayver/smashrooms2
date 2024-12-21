@@ -1,10 +1,7 @@
 import { WebSocketServer, WebSocket } from "ws";
 import { randomUUID } from "crypto";
 
-import {
-  ICommunicatior,
-  ICommunicatorEvent,
-} from "../communicator/communicatorTypes";
+import { ICommunicatior } from "../communicator/communicatorTypes";
 import { ISocketServer } from "./socketsTypes";
 import {
   IGenericNotRegisteredResponseMessageExt,
@@ -28,10 +25,8 @@ export class WSSocketServer implements ISocketServer {
     this.port = port;
     this.init();
   }
-  handlerForCommunicatorEvents = (
-    event: ICommunicatorEvent,
-    clientID: ClientID | "all"
-  ) => {
+  handlerForCommunicatorEvents = (event: any, clientID: ClientID | "all") => {
+    console.log(event);
     if (clientID == "all") {
       this.sendToAll(JSON.stringify(event));
       return;

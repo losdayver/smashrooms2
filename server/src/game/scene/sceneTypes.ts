@@ -2,7 +2,9 @@ import { ClientID } from "../commonTypes";
 import {
   ClientActionCodesExt,
   ClientActionStatusExt,
+  IMessageExt,
   IServerSceneMetaMessageExt,
+  NotificationTypesExt,
 } from "../../../../types/messages";
 import { IProp, PropBehaviours } from "./propTypes";
 import { RecursivePartial } from "../../utils";
@@ -15,6 +17,11 @@ export interface IScene extends ISceneActions {
   getLayoutAt: (x: number, y: number) => ILayoutTile;
   getLayoutAtNormalized: (x: number, y: number) => ILayoutTile;
   checkLayoutCollision: (prop: ICollidableExt, ignoreSemi?: boolean) => boolean;
+  sendNotification: (
+    message: string,
+    type?: NotificationTypesExt,
+    target?: ClientID | "all"
+  ) => void;
 }
 
 export interface ISceneActions {
@@ -85,8 +92,9 @@ export interface IClientActionEvent {
 
 export interface ISceneSubscriber {
   handlerForSceneExternalEvents: (
-    event: IExternalEventBatch,
-    clientID: ClientID | "all"
+    event: any,
+    clientID: ClientID | "all",
+    messageName?: IMessageExt["name"]
   ) => void;
 }
 

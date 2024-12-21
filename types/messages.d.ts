@@ -48,6 +48,17 @@ export interface IServerChatMessageExt {
   message: string;
 }
 
+export interface IServerNotificationExt {
+  name: "serverNotify";
+  message: string;
+  type?: NotificationTypesExt;
+}
+export type NotificationTypesExt =
+  | "info"
+  | "warning"
+  | "connected"
+  | "disconnected";
+
 export interface IGenericMessageExt {
   name: string;
   clientID: string;
@@ -63,7 +74,8 @@ export type IMessageExt =
   | IClientChatMessageExt
   | IServerChatMessageExt
   | IServerSceneMetaMessageExt
-  | IClientSceneMetaMessageExt;
+  | IClientSceneMetaMessageExt
+  | IServerNotificationExt;
 
 export interface IClientActionMessageExt extends IGenericMessageExt {
   name: "clientAct";

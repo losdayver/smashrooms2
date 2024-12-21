@@ -7,6 +7,7 @@ import {
   IGenericMessageExt,
   ClientActionCodesExt,
   IClientSceneMetaMessageExt,
+  IMessageExt,
 } from "../../../../types/messages";
 
 export interface ICommunicatior extends ISceneSubscriber {
@@ -50,9 +51,8 @@ export interface IClientSceneMessageRequest {
 
 export interface ICommunicatorSubscriber {
   handlerForCommunicatorEvents: (
-    event: ICommunicatorEvent,
-    cleintID: ClientID | "all"
+    event: any,
+    cleintID: ClientID | "all",
+    messageName?: IMessageExt["name"]
   ) => void;
 }
-
-export type ICommunicatorEvent = any;

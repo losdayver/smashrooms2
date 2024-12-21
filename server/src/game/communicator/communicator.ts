@@ -4,6 +4,7 @@ import {
   IConnectResponseMessageExt,
   IDisconnectMessageExt,
   IGenericMessageExt,
+  IMessageExt,
 } from "../../../../types/messages";
 import { ICommunicatior, ICommunicatorSubscriber } from "./communicatorTypes";
 
@@ -15,10 +16,14 @@ export class Communicatior implements ICommunicatior {
     this.eventHandler = subscriber.handlerForCommunicatorEvents;
   };
   handlerForSceneExternalEvents = (
-    event: IExternalEventBatch,
-    clientID: string
+    event: any,
+    clientID: string,
+    messageName?: IMessageExt["name"]
   ) => {
-    this.eventHandler({ name: "scene", data: event }, clientID);
+    if (!messageName || messageName == "scene")
+      // todo this is ugly! needs to be standardized
+      this.eventHandler({ name: "scene", data: event }, clientID);
+    else this.eventHandler(event, clientID);
   };
   processMessage = (
     msg:

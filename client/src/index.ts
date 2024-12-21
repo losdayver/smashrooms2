@@ -11,6 +11,9 @@ const tempTopLevelFunciton = async () => {
 
   const client = new Client(`ws://${window.location.hostname}:5889`);
 
+  client.onServerNotifyHandlers.toast = (message, type) =>
+    toast.notify(message, type);
+
   client.onConnectHandlers.index = (status) => {
     if (status) {
       regModal.style.display = "none";

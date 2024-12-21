@@ -6,6 +6,12 @@ import {
   IConnectMessageExt,
   IMessageExt,
   IClientSceneMetaMessageExt,
+  IConnectResponseMessageExt,
+  ISceneUpdatesMessageExt,
+  IServerChatMessageExt,
+  IServerSceneMetaMessageExt,
+  IServerNotificationExt,
+  NotificationTypesExt,
 } from "../../../types/messages";
 import { IExternalEvent, PropIDExt } from "../../../types/sceneTypes";
 
@@ -28,44 +34,84 @@ export class Client {
     string,
     (stageSystemName: string) => void | Promise<void>
   > = {};
+  onServerNotifyHandlers: Record<
+    string,
+    (message: string, type: NotificationTypesExt) => void | Promise<void>
+  > = {};
 
-  connectByClientName = (clientName: string) => {
-    this.socket.send(
-      JSON.stringify({
-        name: "conn",
-        clientName: clientName,
-      } satisfies IConnectMessageExt)
-    );
-  };
+  private socketSend = <T extends object>(data: T) =>
+    this.socket.send(JSON.stringify(data));
 
-  sendInput = (code: ClientActionCodesExt, status: ClientActionStatusExt) => {
-    this.socket.send(
-      JSON.stringify({
-        name: "clientAct",
-        clientID: this.ID,
-        data: {
-          code,
-          status,
-        },
-      } satisfies IClientActionMessageExt)
-    );
-  };
+  connectByClientName = (clientName: string) =>
+    this.socketSend({
+      name: "conn",
+      clientName: clientName,
+    } satisfies IConnectMessageExt);
+  sendInput = (code: ClientActionCodesExt, status: ClientActionStatusExt) =>
+    this.socketSend({
+      name: "clientAct",
+      clientID: this.ID,
+      data: {
+        code,
+        status,
+      },
+    } satisfies IClientActionMessageExt);
+  getSceneMeta = () =>
+    this.socketSend({
+      name: "clientSceneMeta",
+    } satisfies IClientSceneMetaMessageExt);
+  sendChatMessage = (message: string) =>
+    this.socketSend({
+      name: "clientChat",
+      message,
+    } satisfies IClientChatMessageExt);
 
-  getSceneMeta = () => {
-    this.socket.send(
-      JSON.stringify({
-        name: "clientSceneMeta",
-      } satisfies IClientSceneMetaMessageExt)
-    );
-  };
-
-  sendChatMessage = (message: string) => {
-    this.socket.send(
-      JSON.stringify({
-        name: "clientChat",
-        message,
-      } satisfies IClientChatMessageExt)
-    );
+  private incomingMessageHandlers: Partial<
+    Record<IMessageExt["name"], (msgObj: any) => void | Promise<void>>
+  > = {
+    connRes: (msgObj: IConnectResponseMessageExt) => {
+      if (msgObj.status == "allowed") {
+        this.ID = msgObj.clientID;
+        void Promise.all(
+          Object.values(this.onConnectHandlers).map(
+            async (callback) => await callback(true)
+          )
+        );
+      } else
+        void Promise.all(
+          Object.values(this.onConnectHandlers).map(
+            async (callback) => await callback(false)
+          )
+        );
+    },
+    scene: (msgObj: ISceneUpdatesMessageExt) => {
+      void Promise.all(
+        Object.values(this.onSceneEventHandlers).map(
+          async (callback) => await callback(msgObj.data)
+        )
+      );
+    },
+    serverChat: (msgObj: IServerChatMessageExt) => {
+      void Promise.all(
+        Object.values(this.onChatEventHandlers).map(
+          async (callback) => await callback(msgObj.sender, msgObj.message)
+        )
+      );
+    },
+    serverSceneMeta: (msgObj: IServerSceneMetaMessageExt) => {
+      void Promise.all(
+        Object.values(this.onSceneMetaEventHandlers).map(
+          async (callback) => await callback(msgObj.stageSystemName)
+        )
+      );
+    },
+    serverNotify: (msgObj: IServerNotificationExt) => {
+      void Promise.all(
+        Object.values(this.onServerNotifyHandlers).map(
+          async (callback) => await callback(msgObj.message, msgObj.type)
+        )
+      );
+    },
   };
 
   onmessage = async (message: MessageEvent<string>) => {
@@ -73,44 +119,10 @@ export class Client {
     try {
       parsedMsg = JSON.parse(message.data);
     } catch {
-      return; // todo: error handling
+      return;
     }
-
-    if (parsedMsg.name == "connRes") {
-      // todo handler map
-      if (parsedMsg.status == "allowed") {
-        this.ID = parsedMsg.clientID;
-        Promise.all(
-          Object.values(this.onConnectHandlers).map(
-            async (callback) => await callback(true)
-          )
-        );
-      } else
-        Promise.all(
-          Object.values(this.onConnectHandlers).map(
-            async (callback) => await callback(false)
-          )
-        );
-    } else if (parsedMsg.name == "scene") {
-      Promise.all(
-        Object.values(this.onSceneEventHandlers).map(
-          async (callback) => await callback(parsedMsg.data)
-        )
-      );
-    } else if (parsedMsg.name == "serverChat") {
-      Promise.all(
-        Object.values(this.onChatEventHandlers).map(
-          async (callback) =>
-            await callback(parsedMsg.sender, parsedMsg.message)
-        )
-      );
-    } else if (parsedMsg.name == "serverSceneMeta") {
-      Promise.all(
-        Object.values(this.onSceneMetaEventHandlers).map(
-          async (callback) => await callback(parsedMsg.stageSystemName)
-        )
-      );
-    }
+    console.log(parsedMsg);
+    this.incomingMessageHandlers[parsedMsg.name]?.(parsedMsg);
   };
 
   constructor(connString: string) {

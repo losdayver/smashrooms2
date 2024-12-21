@@ -14,9 +14,10 @@ import {
 import { doBenchmark, Mutex, severityLog } from "./../../utils";
 import { Prop, propsMap } from "./props";
 import { IControlled, IPositioned, IProp, PropBehaviours } from "./propTypes";
-import { ICollidableExt, PropIDExt } from "../../../../types/sceneTypes";
+import { PropIDExt } from "../../../../types/sceneTypes";
 import { StageExt } from "../../../../types/stage";
 import { ClientID } from "../commonTypes";
+import { IServerNotificationExt } from "../../../../types/messages";
 
 type ChunkedUpdateMap = Record<`${number}_${number}`, ChunkUpdate>;
 type ChunkUpdate = {
@@ -280,14 +281,12 @@ export class Scene implements IScene {
       if (data.nameTag) prop.nameTagged = { tag: data.nameTag };
       if (prop.controlled) {
         this.propList.unshift(prop);
-        severityLog(
-          `created new controlled prop ${data.propName} for ${data.clientID}`
-        );
         prop.onCreated?.(this.tickNum);
         this.$mutateChunkedUpdates(
           { props: [prop], load: [prop] },
           prop as IProp & IPositioned
         );
+        this.sendNotification(`${data.nameTag} connected!`, "connected");
       }
     }
   };
@@ -299,7 +298,6 @@ export class Scene implements IScene {
           this.propList[i] as IProp & IPositioned
         );
         this.propList.splice(i, 1);
-        severityLog(`destroyed prop ${this.propList[i].ID}`);
         return;
       }
     }
@@ -317,6 +315,10 @@ export class Scene implements IScene {
           this.propList[i] as IProp & IPositioned
         );
         this.propList.splice(i, 1);
+        this.sendNotification(
+          `${this.propList[i].nameTagged?.tag || "player"} disconnected.`,
+          "disconnected"
+        );
         return;
       }
     }
@@ -326,6 +328,18 @@ export class Scene implements IScene {
       (prop) => prop.controlled?.clientID == data.clientID
     ) as IProp & IControlled;
     prop.controlled.onReceive?.(data.code, data.status);
+  };
+
+  sendNotification: IScene["sendNotification"] = (message, type?, target?) => {
+    this.eventHandler(
+      {
+        name: "serverNotify",
+        message,
+        type,
+      } satisfies IServerNotificationExt,
+      target || "all",
+      "serverNotify"
+    );
   };
 
   clientAction: IScene["clientAction"] = async (clientID, code, status?) => {

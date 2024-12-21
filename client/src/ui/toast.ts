@@ -1,6 +1,12 @@
+import { NotificationTypesExt } from "../../../types/messages";
 import { iconRoute } from "../routes.js";
 
-export type ToastIconTypes = "info" | "warning";
+const toastIconMap: Partial<Record<NotificationTypesExt, string>> = {
+  info: "info.png",
+  warning: "warning.png",
+  connected: "connected.png",
+  disconnected: "disconnected.png",
+};
 
 export class Toast {
   private toastEl: HTMLDivElement;
@@ -10,7 +16,7 @@ export class Toast {
 
   constructor(
     parentEl: HTMLDivElement | HTMLSpanElement,
-    timeoutMilliseconds = 2000
+    timeoutMilliseconds = 5000
   ) {
     this.timeout = timeoutMilliseconds;
 
@@ -28,7 +34,7 @@ export class Toast {
     }, this.timeout);
   };
 
-  notify = (message: string, type: ToastIconTypes) => {
+  notify = (message: string, type: NotificationTypesExt) => {
     if (this.toastEl.children.length >= this.maxCount)
       this.toastEl.children[0].remove();
     else if (this.toastEl.children.length == 0) this.restartRemoveTimeout();
@@ -38,11 +44,13 @@ export class Toast {
 
     const notificationText = document.createElement("div");
     notificationText.className = "toast__notification__text";
-    notificationText.innerHTML = message;
+    notificationText.innerText = message;
 
     const notificationIcon = document.createElement("img");
     notificationText.className = "toast__notification__icon";
-    notificationIcon.src = `${iconRoute}${type}`;
+    notificationIcon.src = `${iconRoute}${
+      toastIconMap[type] || toastIconMap.info
+    }`;
 
     notification.append(notificationIcon, notificationText);
 
