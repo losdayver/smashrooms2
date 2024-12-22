@@ -1,6 +1,6 @@
 ![logo](https://raw.githubusercontent.com/losdayver/smashsrooms2/refs/heads/master/promo/goofylogo.png)
 
-**smahrooms 2** is a fast acton-based multiplayer platformer inspired by the one and only **Duck game**.
+**smashrooms 2** is a fast acton-based multiplayer platformer inspired by the one and only **Duck game**.
 
 🚧🏗️ **Under construction** 👷🚧
 
