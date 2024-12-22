@@ -26,7 +26,6 @@ export class WSSocketServer implements ISocketServer {
     this.init();
   }
   handlerForCommunicatorEvents = (event: any, clientID: ClientID | "all") => {
-    console.log(event);
     if (clientID == "all") {
       this.sendToAll(JSON.stringify(event));
       return;
@@ -62,7 +61,9 @@ export class WSSocketServer implements ISocketServer {
           } else if (msg.name == "clientSceneMeta") {
             const data = this.communicator.processMessageSync(msg);
             wslogSend(clientSocket, data);
-          } else this.resolveGenericMessage(clientSocket, msg);
+          } else {
+            this.resolveGenericMessage(clientSocket, msg);
+          }
         } catch (e) {
           severityLog(e as Error);
         }
@@ -122,13 +123,13 @@ export class WSSocketServer implements ISocketServer {
       connectRes,
       `sockets connected new client ${message.clientName}`
     );
-    this.communicator.processMessage(connectRes);
+    this.communicator.processMessage(clientID, connectRes);
   };
 
   private resolveDisconnect = (clientSocket: WebSocket) => {
     for (const [clientID, client] of this.clientMap.entries()) {
       if (client.socket == clientSocket) {
-        this.communicator.processMessage({
+        this.communicator.processMessage(clientID, {
           name: "disc",
           clientID,
         } satisfies IDisconnectMessageExt);
@@ -153,7 +154,14 @@ export class WSSocketServer implements ISocketServer {
     clientSocket: WebSocket,
     message: IGenericMessageExt
   ) => {
-    if (!this.clientMap.has(message.clientID)) {
+    let clientID: ClientID;
+    for (const [ID, client] of this.clientMap.entries())
+      if (clientSocket == client.socket) {
+        clientID = ID;
+        break;
+      }
+
+    if (!clientID) {
       clientSocket.send(
         bufferFromObj({
           name: "notReg",
@@ -161,7 +169,7 @@ export class WSSocketServer implements ISocketServer {
       );
       return;
     }
-    this.communicator.processMessage(message);
+    this.communicator.processMessage(clientID, message);
   };
 }
 

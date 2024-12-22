@@ -7,6 +7,7 @@ import {
   IMessageExt,
 } from "../../../../types/messages";
 import { ICommunicatior, ICommunicatorSubscriber } from "./communicatorTypes";
+import { ClientID } from "../commonTypes";
 
 export class Communicatior implements ICommunicatior {
   private scene: IScene;
@@ -26,6 +27,7 @@ export class Communicatior implements ICommunicatior {
     else this.eventHandler(event, clientID);
   };
   processMessage = (
+    from: ClientID,
     msg:
       | IConnectResponseMessageExt
       | IDisconnectMessageExt
@@ -34,15 +36,15 @@ export class Communicatior implements ICommunicatior {
   ) => {
     if (msg.name == "connRes") {
       this.scene.connectAction(
-        msg.clientID,
+        from,
         (msg as IConnectResponseMessageExt).nameTag
       );
     } else if (msg.name == "disc") {
-      this.scene.disconnectAction(msg.clientID);
+      this.scene.disconnectAction(from);
     } else if (msg.name == "clientAct") {
-      this.scene.clientAction(msg.clientID, msg.data.code, msg.data.status);
+      this.scene.clientAction(from, msg.data.code, msg.data.status);
     } else if (msg.name == "clientAct") {
-      this.scene.clientAction(msg.clientID, msg.data.code, msg.data.status);
+      this.scene.clientAction(from, msg.data.code, msg.data.status);
     }
   };
 

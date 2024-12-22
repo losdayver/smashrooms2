@@ -1,5 +1,5 @@
 import { LayoutMetaExt } from "./stage";
-import { IExternalEvent } from "./sceneTypes";
+import { IExternalEvent as ISceneUpdatesMessageData } from "./sceneTypes";
 
 export interface IConnectMessageExt {
   name: "conn";
@@ -24,7 +24,7 @@ export interface IGenericNotRegisteredResponseMessageExt {
 
 export interface ISceneUpdatesMessageExt {
   name: "scene";
-  data: IExternalEvent;
+  data: ISceneUpdatesMessageData;
 }
 
 export interface IClientSceneMetaMessageExt {
@@ -61,7 +61,6 @@ export type NotificationTypesExt =
 
 export interface IGenericMessageExt {
   name: string;
-  clientID: string;
   data: any;
 }
 

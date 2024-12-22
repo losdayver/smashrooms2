@@ -1,4 +1,8 @@
 import {
+  IConnectResponseMessageExt,
+  ISceneUpdatesMessageExt,
+} from "../../../types/messages";
+import {
   IBehaviouredPropExt,
   IExternalEvent,
   UpdateBehavioursExt,
@@ -143,8 +147,12 @@ export class EaselManager {
     this.pivot.style.position = "relative";
     this.client = client;
 
-    client.onConnectHandlers.easel = this.onConnectHandler;
-    client.onSceneEventHandlers.easel = this.onSceneEventHandler;
+    client.on("connRes", "easel", (data: IConnectResponseMessageExt) =>
+      this.onConnectHandler(data.status == "allowed")
+    );
+    client.on("scene", "easel", (data: ISceneUpdatesMessageExt) =>
+      this.onSceneEventHandler(data.data)
+    );
   }
 }
 

@@ -12,6 +12,7 @@ import {
 
 export interface ICommunicatior extends ISceneSubscriber {
   processMessage: (
+    from: ClientID,
     msg:
       | IConnectResponseMessageExt
       | IDisconnectMessageExt

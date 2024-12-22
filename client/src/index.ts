@@ -1,3 +1,9 @@
+import {
+  IConnectResponseMessageExt,
+  IServerChatMessageExt,
+  IServerNotificationExt,
+  IServerSceneMetaMessageExt,
+} from "../../types/messages";
 import { StageExt } from "../../types/stage";
 import { Client } from "./client/client.js";
 import { EaselManager } from "./easel/easelManager.js";
@@ -5,55 +11,59 @@ import { stagesRoute } from "./routes.js";
 import { Chat } from "./ui/chat.js";
 import { Toast } from "./ui/toast.js";
 
-const tempTopLevelFunciton = async () => {
-  // todo this function is certified spagetti fest. Some kind of architecture pattern is needed
-  const toast = new Toast(document.querySelector(".toast-container"));
-
+const tempTopLevelFunction = async () => {
+  // todo this function is certified spaghetti fest. Needs some kind of architecture pattern
   const client = new Client(`ws://${window.location.hostname}:5889`);
 
-  client.onServerNotifyHandlers.toast = (message, type) =>
-    toast.notify(message, type);
-
-  client.onConnectHandlers.index = (status) => {
-    if (status) {
-      regModal.style.display = "none";
-    }
+  client.on("connRes", "main", (data: IConnectResponseMessageExt) => {
+    if (data.status == "allowed") regModal.style.display = "none";
     client.getSceneMeta();
-  };
+  });
 
-  client.onConnectHandlers.toast = (status) => {
-    if (status) toast.notify("successfully connected!", "info");
+  const toast = new Toast(document.querySelector(".toast-container"));
+  client.on("serverNotify", "toast", (data: IServerNotificationExt) =>
+    toast.notify(data.message, data.type)
+  );
+  client.on("connRes", "toast", (data: IConnectResponseMessageExt) => {
+    if (data.status == "allowed")
+      toast.notify("successfully connected!", "info");
     else toast.notify("failed to connect!", "warning");
-  };
+  });
 
   const chat = new Chat(
     document.querySelector(".chat-container"),
     client.sendChatMessage
   );
 
-  client.onChatEventHandlers.chat = chat.receiveMessage;
+  client.on("serverChat", "chat", (data: IServerChatMessageExt) =>
+    chat.receiveMessage(data.sender, data.message)
+  );
 
   const easel = document.querySelector<HTMLDivElement>(".easel");
   const easelManager = new EaselManager(easel, client);
 
-  client.onSceneMetaEventHandlers.index = async (stageSystemName) => {
-    const layoutString = (await fetch(
-      `${stagesRoute}${stageSystemName}/${stageSystemName}.layout`
-    )
-      .then((data) => data)
-      .then((data) => data.text())) as string;
-    const layoutMeta = (await fetch(
-      `${stagesRoute}${stageSystemName}/${stageSystemName}.meta.json`
-    )
-      .then((data) => data)
-      .then((data) => data.text())) as StageExt["meta"];
-    const stage: StageExt = {
-      layoutData: layoutString,
-      meta: layoutMeta,
-    };
+  client.on(
+    "serverSceneMeta",
+    "easel",
+    async (data: IServerSceneMetaMessageExt) => {
+      const layoutString = (await fetch(
+        `${stagesRoute}${data.stageSystemName}/${data.stageSystemName}.layout`
+      )
+        .then((data) => data)
+        .then((data) => data.text())) as string;
+      const layoutMeta = (await fetch(
+        `${stagesRoute}${data.stageSystemName}/${data.stageSystemName}.meta.json`
+      )
+        .then((data) => data)
+        .then((data) => data.text())) as StageExt["meta"];
+      const stage: StageExt = {
+        layoutData: layoutString,
+        meta: layoutMeta,
+      };
 
-    easelManager.constructStage(stage);
-  };
+      easelManager.constructStage(stage);
+    }
+  );
 
   const regModal = document.querySelector<HTMLDivElement>(".reg-modal");
   const clientNameInput =
@@ -93,4 +103,4 @@ const tempTopLevelFunciton = async () => {
   );
 };
 
-tempTopLevelFunciton();
+tempTopLevelFunction();
