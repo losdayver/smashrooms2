@@ -1,7 +1,7 @@
 import { WebSocketServer, WebSocket } from "ws";
 import { randomUUID } from "crypto";
 
-import { ICommunicatior } from "../communicator/communicatorTypes";
+import { ICommunicator } from "../communicator/communicatorTypes";
 import { ISocketServer } from "./socketsTypes";
 import {
   IGenericNotRegisteredResponseMessageExt,
@@ -15,17 +15,20 @@ import { bufferFromObj, severityLog, wslogSend } from "./../../utils";
 import { ClientID } from "../commonTypes";
 
 export class WSSocketServer implements ISocketServer {
-  private communicator: ICommunicatior;
+  private communicator: ICommunicator;
   private port: number;
   private clientMap: ClientMap = new Map();
   private socketServer: WebSocketServer;
 
-  constructor(communicator: ICommunicatior, port: number) {
+  constructor(communicator: ICommunicator, port: number) {
     this.communicator = communicator;
     this.port = port;
     this.init();
   }
-  handlerForCommunicatorEvents = (event: any, clientID: ClientID | "all") => {
+  onReceiveMessageFromCommunicator = (
+    event: any,
+    clientID: ClientID | "all"
+  ) => {
     if (clientID == "all") {
       this.sendToAll(JSON.stringify(event));
       return;

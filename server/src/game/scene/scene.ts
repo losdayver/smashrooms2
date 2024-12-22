@@ -11,13 +11,16 @@ import {
   ISpawnControlledPropEvent,
   ISpawnPropEvent,
 } from "./sceneTypes";
-import { doBenchmark, Mutex, severityLog } from "./../../utils";
+import { doBenchmark, Mutex } from "./../../utils";
 import { Prop, propsMap } from "./props";
 import { IControlled, IPositioned, IProp, PropBehaviours } from "./propTypes";
 import { PropIDExt } from "../../../../types/sceneTypes";
 import { StageExt } from "../../../../types/stage";
 import { ClientID } from "../commonTypes";
-import { IServerNotificationExt } from "../../../../types/messages";
+import {
+  ISceneUpdatesMessageExt,
+  IServerNotificationExt,
+} from "../../../../types/messages";
 
 type ChunkedUpdateMap = Record<`${number}_${number}`, ChunkUpdate>;
 type ChunkUpdate = {
@@ -28,7 +31,7 @@ type ChunkUpdate = {
 };
 
 export class Scene implements IScene {
-  eventHandler: ISceneSubscriber["handlerForSceneExternalEvents"];
+  sendMessageToSubscriber: ISceneSubscriber["onReceiveMessageFromScene"];
 
   private chunkSize = 256;
   private propList: (IProp & PropBehaviours)[] = [];
@@ -155,12 +158,16 @@ export class Scene implements IScene {
       if (tempLoad.length) batch.load = tempLoad;
       if (tempDelete.length) batch.delete = tempDelete;
     } else if (type == "localUpdates") throw new Error("not implemented");
-    if (Object.keys(batch).length) this.eventHandler(batch, clientID);
+    if (Object.keys(batch).length)
+      this.sendMessageToSubscriber(
+        { name: "scene", data: batch } satisfies ISceneUpdatesMessageExt,
+        clientID
+      );
   };
 
   $isProcessingTick = false;
   tick: IScene["tick"] = async () => {
-    const tickLoop = doBenchmark();
+    // const tickLoop = doBenchmark();
     if (this.$isProcessingTick) return;
     this.$isProcessingTick = true;
     this.$chunkedUpdates = {};
@@ -192,7 +199,7 @@ export class Scene implements IScene {
     const checkedCollisions: PropIDExt[] = [];
     for (const [coord, chunk] of Object.entries(this.$chunkedUpdates)) {
       const [x, y] = coord.split("_").map(Number);
-      const adjecentChunks: ChunkUpdate[] = [chunk];
+      const adjacentChunks: ChunkUpdate[] = [chunk];
 
       for (const [coordAdj, chunkAdj] of Object.entries(this.$chunkedUpdates)) {
         const [xAdj, yAdj] = coordAdj.split("_").map(Number);
@@ -202,17 +209,17 @@ export class Scene implements IScene {
           Math.abs(xAdj - x) <= 1 &&
           Math.abs(yAdj - y) <= 1
         )
-          adjecentChunks.push(chunkAdj);
+          adjacentChunks.push(chunkAdj);
       }
 
       for (const prop of chunk.props) {
         if (prop.collidable) {
-          for (const adjecentChunk of adjecentChunks) {
-            for (const adjecentProp of adjecentChunk.props) {
+          for (const adjacentChunk of adjacentChunks) {
+            for (const adjacentProp of adjacentChunk.props) {
               if (
-                adjecentProp != prop &&
-                adjecentProp.collidable &&
-                !checkedCollisions.includes(adjecentProp.ID)
+                adjacentProp != prop &&
+                adjacentProp.collidable &&
+                !checkedCollisions.includes(adjacentProp.ID)
               ) {
                 const left1 = prop.positioned.posX + prop.collidable.offsetX;
                 const top1 = prop.positioned.posY + prop.collidable.offsetY;
@@ -220,13 +227,13 @@ export class Scene implements IScene {
                 const height1 = prop.collidable.sizeY;
 
                 const left2 =
-                  adjecentProp.positioned.posX +
-                  adjecentProp.collidable.offsetX;
+                  adjacentProp.positioned.posX +
+                  adjacentProp.collidable.offsetX;
                 const top2 =
-                  adjecentProp.positioned.posY +
-                  adjecentProp.collidable.offsetY;
-                const width2 = adjecentProp.collidable.sizeX;
-                const height2 = adjecentProp.collidable.sizeY;
+                  adjacentProp.positioned.posY +
+                  adjacentProp.collidable.offsetY;
+                const width2 = adjacentProp.collidable.sizeX;
+                const height2 = adjacentProp.collidable.sizeY;
 
                 const isLeft = left1 + width1 <= left2;
                 const isRight = left1 >= left2 + width2;
@@ -234,8 +241,8 @@ export class Scene implements IScene {
                 const isBelow = top1 >= top2 + height2;
 
                 if (!(isLeft || isRight || isAbove || isBelow)) {
-                  prop.collidable.onCollide?.(adjecentProp);
-                  adjecentProp.collidable.onCollide?.(prop);
+                  prop.collidable.onCollide?.(adjacentProp);
+                  adjacentProp.collidable.onCollide?.(prop);
                 }
               }
             }
@@ -244,12 +251,9 @@ export class Scene implements IScene {
         }
       }
     }
-
-    // todo this is inefficient
     this.$generateExternalEventBatch("all", "everyUpdate");
     this.tickNum++;
     this.$isProcessingTick = false;
-    // severityLog(`time elapsed to calculate stuff in tick loop ${tickLoop()}`);
   };
 
   private spawnPropHandler = (data: ISpawnPropEvent["data"]) => {
@@ -263,7 +267,6 @@ export class Scene implements IScene {
         }
       }
       this.propList.unshift(prop);
-      severityLog(`created new prop ${data.propName}`);
       prop.onCreated?.(this.tickNum);
       if (prop.positioned)
         this.$mutateChunkedUpdates(
@@ -331,14 +334,13 @@ export class Scene implements IScene {
   };
 
   sendNotification: IScene["sendNotification"] = (message, type?, target?) => {
-    this.eventHandler(
+    this.sendMessageToSubscriber(
       {
         name: "serverNotify",
         message,
         type,
       } satisfies IServerNotificationExt,
-      target || "all",
-      "serverNotify"
+      target || "all"
     );
   };
 
@@ -360,7 +362,6 @@ export class Scene implements IScene {
   connectAction: IScene["connectAction"] = async (clientID, nameTag?) => {
     const unlock = await this.internalEventQueueMutex.acquire();
     try {
-      severityLog(`scene connected client ${clientID}`);
       const event = {
         name: "spawnControlledProp",
         data: {
@@ -439,8 +440,8 @@ export class Scene implements IScene {
     };
   };
 
-  makeSubscribe: IScene["makeSubscribe"] = (subscriber) => {
-    this.eventHandler = subscriber.handlerForSceneExternalEvents;
+  subscribe: IScene["subscribe"] = (subscriber) => {
+    this.sendMessageToSubscriber = subscriber.onReceiveMessageFromScene;
   };
 
   loadTemplate = (template: ISceneTemplate) => {
@@ -505,9 +506,6 @@ export class Scene implements IScene {
 }
 
 const layoutMap: Record<string, ILayoutTile> = {
-  "#": {
-    solidity: "solid",
-  },
   "=": {
     solidity: "semi",
   },

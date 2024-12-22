@@ -10,7 +10,7 @@ import {
   IMessageExt,
 } from "../../../../types/messages";
 
-export interface ICommunicatior extends ISceneSubscriber {
+export interface ICommunicator extends ISceneSubscriber {
   processMessage: (
     from: ClientID,
     msg:
@@ -20,7 +20,7 @@ export interface ICommunicatior extends ISceneSubscriber {
       | IGenericMessageExt
   ) => void;
   processMessageSync: (msg: IClientSceneMetaMessageExt) => any;
-  makeSubscribe: (communiucatorSubscriber: ICommunicatorSubscriber) => void;
+  subscribe: (communicatorSubscriber: ICommunicatorSubscriber) => void;
 }
 
 export type ICommunicatorRequests =
@@ -51,9 +51,8 @@ export interface IClientSceneMessageRequest {
 }
 
 export interface ICommunicatorSubscriber {
-  handlerForCommunicatorEvents: (
-    event: any,
-    cleintID: ClientID | "all",
-    messageName?: IMessageExt["name"]
+  onReceiveMessageFromCommunicator: (
+    message: IMessageExt,
+    clientID?: ClientID | "all"
   ) => void;
 }

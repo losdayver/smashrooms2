@@ -1,6 +1,6 @@
 import { severityLog } from "../../utils";
-import { Communicatior } from "../communicator/communicator";
-import { ICommunicatior } from "../communicator/communicatorTypes";
+import { Communicator } from "../communicator/communicator";
+import { ICommunicator } from "../communicator/communicatorTypes";
 import { Scene } from "../scene/scene";
 import { IScene } from "../scene/sceneTypes";
 import { WSSocketServer } from "../sockets/sockets";
@@ -10,22 +10,22 @@ import path from "path";
 
 export class Server {
   private scene: IScene;
-  private communicatior: ICommunicatior;
+  private communicator: ICommunicator;
   private socketServer: ISocketServer;
 
   run = () => setInterval(this.scene.tick, 32);
 
   constructor(
     socketServer: ISocketServer,
-    communicatior: ICommunicatior,
+    communicator: ICommunicator,
     scene: IScene
   ) {
     this.scene = scene;
-    this.communicatior = communicatior;
+    this.communicator = communicator;
     this.socketServer = socketServer;
 
-    this.communicatior.makeSubscribe(this.socketServer);
-    this.scene.makeSubscribe(this.communicatior);
+    this.communicator.subscribe(this.socketServer);
+    this.scene.subscribe(this.communicator);
     severityLog(`server started`);
   }
 }
@@ -33,7 +33,7 @@ export class Server {
 export const createWSServer = (port: number) => {
   severityLog(`starting server on port ${port}`);
   const scene = new Scene();
-  const communicator = new Communicatior(scene);
+  const communicator = new Communicator(scene);
   const wsServer = new WSSocketServer(communicator, port);
   return new Server(wsServer, communicator, scene);
 };
@@ -77,20 +77,7 @@ export const createWSTestingServer = (port: number) => {
     meta: layoutMeta,
     layoutData,
   });
-  // const template = {
-  //   props: [
-  //     ...[...Array(10).keys()].map(
-  //       (i) =>
-  //         new Crate(scene, {
-  //           positioned: {
-  //             posX: 100 + i * 100,
-  //             posY: 100,
-  //           },
-  //         })
-  //     ),
-  //   ],
-  // };
-  const communicator = new Communicatior(scene);
+  const communicator = new Communicator(scene);
   const wsServer = new WSSocketServer(communicator, port);
   return new Server(wsServer, communicator, scene);
 };

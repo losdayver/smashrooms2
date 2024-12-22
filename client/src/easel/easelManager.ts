@@ -4,8 +4,7 @@ import {
 } from "../../../types/messages";
 import {
   IBehaviouredPropExt,
-  IExternalEvent,
-  UpdateBehavioursExt,
+  ISceneUpdatesMessageData,
 } from "../../../types/sceneTypes";
 import { StageExt } from "../../../types/stage";
 import { Client } from "../client/client.js";
@@ -51,7 +50,7 @@ export class EaselManager {
     this.propList.push(easelProp);
   };
 
-  private updateProps = (update: IExternalEvent["update"]) => {
+  private updateProps = (update: ISceneUpdatesMessageData["update"]) => {
     Object.entries(update)?.forEach(([propID, changes]) => {
       const prop = this.propList.find((prop) => prop.ID == propID);
       if (!prop) return;
@@ -86,7 +85,7 @@ export class EaselManager {
     });
   };
 
-  private deleteProps = (del: IExternalEvent["delete"]) => {
+  private deleteProps = (del: ISceneUpdatesMessageData["delete"]) => {
     for (const propToDeleteID of del) {
       this.propList.forEach((prop, index) => {
         if (propToDeleteID == prop.ID) {
@@ -99,11 +98,11 @@ export class EaselManager {
   };
 
   private onConnectHandler = (status: boolean) => {};
-  private onSceneEventHandler = (data: IExternalEvent) => {
+  private onSceneEventHandler = (data: ISceneUpdatesMessageData) => {
     data.load?.forEach((prop) => {
       if (prop.drawable) this.loadProp(prop);
     });
-    if (data.update) this.updateProps(data.update); // todo fix concurrency here
+    if (data.update) this.updateProps(data.update);
     if (data.delete) this.deleteProps(data.delete);
   };
 

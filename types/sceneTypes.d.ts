@@ -4,7 +4,7 @@ export interface IPropExt {
   ID: PropIDExt;
 }
 
-export type IExternalEvent = {
+export type ISceneUpdatesMessageData = {
   update?: UpdateBehavioursExt;
   load?: IBehaviouredPropExt[];
   delete?: PropIDExt[];
@@ -30,7 +30,7 @@ export interface IControlledExt {
 export interface IDrawableExt extends IPositionedExt {
   drawable: {
     animationCode: string;
-    facing: "right" | "left" | string; // todo wtf
+    facing: "right" | "left" | string;
     pivotOffsetX: number;
     pivotOffsetY: number;
   };

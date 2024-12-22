@@ -11,7 +11,7 @@ import { RecursivePartial } from "../../utils";
 import { ICollidableExt, PropIDExt } from "../../../../types/sceneTypes";
 
 export interface IScene extends ISceneActions {
-  makeSubscribe: (sceneSubscriber: ISceneSubscriber) => void;
+  subscribe: (sceneSubscriber: ISceneSubscriber) => void;
   tick: () => void;
   getSceneMeta: () => IServerSceneMetaMessageExt;
   getLayoutAt: (x: number, y: number) => ILayoutTile;
@@ -91,10 +91,9 @@ export interface IClientActionEvent {
 }
 
 export interface ISceneSubscriber {
-  handlerForSceneExternalEvents: (
-    event: any,
-    clientID: ClientID | "all",
-    messageName?: IMessageExt["name"]
+  onReceiveMessageFromScene: (
+    message: IMessageExt,
+    clientID?: ClientID | "all"
   ) => void;
 }
 

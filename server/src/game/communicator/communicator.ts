@@ -1,4 +1,8 @@
-import { IExternalEventBatch, IScene } from "../scene/sceneTypes";
+import {
+  IExternalEventBatch,
+  IScene,
+  ISceneSubscriber,
+} from "../scene/sceneTypes";
 import {
   IClientActionMessageExt,
   IConnectResponseMessageExt,
@@ -6,25 +10,21 @@ import {
   IGenericMessageExt,
   IMessageExt,
 } from "../../../../types/messages";
-import { ICommunicatior, ICommunicatorSubscriber } from "./communicatorTypes";
+import { ICommunicator, ICommunicatorSubscriber } from "./communicatorTypes";
 import { ClientID } from "../commonTypes";
 
-export class Communicatior implements ICommunicatior {
+export class Communicator implements ICommunicator {
   private scene: IScene;
-  private eventHandler: ICommunicatorSubscriber["handlerForCommunicatorEvents"];
+  private sendMessageToSubscriber: ICommunicatorSubscriber["onReceiveMessageFromCommunicator"];
 
-  makeSubscribe = (subscriber: ICommunicatorSubscriber) => {
-    this.eventHandler = subscriber.handlerForCommunicatorEvents;
+  subscribe = (subscriber: ICommunicatorSubscriber) => {
+    this.sendMessageToSubscriber = subscriber.onReceiveMessageFromCommunicator;
   };
-  handlerForSceneExternalEvents = (
-    event: any,
-    clientID: string,
-    messageName?: IMessageExt["name"]
+  onReceiveMessageFromScene: ISceneSubscriber["onReceiveMessageFromScene"] = (
+    message,
+    clientID?
   ) => {
-    if (!messageName || messageName == "scene")
-      // todo this is ugly! needs to be standardized
-      this.eventHandler({ name: "scene", data: event }, clientID);
-    else this.eventHandler(event, clientID);
+    this.sendMessageToSubscriber(message, clientID || "all");
   };
   processMessage = (
     from: ClientID,
@@ -48,7 +48,7 @@ export class Communicatior implements ICommunicatior {
     }
   };
 
-  processMessageSync: ICommunicatior["processMessageSync"] = (msg) => {
+  processMessageSync: ICommunicator["processMessageSync"] = (msg) => {
     if (msg.name == "clientSceneMeta") {
       return this.scene.getSceneMeta();
     }
