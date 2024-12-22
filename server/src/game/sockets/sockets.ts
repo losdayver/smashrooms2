@@ -11,6 +11,7 @@ import {
   IConnectMessageExt,
   IServerChatMessageExt,
   IMessageExt,
+  IClientChatMessageExt,
 } from "../../../../types/messages";
 import { bufferFromObj, severityLog, wslogSend } from "./../../utils";
 import { ClientID } from "../commonTypes";
@@ -131,7 +132,7 @@ export class WSSocketServer implements ISocketServer {
 
   private resolveClientChatMessage = (
     clientSocket: WebSocket,
-    message: any
+    message: IClientChatMessageExt
   ) => {
     let sender: string;
     for (const [_, client] of this.clientMap.entries())
@@ -143,7 +144,7 @@ export class WSSocketServer implements ISocketServer {
     const msg: IServerChatMessageExt = {
       name: "serverChat",
       sender,
-      message,
+      message: message.message,
     };
     const stringMsg = JSON.stringify(msg);
     this.sendToAll(stringMsg);

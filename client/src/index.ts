@@ -35,9 +35,9 @@ const tempTopLevelFunction = async () => {
     client.sendChatMessage
   );
 
-  client.on("serverChat", "chat", (data: IServerChatMessageExt) =>
-    chat.receiveMessage(data.sender, data.message)
-  );
+  client.on("serverChat", "chat", (data: IServerChatMessageExt) => {
+    chat.receiveMessage(data.sender, data.message);
+  });
 
   const easel = document.querySelector<HTMLDivElement>(".easel");
   const easelManager = new EaselManager(easel, client);

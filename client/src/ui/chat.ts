@@ -32,7 +32,7 @@ export class Chat {
     this.maxMessages = maxMessages;
 
     const input = document.createElement("input") as HTMLInputElement;
-    input.className = "chat__input";
+    input.classList.add("chat__input", "smsh-input");
     input.type = "text";
     input.maxLength = maxMessageLength;
     this.input = input;
@@ -41,7 +41,7 @@ export class Chat {
 
     const submit = document.createElement("button") as HTMLInputElement;
     submit.innerHTML = "Send";
-    submit.className = "chat__submit";
+    submit.classList.add("chat__submit", "smsh-button");
 
     submit.addEventListener("click", () => {
       onSendPressed(input.value);

@@ -1,0 +1,16 @@
+.library-exhibit {
+  display: flex;
+  flex-direction: column;
+  margin: 1em;
+  gap: 1em;
+}
+
+.library-container {
+  padding: 1em;
+  border-radius: 1em;
+  background-color: rgb(55, 55, 56);
+}
+
+.library-container__header {
+  margin: 0;
+}

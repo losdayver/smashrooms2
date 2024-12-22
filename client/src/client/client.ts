@@ -59,7 +59,6 @@ export class Client
     } catch {
       return;
     }
-    console.log(parsedMsg);
     this.eventEmitter.emit(parsedMsg.name, parsedMsg);
   };
 

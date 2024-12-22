@@ -1,3 +1,5 @@
+import { LayoutMetaExt } from "../../../../types/stage";
+import { config } from "../../config";
 import { severityLog } from "../../utils";
 import { Communicator } from "../communicator/communicator";
 import { ICommunicator } from "../communicator/communicatorTypes";
@@ -13,7 +15,7 @@ export class Server {
   private communicator: ICommunicator;
   private socketServer: ISocketServer;
 
-  run = () => setInterval(this.scene.tick, 32);
+  start = () => setInterval(this.scene.tick, 32);
 
   constructor(
     socketServer: ISocketServer,
@@ -23,61 +25,27 @@ export class Server {
     this.scene = scene;
     this.communicator = communicator;
     this.socketServer = socketServer;
-
     this.communicator.subscribe(this.socketServer);
     this.scene.subscribe(this.communicator);
     severityLog(`server started`);
   }
 }
 
-export const createWSServer = (port: number) => {
+export const getWSTestingServer = (port: number) => {
   severityLog(`starting server on port ${port}`);
-  const scene = new Scene();
+  const scene = new Scene(getStageFS("testing"));
   const communicator = new Communicator(scene);
   const wsServer = new WSSocketServer(communicator, port);
   return new Server(wsServer, communicator, scene);
 };
 
-export const createWSTestingServer = (port: number) => {
-  const layoutData = fs
-    .readFileSync(
-      path.resolve(
-        __dirname,
-        "..",
-        "..",
-        "..",
-        "..",
-        "static",
-        "stages",
-        "testing",
-        "testing.layout"
-      )
-    )
-    .toString(); // todo change this
-  const layoutMeta = JSON.parse(
+export const getStageFS = (name: string) => ({
+  layoutData: fs
+    .readFileSync(path.resolve(config.stagesRoute, name, `${name}.layout`))
+    .toString(),
+  meta: JSON.parse(
     fs
-      .readFileSync(
-        path.resolve(
-          __dirname,
-          "..",
-          "..",
-          "..",
-          "..",
-          "static",
-          "stages",
-          "testing",
-          "testing.meta.json"
-        )
-      )
+      .readFileSync(path.resolve(config.stagesRoute, name, `${name}.meta.json`))
       .toString()
-  ); // todo change this
-
-  severityLog(`starting server on port ${port}`);
-  const scene = new Scene({
-    meta: layoutMeta,
-    layoutData,
-  });
-  const communicator = new Communicator(scene);
-  const wsServer = new WSSocketServer(communicator, port);
-  return new Server(wsServer, communicator, scene);
-};
+  ) as LayoutMetaExt,
+});
