@@ -10,6 +10,7 @@ import {
   IGenericMessageExt,
   IConnectMessageExt,
   IServerChatMessageExt,
+  IMessageExt,
 } from "../../../../types/messages";
 import { bufferFromObj, severityLog, wslogSend } from "./../../utils";
 import { ClientID } from "../commonTypes";
@@ -17,7 +18,7 @@ import { ClientID } from "../commonTypes";
 export class WSSocketServer implements ISocketServer {
   private communicator: ICommunicator;
   private port: number;
-  private clientMap: ClientMap = new Map();
+  private clientMap: Map<string, IWSClient> = new Map();
   private socketServer: WebSocketServer;
 
   constructor(communicator: ICommunicator, port: number) {
@@ -44,29 +45,14 @@ export class WSSocketServer implements ISocketServer {
   private init = () => {
     const sockServer = new WebSocketServer({ port: this.port });
     this.socketServer = sockServer;
-    sockServer.on("connection", (clientSocket) => {
-      clientSocket.on("message", (buffer) => {
-        let msg;
+    sockServer.on("connection", (clientSocket: WebSocket) => {
+      clientSocket.on("message", (buffer: Buffer) => {
+        let msg: IMessageExt;
         try {
-          msg = JSON.parse(buffer.toString()) as any;
-          if (msg.name == "conn") {
-            this.resolveConnectMessage(clientSocket, msg);
-          } else if (msg.name == "clientChat") {
-            // todo handler map
-            let senderName: string;
-            for (const [_, client] of this.clientMap.entries())
-              if (client.socket == clientSocket) {
-                senderName = client.name;
-                break;
-              }
-            if (senderName)
-              this.resolveClientChatMessage(senderName, msg.message);
-          } else if (msg.name == "clientSceneMeta") {
-            const data = this.communicator.processMessageSync(msg);
-            wslogSend(clientSocket, data);
-          } else {
-            this.resolveGenericMessage(clientSocket, msg);
-          }
+          msg = JSON.parse(buffer.toString()) as IMessageExt;
+          const resolver = this.messageResolveMap[msg.name];
+          if (resolver) resolver(clientSocket, msg);
+          else this.messageResolveMap["default"](clientSocket, msg);
         } catch (e) {
           severityLog(e as Error);
         }
@@ -143,7 +129,17 @@ export class WSSocketServer implements ISocketServer {
     }
   };
 
-  private resolveClientChatMessage = (sender: string, message: string) => {
+  private resolveClientChatMessage = (
+    clientSocket: WebSocket,
+    message: any
+  ) => {
+    let sender: string;
+    for (const [_, client] of this.clientMap.entries())
+      if (client.socket == clientSocket) {
+        sender = client.name;
+        break;
+      }
+    if (!sender) return;
     const msg: IServerChatMessageExt = {
       name: "serverChat",
       sender,
@@ -174,9 +170,18 @@ export class WSSocketServer implements ISocketServer {
     }
     this.communicator.processMessage(clientID, message);
   };
-}
 
-type ClientMap = Map<string, IWSClient>;
+  private messageResolveMap: Partial<
+    Record<
+      IMessageExt["name"] | "default",
+      (clientSocket: WebSocket, message: any) => void
+    >
+  > = {
+    conn: this.resolveConnectMessage,
+    clientChat: this.resolveClientChatMessage,
+    default: this.resolveGenericMessage,
+  };
+}
 
 export interface IWSClient {
   name: string;
