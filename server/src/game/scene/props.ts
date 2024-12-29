@@ -256,8 +256,8 @@ export class DummyBullet extends Prop implements IDrawable, IDamaging, IMoving {
     pivotOffsetY: 16,
   };
   collidable: ICollidable["collidable"] = {
-    sizeX: 64,
-    sizeY: 64,
+    sizeX: 8,
+    sizeY: 8,
     offsetX: -16,
     offsetY: -16,
     onCollide: (prop: Prop & PropBehaviours) => {
@@ -267,7 +267,7 @@ export class DummyBullet extends Prop implements IDrawable, IDamaging, IMoving {
   };
   damaging = { damage: 10 };
   moving = {
-    speedH: 50,
+    speedH: 32,
     speedV: 0,
   };
 
@@ -282,15 +282,7 @@ export class DummyBullet extends Prop implements IDrawable, IDamaging, IMoving {
     if (
       tickNum - this.createdOn > 20 ||
       this.scene.getLayoutAt(this.positioned.posX, this.positioned.posY)
-        .solidity == "solid" ||
-      this.scene.getLayoutAt(
-        this.positioned.posX + this.moving.speedH / 2,
-        this.positioned.posY
-      ).solidity == "solid" ||
-      this.scene.getLayoutAt(
-        this.positioned.posX + this.moving.speedH,
-        this.positioned.posY
-      ).solidity == "solid"
+        .solidity == "solid"
     ) {
       this.scene.destroyPropAction(this.ID);
       return;

@@ -6,7 +6,7 @@
   left: 0;
   bottom: 0;
   background-position: center top;
-  background-size: 100% auto;
+  background-size: auto 100%;
 }
 
 .easel__prop-sprite {
@@ -44,8 +44,10 @@
 @keyframes hit__keyframes {
   0% {
     filter: sepia(1) hue-rotate(-50deg) saturate(5);
+    transform: scale(1.2, 1.2);
   }
   100% {
     filter: none;
+    transform: none;
   }
 }
