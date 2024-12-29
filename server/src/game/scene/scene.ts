@@ -1,4 +1,5 @@
 import {
+  IAnimatePropEvent,
   IClientActionEvent,
   IDestroyControlledPropEvent,
   IDestroyPropEvent,
@@ -14,7 +15,7 @@ import {
 import { doBenchmark, Mutex } from "./../../utils";
 import { Prop, propsMap } from "./props";
 import { IControlled, IPositioned, IProp, PropBehaviours } from "./propTypes";
-import { PropIDExt } from "../../../../types/sceneTypes";
+import { IAnimationExt, PropIDExt } from "../../../../types/sceneTypes";
 import { StageExt } from "../../../../types/stage";
 import { ClientID } from "../commonTypes";
 import {
@@ -28,6 +29,7 @@ type ChunkUpdate = {
   update: Record<PropIDExt, PropBehaviours>;
   load: (IProp & PropBehaviours)[];
   delete: string[];
+  anim: IAnimationExt[];
 };
 
 export class Scene implements IScene {
@@ -66,6 +68,7 @@ export class Scene implements IScene {
     if (!chunk.props) chunk.props = [];
     if (!chunk.delete) chunk.delete = [];
     if (!chunk.update) chunk.update = {};
+    if (!chunk.anim) chunk.anim = [];
 
     let update = chunk.update;
     if (partialChunkUpdate.update) {
@@ -86,6 +89,7 @@ export class Scene implements IScene {
       props: chunk.props.concat(partialChunkUpdate.props || []),
       load: chunk.load.concat(partialChunkUpdate.load || []),
       delete: chunk.delete.concat(partialChunkUpdate.delete || []),
+      anim: chunk.anim.concat(partialChunkUpdate.anim || []),
     } satisfies Partial<ChunkUpdate>;
   };
 
@@ -121,6 +125,7 @@ export class Scene implements IScene {
       const tempUpdate = {};
       const tempLoad = [];
       let tempDelete = [];
+      let tempAnim = [];
 
       Object.values(this.$chunkedUpdates).forEach((chunkedUpdate) => {
         if (chunkedUpdate.update) {
@@ -152,11 +157,14 @@ export class Scene implements IScene {
 
         if (chunkedUpdate.delete)
           tempDelete = tempDelete.concat(chunkedUpdate.delete);
+
+        if (chunkedUpdate.anim) tempAnim = tempAnim.concat(chunkedUpdate.anim);
       });
 
       if (Object.keys(tempUpdate).length) batch.update = tempUpdate;
       if (tempLoad.length) batch.load = tempLoad;
       if (tempDelete.length) batch.delete = tempDelete;
+      if (tempAnim.length) batch.anim = tempAnim;
     } else if (type == "localUpdates") throw new Error("not implemented");
     if (Object.keys(batch).length)
       this.sendMessageToSubscriber(
@@ -332,6 +340,11 @@ export class Scene implements IScene {
     ) as IProp & IControlled;
     prop.controlled.onReceive?.(data.code, data.status);
   };
+  private animatePropHandler = (data: IAnimatePropEvent["data"]) => {
+    const prop = this.propList.find((prop) => prop.ID == data.ID) as IProp &
+      IPositioned;
+    this.$mutateChunkedUpdates({ anim: [data] }, prop);
+  };
 
   sendNotification: IScene["sendNotification"] = (message, type?, target?) => {
     this.sendMessageToSubscriber(
@@ -432,6 +445,18 @@ export class Scene implements IScene {
       unlock();
     }
   };
+  animatePropAction: IScene["animatePropAction"] = async (propID, name) => {
+    const unlock = await this.internalEventQueueMutex.acquire();
+    try {
+      this.internalEventQueueMutex.value.unshift({
+        name: "animateProp",
+        data: { ID: propID, name },
+      } satisfies IAnimatePropEvent);
+    } finally {
+      unlock();
+    }
+  };
+
   getSceneMeta: IScene["getSceneMeta"] = () => {
     return {
       name: "serverSceneMeta",
@@ -501,6 +526,7 @@ export class Scene implements IScene {
       destroyProp: this.destroyPropHandler,
       destroyControlledProp: this.destroyControlledPropHandler,
       clientAction: this.clientActionHandler,
+      animateProp: this.animatePropHandler,
     };
   }
 }

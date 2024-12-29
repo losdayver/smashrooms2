@@ -8,7 +8,13 @@ export type ISceneUpdatesMessageData = {
   update?: UpdateBehavioursExt;
   load?: IBehaviouredPropExt[];
   delete?: PropIDExt[];
+  anim?: IAnimationExt[];
 };
+
+export interface IAnimationExt {
+  ID: PropIDExt;
+  name: string;
+}
 
 export type UpdateBehavioursExt = Record<PropIDExt, PropBehavioursExt>;
 
@@ -53,7 +59,7 @@ export interface IDamageableExt extends ICollidableExt {
 }
 
 export interface IDamagingExt extends ICollidableExt {
-  damageable: {
+  damaging: {
     damage: number;
   };
 }

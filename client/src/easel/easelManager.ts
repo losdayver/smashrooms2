@@ -97,6 +97,19 @@ export class EaselManager {
     }
   };
 
+  private animateProps = (anim: ISceneUpdatesMessageData["anim"]) => {
+    while (anim.length) {
+      const a = anim.pop();
+      const prop = this.propList.find((prop) => prop.ID == a.ID);
+      if (prop) {
+        const animClass = `easel__prop-sprite--${a.name}`;
+        prop.img.classList.remove(animClass);
+        void prop.img.offsetWidth;
+        prop.img.classList.add(animClass);
+      }
+    }
+  };
+
   private onConnectHandler = (status: boolean) => {};
   private onSceneEventHandler = (data: ISceneUpdatesMessageData) => {
     data.load?.forEach((prop) => {
@@ -104,6 +117,7 @@ export class EaselManager {
     });
     if (data.update) this.updateProps(data.update);
     if (data.delete) this.deleteProps(data.delete);
+    if (data.anim) this.animateProps(data.anim);
   };
 
   constructStage = (stage: StageExt) => {

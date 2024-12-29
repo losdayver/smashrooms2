@@ -8,7 +8,11 @@ import {
 } from "../../../../types/messages";
 import { IProp, PropBehaviours } from "./propTypes";
 import { RecursivePartial } from "../../utils";
-import { ICollidableExt, PropIDExt } from "../../../../types/sceneTypes";
+import {
+  IAnimationExt,
+  ICollidableExt,
+  PropIDExt,
+} from "../../../../types/sceneTypes";
 
 export interface IScene extends ISceneActions {
   subscribe: (sceneSubscriber: ISceneSubscriber) => void;
@@ -33,7 +37,7 @@ export interface ISceneActions {
   connectAction: (clientID: string, nameTag?: string) => void | Promise<void>;
   disconnectAction: (clientID: string) => void | Promise<void>;
   mutatePropBehaviourAction: (
-    propOrID: (IProp & PropBehaviours) | string,
+    propOrID: (IProp & PropBehaviours) | PropIDExt,
     behaviour: { name: string; newValue: any }
   ) => void;
   spawnPropAction: (
@@ -41,6 +45,7 @@ export interface ISceneActions {
     behaviours?: RecursivePartial<PropBehaviours>
   ) => Promise<void>;
   destroyPropAction: (propID: PropIDExt) => Promise<void>;
+  animatePropAction: (propID: PropIDExt, name: string) => Promise<void>;
 }
 
 /** describes event that is put into event queue upon receiving action from outside */
@@ -49,7 +54,8 @@ export type IInternalEvent =
   | ISpawnControlledPropEvent
   | IDestroyPropEvent
   | IDestroyControlledPropEvent
-  | IClientActionEvent;
+  | IClientActionEvent
+  | IAnimatePropEvent;
 export interface ISpawnPropEvent {
   name: "spawnProp";
   data: {
@@ -78,8 +84,13 @@ export interface IDestroyControlledPropEvent {
 export interface IDestroyPropEvent {
   name: "destroyProp";
   data: {
-    ID: string;
+    ID: PropIDExt;
   };
+}
+
+export interface IAnimatePropEvent {
+  name: "animateProp";
+  data: IAnimationExt;
 }
 export interface IClientActionEvent {
   name: "clientAction";
@@ -101,6 +112,7 @@ export type IExternalEventBatch = {
   update?: ExternalUpdateBehaviours;
   load?: ExternalLoadChunk[];
   delete?: PropIDExt[];
+  anim?: IAnimationExt[];
 };
 
 export type ExternalUpdateBehaviours = Record<

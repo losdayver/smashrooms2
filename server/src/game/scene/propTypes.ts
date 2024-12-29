@@ -22,7 +22,8 @@ export type PropBehaviours = Partial<
     ICollidable &
     IDamageable &
     IDamaging &
-    INameTagged
+    INameTagged &
+    IMoving
 >;
 
 export interface IProp extends IPropExt {
@@ -31,11 +32,14 @@ export interface IProp extends IPropExt {
   onCreated?: (tickNum: number) => void;
 }
 
-export type IPositioned = {
-  positioned: {
-    callback?: (newPos: { posX: number; posY: number }) => void;
+export interface IMoving {
+  moving: {
+    speedH: number;
+    speedV: number;
   };
-} & IPositionedExt;
+}
+
+export type IPositioned = IPositionedExt;
 
 export type IControlled = {
   controlled: {
@@ -46,11 +50,7 @@ export type IControlled = {
   };
 } & IControlledExt;
 
-export type IDrawable = IPositioned & {
-  drawable: {
-    callback?: () => void;
-  };
-} & IDrawableExt;
+export type IDrawable = IDrawableExt;
 
 export type ICollidable = IPositioned & {
   collidable: {
@@ -58,22 +58,8 @@ export type ICollidable = IPositioned & {
   };
 } & ICollidableExt;
 
-export type IDamageable = ICollidable & {
-  damageable: {
-    health: number;
-    callback?: (damage: number, attacker: Prop) => void;
-  };
-} & IDamageableExt;
+export type IDamageable = ICollidable & IDamageableExt;
 
-export type IDamaging = ICollidable & {
-  damageable: {
-    damage: number;
-    callback?: (health: number, victim: Prop) => void;
-  };
-} & IDamagingExt;
+export type IDamaging = ICollidable & IDamagingExt;
 
-export type INameTagged = IDrawable & {
-  nameTagged: {
-    tag: string;
-  };
-} & INameTaggedExt;
+export type INameTagged = INameTaggedExt;

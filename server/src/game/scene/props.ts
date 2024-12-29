@@ -2,7 +2,9 @@ import {
   ICollidable,
   IControlled,
   IDamageable,
+  IDamaging,
   IDrawable,
+  IMoving,
   INameTagged,
   IProp,
   PropBehaviours,
@@ -81,7 +83,12 @@ export class Player
     sizeY: 64,
     offsetX: -16,
     offsetY: 0,
-    onCollide: (prop: Prop & PropBehaviours) => {},
+    onCollide: (prop: Prop & PropBehaviours) => {
+      if (prop.damaging && prop.collidable.colGroup != this.ID) {
+        if (prop.moving) this.$punchH = 2 * Math.sign(prop.moving.speedH);
+        this.scene.animatePropAction(this.ID, "hit");
+      }
+    },
   };
   positioned = { posX: 100, posY: 100 };
   nameTagged = { tag: "player" };
@@ -98,6 +105,7 @@ export class Player
   private $isInAir = true;
   private $state: "playerIdle" | "playerWalk" | "playerJump" = "playerWalk";
   private $passSemi = false;
+  private $punchH = 0;
 
   /** how being in air affect horizontal speed */
   private hSpeedAirTimeCoeff = 0.8;
@@ -112,9 +120,10 @@ export class Player
 
     this.$vSpeed = Math.min(this.$vSpeed + this.vAcc, this.maxVSpeed);
 
-    const frameHSpeed = this.$isInAir
-      ? this.$hSpeed * this.hSpeedAirTimeCoeff
-      : this.$hSpeed;
+    const frameHSpeed =
+      (this.$isInAir ? this.$hSpeed * this.hSpeedAirTimeCoeff : this.$hSpeed) +
+      this.$punchH;
+    this.$punchH = 0;
 
     let newPosX = this.positioned.posX + frameHSpeed;
     let newPosY = this.positioned.posY + this.$vSpeed;
@@ -238,7 +247,7 @@ export class Player
   }
 }
 
-export class DummyBullet extends Prop implements IDrawable {
+export class DummyBullet extends Prop implements IDrawable, IDamaging, IMoving {
   positioned = { posX: 100, posY: 100 };
   drawable = {
     animationCode: "bullet",
@@ -256,14 +265,17 @@ export class DummyBullet extends Prop implements IDrawable {
         this.scene.destroyPropAction(this.ID);
     },
   };
-
-  private movingTickSpeed = 50;
+  damaging = { damage: 10 };
+  moving = {
+    speedH: 50,
+    speedV: 0,
+  };
 
   createdOn: number;
 
   onCreated = (tickNum: number) => {
     this.createdOn = tickNum;
-    if (this.drawable.facing == "left") this.movingTickSpeed *= -1;
+    if (this.drawable.facing == "left") this.moving.speedH *= -1;
   };
 
   onTick = (tickNum: number) => {
@@ -272,11 +284,11 @@ export class DummyBullet extends Prop implements IDrawable {
       this.scene.getLayoutAt(this.positioned.posX, this.positioned.posY)
         .solidity == "solid" ||
       this.scene.getLayoutAt(
-        this.positioned.posX + this.movingTickSpeed / 2,
+        this.positioned.posX + this.moving.speedH / 2,
         this.positioned.posY
       ).solidity == "solid" ||
       this.scene.getLayoutAt(
-        this.positioned.posX + this.movingTickSpeed,
+        this.positioned.posX + this.moving.speedH,
         this.positioned.posY
       ).solidity == "solid"
     ) {
@@ -287,7 +299,7 @@ export class DummyBullet extends Prop implements IDrawable {
       name: "positioned",
       newValue: {
         ...this.positioned,
-        posX: (this.positioned.posX += this.movingTickSpeed),
+        posX: (this.positioned.posX += this.moving.speedH),
       },
     });
   };
@@ -295,6 +307,8 @@ export class DummyBullet extends Prop implements IDrawable {
   constructor(scene: IScene) {
     super(scene);
   }
+  speedH: number;
+  speedV: number;
 }
 
 export class Crate extends Prop implements IDamageable, IDrawable {
