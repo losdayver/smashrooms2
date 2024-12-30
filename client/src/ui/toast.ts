@@ -1,11 +1,12 @@
 import { NotificationTypesExt } from "../../../types/messages";
 import { iconRoute } from "../routes.js";
 
-const toastIconMap: Partial<Record<NotificationTypesExt, string>> = {
+const toastIconMap: Record<NotificationTypesExt, string> = {
   info: "info.png",
   warning: "warning.png",
   connected: "connected.png",
   disconnected: "disconnected.png",
+  music: "music.png",
 };
 
 export class Toast {

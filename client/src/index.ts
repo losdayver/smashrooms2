@@ -5,6 +5,7 @@ import {
   IServerSceneMetaMessageExt,
 } from "../../types/messages";
 import { StageExt } from "../../types/stage";
+import { AudioManager } from "./audio/audioManager.js";
 import { Client } from "./client/client.js";
 import { EaselManager } from "./easel/easelManager.js";
 import { stagesRoute } from "./routes.js";
@@ -72,6 +73,7 @@ const tempTopLevelFunction = async () => {
   regForm.addEventListener("submit", (event) => {
     event.preventDefault();
     client.connectByClientName(clientNameInput.value);
+    audio.startSoundtrack("iceworld");
   });
 
   document.addEventListener(
@@ -101,6 +103,11 @@ const tempTopLevelFunction = async () => {
     },
     false
   );
+
+  const audio = new AudioManager();
+  audio.on("onStartedSoundtrack", "toast", (data) => {
+    toast.notify(`smsh2 OST — ${data.name}`, "music");
+  });
 };
 
 tempTopLevelFunction();

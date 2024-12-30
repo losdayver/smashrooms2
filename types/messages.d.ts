@@ -57,7 +57,8 @@ export type NotificationTypesExt =
   | "info"
   | "warning"
   | "connected"
-  | "disconnected";
+  | "disconnected"
+  | "music";
 
 export interface IGenericMessageExt {
   name: string;
