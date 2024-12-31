@@ -8,10 +8,11 @@ import {
   IClientSceneMetaMessageExt,
 } from "../../../types/messages";
 import { PropIDExt } from "../../../types/sceneTypes";
+import { FocusManager, IFocusable } from "../focus/focusManager.js";
 import { EventEmitter, IEventEmitterPublicInterface } from "../utils.js";
 
 export class Client
-  implements IEventEmitterPublicInterface<IMessageExt["name"]>
+  implements IEventEmitterPublicInterface<IMessageExt["name"]>, IFocusable
 {
   private socket: WebSocket;
   private ID: PropIDExt;
@@ -25,6 +26,28 @@ export class Client
   ) => this.eventEmitter.on(eventName, callbackID, callback);
   off = (eventName: IMessageExt["name"], callbackID: string) =>
     this.eventEmitter.off(eventName, callbackID);
+
+  private focusManager: FocusManager;
+  getFocusTag = () => "client";
+  onFocusReceiveKey: IFocusable["onFocusReceiveKey"] = (e, status) => {
+    if (e.repeat) return;
+    if (status == "down") {
+      if (e.code == "ArrowRight") this.sendInput("right", "pressed");
+      else if (e.code == "ArrowLeft") this.sendInput("left", "pressed");
+      if (e.code == "ArrowUp") this.sendInput("jump", "pressed");
+      else if (e.code == "ArrowDown") this.sendInput("duck", "pressed");
+      if (e.code == "Space") this.sendInput("fire", "pressed");
+      else if (e.code == "KeyT") this.focusManager.setFocus("chat");
+    } else {
+      if (e.code == "ArrowRight") this.sendInput("right", "released");
+      else if (e.code == "ArrowLeft") this.sendInput("left", "released");
+      if (e.code == "ArrowUp") this.sendInput("jump", "released");
+      else if (e.code == "ArrowDown") this.sendInput("duck", "released");
+    }
+  };
+  onFocusRegistered: IFocusable["onFocusRegistered"] = (focusManager) => {
+    this.focusManager = focusManager;
+  };
 
   private socketSend = <T extends object>(data: T) =>
     this.socket.send(JSON.stringify(data));

@@ -8,6 +8,7 @@ import { StageExt } from "../../types/stage";
 import { AudioManager } from "./audio/audioManager.js";
 import { Client } from "./client/client.js";
 import { EaselManager } from "./easel/easelManager.js";
+import { FocusManager } from "./focus/focusManager.js";
 import { stagesRoute } from "./routes.js";
 import { Chat } from "./ui/chat.js";
 import { Toast } from "./ui/toast.js";
@@ -16,9 +17,21 @@ const tempTopLevelFunction = async () => {
   // todo this function is certified spaghetti fest. Needs some kind of architecture pattern
   const client = new Client(`ws://${window.location.hostname}:5889`);
 
+  const chat = new Chat(
+    document.querySelector(".chat-container"),
+    client.sendChatMessage
+  );
+
   client.on("connRes", "main", (data: IConnectResponseMessageExt) => {
     if (data.status == "allowed") regModal.style.display = "none";
     client.getSceneMeta();
+    focus.register(chat);
+    audio.startSoundtrack("iceworld");
+  });
+
+  const audio = new AudioManager();
+  audio.on("onStartedSoundtrack", "toast", (data) => {
+    toast.notify(`smsh2 OST — ${data.name}`, "music");
   });
 
   const toast = new Toast(document.querySelector(".toast-container"));
@@ -30,11 +43,6 @@ const tempTopLevelFunction = async () => {
       toast.notify("successfully connected!", "info");
     else toast.notify("failed to connect!", "warning");
   });
-
-  const chat = new Chat(
-    document.querySelector(".chat-container"),
-    client.sendChatMessage
-  );
 
   client.on("serverChat", "chat", (data: IServerChatMessageExt) => {
     chat.receiveMessage(data.sender, data.message);
@@ -73,41 +81,11 @@ const tempTopLevelFunction = async () => {
   regForm.addEventListener("submit", (event) => {
     event.preventDefault();
     client.connectByClientName(clientNameInput.value);
-    audio.startSoundtrack("iceworld");
   });
 
-  document.addEventListener(
-    "keydown",
-    (e) => {
-      if (e.repeat) return;
-      const status = "pressed";
-      if (e.code == "ArrowRight") client.sendInput("right", status);
-      else if (e.code == "ArrowLeft") client.sendInput("left", status);
-      if (e.code == "ArrowUp") client.sendInput("jump", status);
-      else if (e.code == "ArrowDown") client.sendInput("duck", status);
-
-      if (e.code == "Space") client.sendInput("fire", status);
-    },
-    false
-  );
-
-  document.addEventListener(
-    "keyup",
-    (e) => {
-      if (e.repeat) return;
-      const status = "released";
-      if (e.code == "ArrowRight") client.sendInput("right", status);
-      else if (e.code == "ArrowLeft") client.sendInput("left", status);
-      if (e.code == "ArrowUp") client.sendInput("jump", status);
-      else if (e.code == "ArrowDown") client.sendInput("duck", status);
-    },
-    false
-  );
-
-  const audio = new AudioManager();
-  audio.on("onStartedSoundtrack", "toast", (data) => {
-    toast.notify(`smsh2 OST — ${data.name}`, "music");
-  });
+  const focus = new FocusManager();
+  focus.register(client);
+  focus.setFocus("client");
 };
 
 tempTopLevelFunction();

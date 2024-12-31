@@ -1,4 +1,6 @@
-export class Chat {
+import { FocusManager, IFocusable } from "../focus/focusManager.js";
+
+export class Chat implements IFocusable {
   private maxMessages: number;
   private maxMessageLength: number;
   private chatEl: HTMLDivElement;
@@ -19,8 +21,31 @@ export class Chat {
       this.messageContainer.children[0].remove();
   };
 
-  private sendButtonClickHandler = () => {
+  private onSendPressed: (message: string) => void;
+
+  private send = () => {
+    if (!this.input.value) return;
+    this.onSendPressed(this.input.value);
     this.input.value = "";
+    this.focusManager.setFocus("client");
+  };
+
+  private focusManager: FocusManager;
+  getFocusTag = () => "chat";
+  onFocusReceiveKey: IFocusable["onFocusReceiveKey"] = (e) => {
+    if (e.repeat) return;
+    if (e.code == "Escape") this.focusManager.setFocus("client");
+    if (e.code == "Enter") this.send();
+  };
+  onUnfocused = () => {
+    this.input.blur();
+  };
+  onFocused = () => {
+    this.input.focus();
+    setTimeout(() => (this.input.value = ""), 0); // todo fix bug with t appearing in input when switching to a chat via key T press
+  };
+  onFocusRegistered: IFocusable["onFocusRegistered"] = (focusManager) => {
+    this.focusManager = focusManager;
   };
 
   constructor(
@@ -30,11 +55,18 @@ export class Chat {
     maxMessageLength: number = 30
   ) {
     this.maxMessages = maxMessages;
+    this.onSendPressed = onSendPressed;
 
     const input = document.createElement("input") as HTMLInputElement;
     input.classList.add("chat__input", "smsh-input");
     input.type = "text";
     input.maxLength = maxMessageLength;
+    input.onclick = () => {
+      this.focusManager.setFocus(this.getFocusTag());
+    };
+    input.onblur = () => {
+      this.focusManager.setFocus("client");
+    };
     this.input = input;
 
     this.maxMessageLength = maxMessageLength;
@@ -43,10 +75,7 @@ export class Chat {
     submit.innerHTML = "Send";
     submit.classList.add("chat__submit", "smsh-button");
 
-    submit.addEventListener("click", () => {
-      onSendPressed(input.value);
-      this.sendButtonClickHandler();
-    });
+    submit.addEventListener("click", this.send);
 
     const controls = document.createElement("div") as HTMLDivElement;
 
