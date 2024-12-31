@@ -32,7 +32,7 @@ By default, the application operates on two TCP ports: `5889` and `5890`. Port 5
 
 This project is licensed under the terms of the GNU General Public License (GPL) v3.0. 
 You can freely redistribute and modify this software under the terms of the GPL. 
-For more details, please see the LICENSE.md file included in this repository.
+For more details, please see the LICENSE.txt file included in this repository.
 
 ## Copyright
 
