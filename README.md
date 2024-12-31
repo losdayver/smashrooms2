@@ -32,4 +32,4 @@ For more details, please see the LICENSE.md file included in this repository.
 
 ## Copyright
 
-Copyright (C) 2024 Oleg Zhmelev
+Copyright © 2024 Oleg Zhmelev
