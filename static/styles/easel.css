@@ -43,11 +43,9 @@
 
 @keyframes hit__keyframes {
   0% {
-    filter: sepia(1) hue-rotate(-50deg) saturate(5);
-    transform: scale(1.2, 1.2);
+    filter: sepia(1) hue-rotate(-50deg) saturate(10);
   }
   100% {
     filter: none;
-    transform: none;
   }
 }
