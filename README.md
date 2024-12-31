@@ -4,7 +4,7 @@
 
 🚧🏗️ **Under construction** 👷🚧
 
-## Agenda
+## Overview
 
 This is a passion project of mine that began as a straightforward university assignment for my networking class (you can check it out here: https://github.com/losdayver/Internet-Battle).
 
@@ -24,4 +24,12 @@ To deploy the application, simply run the `deploy.bash` script, which will autom
 
 By default, the application operates on two TCP ports: `5889` and `5890`. Port 5889 is utilized for WebSocket connections, while port 5890 is used for serving static content. You can access the application user interface at http://127.0.0.1:5890.
 
-**Enjoy!**
+## License
+
+This project is licensed under the terms of the GNU General Public License (GPL) v3.0. 
+You can freely redistribute and modify this software under the terms of the GPL. 
+For more details, please see the LICENSE.md file included in this repository.
+
+## Copyright
+
+Copyright (C) 2024 Oleg Zhmelev
