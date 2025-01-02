@@ -2,7 +2,7 @@ import {
   ClientActionCodesExt,
   ClientActionStatusExt,
 } from "../../../../types/messages";
-import { Prop } from "./props";
+import { Prop } from "./prop";
 import { IScene } from "./sceneTypes";
 import {
   ICollidableExt,

@@ -13,7 +13,7 @@ import {
   ISpawnPropEvent,
 } from "./sceneTypes";
 import { doBenchmark, Mutex } from "./../../utils";
-import { Prop, propsMap } from "./props";
+import { Prop } from "./prop";
 import { IControlled, IPositioned, IProp, PropBehaviours } from "./propTypes";
 import { IAnimationExt, PropIDExt } from "../../../../types/sceneTypes";
 import { StageExt } from "../../../../types/stage";
@@ -268,7 +268,7 @@ export class Scene implements IScene {
   };
 
   private spawnPropHandler = (data: ISpawnPropEvent["data"]) => {
-    const propType = propsMap[data.propName];
+    const propType = this.propMap[data.propName];
     if (propType) {
       const prop = new propType(this) as Prop & PropBehaviours;
       if (data.behaviours) {
@@ -289,9 +289,9 @@ export class Scene implements IScene {
   private spawnControlledPropHandler = (
     data: ISpawnControlledPropEvent["data"]
   ) => {
-    const propType = propsMap[data.propName];
+    const propType = this.propMap[data.propName];
     if (propType) {
-      const prop = new propType(data.clientID, this) as IProp & PropBehaviours;
+      const prop = new propType(data.clientID, this);
       if (data.nameTag) prop.nameTagged = { tag: data.nameTag };
       if (prop.controlled) {
         this.propList.unshift(prop);
@@ -544,7 +544,13 @@ export class Scene implements IScene {
     return false;
   };
 
-  constructor(stage?: StageExt) {
+  propMap: Record<string, any>;
+
+  constructor(
+    propMap: Record<string, any>,
+    stage?: StageExt,
+    propFactoryMethod?: (scene: IScene, stage: StageExt) => void
+  ) {
     this.stage = stage;
     this.layoutLines = this.stage.layoutData.split(/\r\n|\r|\n/);
     this.internalEventHandlerMap = {
@@ -555,6 +561,8 @@ export class Scene implements IScene {
       clientAction: this.clientActionHandler,
       animateProp: this.animatePropHandler,
     };
+    this.propMap = propMap;
+    if (stage) propFactoryMethod?.(this, stage);
   }
 }
 
