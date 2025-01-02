@@ -2,15 +2,13 @@ import {
   IConnectResponseMessageExt,
   IServerChatMessageExt,
   IServerNotificationExt,
-  IServerSceneMetaMessageExt,
 } from "../../types/messages";
-import { StageExt } from "../../types/stage";
 import { AudioManager } from "./audio/audioManager.js";
 import { Client } from "./client/client.js";
 import { EaselManager } from "./easel/easelManager.js";
-import { FocusManager } from "./focus/focusManager.js";
+import { FocusManager, IFocusable } from "./focus/focusManager.js";
 import { Modal } from "./modal/modal.js";
-import { stagesRoute } from "./routes.js";
+import { repoRoute } from "./routes.js";
 import { Chat } from "./ui/chat.js";
 import { Toast } from "./ui/toast.js";
 
@@ -27,6 +25,7 @@ export class RegModal extends Modal {
     });
     this.onSubmit = onSubmit;
   }
+
   protected getContent = () => {
     const label = document.createElement("label");
 
@@ -54,20 +53,76 @@ export class RegModal extends Modal {
   };
 }
 
-const tempTopLevelFunction = async () => {
-  // todo this function is certified spaghetti fest. Needs some kind of architecture pattern
+// todo create unified menu modal factory
+export class GameMenuModal extends Modal implements IFocusable {
+  constructor(container: HTMLDivElement) {
+    super(container, {
+      title: "Menu",
+      width: 500,
+    });
+  }
+  private focusManager: FocusManager;
+
+  onClose = () => {
+    this.focusManager.setFocus("client");
+  };
+
+  getFocusTag = () => "menu";
+  onFocused = this.show;
+
+  onFocusReceiveKey: IFocusable["onFocusReceiveKey"] = (e, status) => {
+    if (e.repeat) return;
+    if (status == "down") {
+      if (e.code == "Escape") this.hide();
+    }
+  };
+
+  onFocusRegistered = (focusManager: FocusManager) => {
+    this.focusManager = focusManager;
+  };
+
+  protected getContent = () => {
+    const d = document;
+    const makeBtn = (text: string, onClick: () => void) => {
+      const button = d.createElement("button");
+      button.classList.add("smsh-button");
+      button.innerText = text;
+      button.onclick = onClick;
+      return button;
+    };
+    const options = d.createElement("div");
+    options.style.display = "flex";
+    options.style.flexDirection = "column";
+    options.style.gap = "8px";
+
+    options.append(
+      makeBtn("Controls", () => {}),
+      makeBtn("Visit repo", () => {
+        document.location = repoRoute;
+      }),
+      makeBtn("Exit game", () => (document.location = document.location)),
+      makeBtn("Close menu", this.hide)
+    );
+
+    return options;
+  };
+}
+
+const initGameLayout = async () => {
   const client = new Client(`ws://${window.location.hostname}:5889`);
 
   const chat = new Chat(
     document.querySelector(".chat-container"),
     client.sendChatMessage
   );
-
   client.on("connRes", "main", (data: IConnectResponseMessageExt) => {
     if (data.status == "allowed") regModal.hide();
     client.getSceneMeta();
     focus.register(chat);
     audio.startSoundtrack("iceworld");
+  });
+  client.on("serverChat", "chat", (data: IServerChatMessageExt) => {
+    chat.receiveMessage(data.sender, data.message);
   });
 
   const audio = new AudioManager();
@@ -85,47 +140,25 @@ const tempTopLevelFunction = async () => {
     else toast.notify("failed to connect!", "warning");
   });
 
-  client.on("serverChat", "chat", (data: IServerChatMessageExt) => {
-    chat.receiveMessage(data.sender, data.message);
-  });
-
   const easel = document.querySelector<HTMLDivElement>(".easel");
   const easelManager = new EaselManager(easel, client);
 
-  client.on(
-    "serverSceneMeta",
-    "easel",
-    async (data: IServerSceneMetaMessageExt) => {
-      const layoutString = (await fetch(
-        `${stagesRoute}${data.stageSystemName}/${data.stageSystemName}.layout`
-      )
-        .then((data) => data)
-        .then((data) => data.text())) as string;
-      const layoutMeta = (await fetch(
-        `${stagesRoute}${data.stageSystemName}/${data.stageSystemName}.meta.json`
-      )
-        .then((data) => data)
-        .then((data) => data.text())) as StageExt["meta"];
-      const stage: StageExt = {
-        layoutData: layoutString,
-        meta: layoutMeta,
-      };
+  const focus = new FocusManager();
+  focus.register(client);
+  client.on("connRes", "focus", (data: IConnectResponseMessageExt) => {
+    if (data.status == "allowed") focus.setFocus("client");
+  });
 
-      easelManager.constructStage(stage);
-    }
+  const menuModal = new GameMenuModal(
+    document.querySelector<HTMLDivElement>(".modal-container")
   );
+  focus.register(menuModal);
 
   const regModal = new RegModal(
     document.querySelector<HTMLDivElement>(".modal-container"),
-    (clientName: string) => {
-      client.connectByClientName(clientName);
-    }
+    (clientName: string) => client.connectByClientName(clientName)
   );
   regModal.show();
-
-  const focus = new FocusManager();
-  focus.register(client);
-  focus.setFocus("client");
 };
 
-tempTopLevelFunction();
+initGameLayout();

@@ -15,8 +15,8 @@ export class FocusManager {
     const newReceiver = this.registeredReceivers.get(tag);
     if (!newReceiver) return;
     this.getCurrent()?.onUnfocused?.();
-    this.currentFocusedTag = tag;
     newReceiver.onFocused?.();
+    this.currentFocusedTag = tag;
   };
   constructor() {
     document.addEventListener(

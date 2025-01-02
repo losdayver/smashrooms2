@@ -1,6 +1,7 @@
 import {
   IConnectResponseMessageExt,
   ISceneUpdatesMessageExt,
+  IServerSceneMetaMessageExt,
 } from "../../../types/messages";
 import {
   IBehaviouredPropExt,
@@ -12,6 +13,7 @@ import {
   backgroundRoute,
   layoutSpriteRoute,
   propSpriteRoute,
+  stagesRoute,
 } from "../routes.js";
 
 export class EaselManager {
@@ -120,8 +122,9 @@ export class EaselManager {
     if (data.anim) this.animateProps(data.anim);
   };
 
-  constructStage = (stage: StageExt) => {
-    const tileSize = 32; // todo define this somewhere
+  private constructStage = (stage: StageExt) => {
+    console.log(stage);
+    const tileSize = stage.meta.gridSize;
     this.layoutPivot = document.createElement("div") as HTMLDivElement;
     this.layoutPivot.style.position = "relative";
     this.stage = this.stage;
@@ -165,6 +168,28 @@ export class EaselManager {
     );
     client.on("scene", "easel", (data: ISceneUpdatesMessageExt) =>
       this.onSceneEventHandler(data.data)
+    );
+    client.on(
+      "serverSceneMeta",
+      "easel",
+      async (data: IServerSceneMetaMessageExt) => {
+        const layoutString = (await fetch(
+          `${stagesRoute}${data.stageSystemName}/${data.stageSystemName}.layout`
+        )
+          .then((data) => data)
+          .then((data) => data.text())) as string;
+        const layoutMeta = (await fetch(
+          `${stagesRoute}${data.stageSystemName}/${data.stageSystemName}.meta.json`
+        )
+          .then((data) => data)
+          .then((data) => data.json())) as StageExt["meta"];
+        const stage: StageExt = {
+          layoutData: layoutString,
+          meta: layoutMeta,
+        };
+
+        this.constructStage(stage);
+      }
     );
   }
 }

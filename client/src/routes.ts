@@ -4,3 +4,4 @@ export const iconRoute = "img/icons/";
 export const backgroundRoute = "img/background/";
 export const stagesRoute = "stages/";
 export const soundtrackRoute = "music/soundtrack/";
+export const repoRoute = "https://github.com/losdayver/smashrooms2";

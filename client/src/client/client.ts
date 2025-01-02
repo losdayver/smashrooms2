@@ -38,6 +38,7 @@ export class Client
       else if (e.code == "ArrowDown") this.sendInput("duck", "pressed");
       if (e.code == "Space") this.sendInput("fire", "pressed");
       else if (e.code == "KeyT") this.focusManager.setFocus("chat");
+      else if (e.code == "Escape") this.focusManager.setFocus("menu");
     } else {
       if (e.code == "ArrowRight") this.sendInput("right", "released");
       else if (e.code == "ArrowLeft") this.sendInput("left", "released");
@@ -49,14 +50,26 @@ export class Client
     this.focusManager = focusManager;
   };
 
+  private initSocket = () => {
+    this.socket = new WebSocket(this.connString);
+    this.socket.onmessage = this.onmessage;
+  };
+
   private socketSend = <T extends object>(data: T) =>
     this.socket.send(JSON.stringify(data));
 
-  connectByClientName = (clientName: string) =>
+  connectByClientName = (clientName: string) => {
+    if (
+      [WebSocket.CLOSED, WebSocket.CLOSING].includes(
+        this.socket.readyState as any
+      )
+    )
+      this.initSocket();
     this.socketSend({
       name: "conn",
       clientName: clientName,
     } satisfies IConnectMessageExt);
+  };
   sendInput = (code: ClientActionCodesExt, status: ClientActionStatusExt) =>
     this.socketSend({
       name: "clientAct",
@@ -87,7 +100,6 @@ export class Client
 
   constructor(connString: string) {
     this.connString = connString;
-    this.socket = new WebSocket(this.connString);
-    this.socket.onmessage = this.onmessage;
+    this.initSocket();
   }
 }

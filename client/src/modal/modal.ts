@@ -2,6 +2,7 @@ import { iconRoute } from "../routes.js";
 
 export abstract class Modal {
   protected abstract getContent: () => HTMLElement;
+  protected overlay: HTMLDivElement;
   protected container: HTMLDivElement;
   protected modal: HTMLDivElement;
   protected content: HTMLElement;
@@ -19,15 +20,24 @@ export abstract class Modal {
       this.isInit = true;
     }
     this.modal.classList.remove("modal--hidden");
+    this.overlay.classList.remove("modal__overlay--hidden");
   };
   hide = () => {
+    this.onClose();
     this.modal.classList.add("modal--hidden");
+    this.overlay.classList.add("modal__overlay--hidden");
   };
+
+  protected onClose = () => void 0;
 
   constructor(container: HTMLDivElement, props: IModalProps) {
     this.container = container;
-
     const d = document;
+
+    const overlay = d.createElement("div");
+    overlay.classList.add("modal__overlay", "modal__overlay--hidden");
+    this.overlay = overlay;
+
     const modal = d.createElement("div");
     modal.classList.add("modal", "modal--hidden");
 
@@ -59,7 +69,9 @@ export abstract class Modal {
     modal.append(controls, content);
     this.modal = modal;
 
-    container.append(modal);
+    overlay.append(modal);
+
+    container.append(overlay);
   }
 }
 
