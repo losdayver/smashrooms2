@@ -187,10 +187,6 @@ export class Scene implements IScene {
         );
     });
 
-    this.propList.forEach((prop) => {
-      if (prop.onTick) prop.onTick(this.tickNum);
-    });
-
     if (this.internalEventQueueMutex.value.length) {
       const unlock = await this.internalEventQueueMutex.acquire();
       try {
@@ -259,6 +255,11 @@ export class Scene implements IScene {
         }
       }
     }
+
+    this.propList.forEach((prop) => {
+      if (prop.onTick) prop.onTick(this.tickNum);
+    });
+
     this.$generateExternalEventBatch("all", "everyUpdate");
     this.tickNum++;
     this.$isProcessingTick = false;
@@ -338,8 +339,18 @@ export class Scene implements IScene {
     const prop = this.propList.find(
       (prop) => prop.controlled?.clientID == data.clientID
     ) as IProp & IControlled;
-    if (!prop) return;
-    prop.controlled.onReceive(data.code, data.status);
+    if (!prop) {
+      if (data.code == "revive") {
+        this.spawnControlledPropHandler({
+          // todo add test that this client is dead
+          clientID: data.clientID,
+          nameTag: data.nameTag,
+          posX: 100,
+          posY: 100,
+          propName: "player",
+        });
+      }
+    } else prop.controlled.onReceive(data.code, data.status);
   };
   private animatePropHandler = (data: IAnimatePropEvent["data"]) => {
     const prop = this.propList.find((prop) => prop.ID == data.ID) as IProp &
@@ -358,7 +369,12 @@ export class Scene implements IScene {
     );
   };
 
-  clientAction: IScene["clientAction"] = async (clientID, code, status?) => {
+  clientAction: IScene["clientAction"] = async (
+    clientID,
+    code,
+    nameTag,
+    status?
+  ) => {
     const unlock = await this.internalEventQueueMutex.acquire();
     try {
       this.internalEventQueueMutex.value.unshift({
@@ -366,6 +382,7 @@ export class Scene implements IScene {
         data: {
           clientID,
           code,
+          nameTag,
           status,
         },
       });

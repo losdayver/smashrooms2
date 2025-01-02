@@ -15,7 +15,7 @@ export class Communicator implements ICommunicator {
   ) => {
     this.sendMessageToSubscriber(message, clientID || "all");
   };
-  processMessage: ICommunicator["processMessage"] = (from, msg) => {
+  processMessage: ICommunicator["processMessage"] = (from, msg, nameTag) => {
     if (msg.name == "connRes") {
       this.scene.connectAction(
         from,
@@ -23,7 +23,7 @@ export class Communicator implements ICommunicator {
       );
     } else if (msg.name == "disc") this.scene.disconnectAction(from);
     else if (msg.name == "clientAct")
-      this.scene.clientAction(from, msg.data.code, msg.data.status);
+      this.scene.clientAction(from, msg.data.code, nameTag, msg.data.status);
     else if (msg.name == "clientSceneMeta")
       this.sendMessageToSubscriber(this.scene.getSceneMeta(), from);
   };

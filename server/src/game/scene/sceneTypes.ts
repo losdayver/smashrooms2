@@ -32,6 +32,7 @@ export interface ISceneActions {
   clientAction: (
     clientID: string,
     code: ClientActionCodesExt,
+    nameTag: string,
     status?: ClientActionStatusExt
   ) => void | Promise<void>;
   connectAction: (clientID: string, nameTag?: string) => void | Promise<void>;
@@ -98,6 +99,7 @@ export interface IClientActionEvent {
     clientID: ClientID;
     code: ClientActionCodesExt;
     status?: ClientActionStatusExt;
+    nameTag?: string;
   };
 }
 

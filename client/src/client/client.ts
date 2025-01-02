@@ -37,6 +37,7 @@ export class Client
       if (e.code == "ArrowUp") this.sendInput("jump", "pressed");
       else if (e.code == "ArrowDown") this.sendInput("duck", "pressed");
       if (e.code == "Space") this.sendInput("fire", "pressed");
+      if (e.code == "KeyR") this.sendInput("revive", "pressed");
       else if (e.code == "KeyT") this.focusManager.setFocus("chat");
       else if (e.code == "Escape") this.focusManager.setFocus("menu");
     } else {

@@ -18,7 +18,8 @@ export interface ICommunicator extends ISceneSubscriber {
       | IDisconnectMessageExt
       | IClientActionMessageExt
       | IGenericMessageExt
-      | IClientSceneMetaMessageExt
+      | IClientSceneMetaMessageExt,
+    clientName?: string
   ) => void;
   processMessageSync: (msg: IClientSceneMetaMessageExt) => any;
   subscribe: (communicatorSubscriber: ICommunicatorSubscriber) => void;

@@ -155,8 +155,10 @@ export class WSSocketServer implements ISocketServer {
     message: IGenericMessageExt
   ) => {
     let clientID: ClientID;
+    let currentClinet: IWSClient;
     for (const [ID, client] of this.clientMap.entries())
       if (clientSocket == client.socket) {
+        currentClinet = client;
         clientID = ID;
         break;
       }
@@ -169,7 +171,8 @@ export class WSSocketServer implements ISocketServer {
       );
       return;
     }
-    this.communicator.processMessage(clientID, message);
+
+    this.communicator.processMessage(clientID, message, currentClinet.name);
   };
 
   private messageResolveMap: Partial<

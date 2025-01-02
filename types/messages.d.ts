@@ -84,5 +84,11 @@ export interface IClientActionMessageExt extends IGenericMessageExt {
     status: ClientActionStatusExt;
   };
 }
-export type ClientActionCodesExt = "left" | "right" | "jump" | "fire" | "duck";
+export type ClientActionCodesExt =
+  | "left"
+  | "right"
+  | "jump"
+  | "fire"
+  | "duck"
+  | "revive";
 export type ClientActionStatusExt = "pressed" | "released";
