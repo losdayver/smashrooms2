@@ -3,6 +3,7 @@ export interface LayoutMetaExt {
   stageSystemName: string;
   gridSize: number;
   author?: string;
+  /** anything implementation specific goes here */ extra: any;
 }
 
 export interface StageExt {

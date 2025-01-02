@@ -7,25 +7,13 @@ import {
   IMoving,
   INameTagged,
   IProp,
+  ISpawner,
   PropBehaviours,
 } from "./propTypes";
-import { randomUUID } from "crypto";
 import { IScene } from "./sceneTypes";
-import { getRandomBetween } from "../../utils";
-
-export abstract class Prop implements IProp {
-  ID: string;
-  scene: IScene;
-  onCreated?: IProp["onCreated"];
-  onTick?: IProp["onTick"];
-  constructor(scene: IScene, behaviourPresets?: PropBehaviours) {
-    this.ID = randomUUID();
-    this.scene = scene;
-    Object.entries(behaviourPresets ?? {}).map(
-      ([key, value]) => (this[key] = value)
-    );
-  }
-}
+import { getRandomBetween, RecursivePartial } from "../../utils";
+import { Prop } from "./prop";
+import { StageExt } from "../../../../types/stage";
 
 export class Player
   extends Prop
@@ -86,7 +74,7 @@ export class Player
       }
     },
   };
-  positioned = { posX: 100, posY: 100 };
+  positioned;
   nameTagged = { tag: "player" };
   drawable = {
     animationCode: "playerIdle",
@@ -353,8 +341,36 @@ export class Crate extends Prop implements IDamageable, IDrawable {
   }
 }
 
-export const propsMap = {
+export class PlayerSpawner extends Prop implements ISpawner {
+  spawner = { propName: "player" };
+  positioned;
+
+  constructor(scene: IScene, behaviourPresets?: PropBehaviours) {
+    super(scene, behaviourPresets);
+  }
+}
+
+export const smshPropMap = {
   player: Player,
   crate: Crate,
   bullet: DummyBullet,
+  playerSpawner: PlayerSpawner,
+} as const;
+
+export const smshPropFactory: (scene: IScene, stage: StageExt) => void = (
+  scene,
+  stage
+) => {
+  const preload = (stage.meta.extra as IStageMetaExtra)?.preload;
+  if (!preload) return;
+  for (const p of preload) {
+    scene.spawnPropAction(p.name, p.behaviours);
+  }
 };
+
+interface IStageMetaExtra {
+  preload: {
+    name: keyof typeof smshPropMap;
+    behaviours?: RecursivePartial<PropBehaviours>;
+  }[];
+}
