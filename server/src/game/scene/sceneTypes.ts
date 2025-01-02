@@ -73,7 +73,8 @@ export interface ISpawnControlledPropEvent {
     posY: number;
     propName: string;
     clientID: ClientID;
-    nameTag?: string;
+    type: "connected" | "revived";
+    nameTag: string;
   };
 }
 export interface IDestroyControlledPropEvent {

@@ -300,7 +300,12 @@ export class Scene implements IScene {
           { props: [prop], load: [prop] },
           prop as IProp & IPositioned
         );
-        this.sendNotification(`${data.nameTag} connected!`, "connected");
+        this.sendNotification(
+          `${data.nameTag} ${
+            data.type == "connected" ? "connected" : "is back"
+          }!`,
+          data.type
+        );
       }
     }
   };
@@ -344,12 +349,12 @@ export class Scene implements IScene {
     if (!prop) {
       if (data.code == "revive") {
         this.spawnControlledPropHandler({
-          // todo add test that this client is dead
           clientID: data.clientID,
           nameTag: data.nameTag,
           posX: 100,
           posY: 100,
           propName: "player",
+          type: "revived",
         });
       }
     } else prop.controlled.onReceive(data.code, data.status);
@@ -392,7 +397,7 @@ export class Scene implements IScene {
       unlock();
     }
   };
-  connectAction: IScene["connectAction"] = async (clientID, nameTag?) => {
+  connectAction: IScene["connectAction"] = async (clientID, nameTag) => {
     const unlock = await this.internalEventQueueMutex.acquire();
     try {
       const event = {
@@ -402,8 +407,10 @@ export class Scene implements IScene {
           posX: 0,
           posY: 0,
           propName: "player",
+          nameTag,
+          type: "connected",
         },
-      } as ISpawnControlledPropEvent;
+      } satisfies ISpawnControlledPropEvent;
       if (nameTag) event.data.nameTag = nameTag;
       this.internalEventQueueMutex.value.unshift(event);
     } finally {

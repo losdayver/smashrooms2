@@ -94,6 +94,20 @@ export class WSSocketServer implements ISocketServer {
         clientSocket.close();
         return;
       }
+      if (!message.clientName) {
+        wslogSend(
+          clientSocket,
+          {
+            name: "connRes",
+            status: "restricted",
+            cause: "name not provided",
+          } satisfies IConnectResponseMessageExt,
+          `sockets rejected client connection. name was not provided`,
+          "warning"
+        );
+        clientSocket.close();
+        return;
+      }
     }
 
     const clientID = randomUUID();
