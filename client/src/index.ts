@@ -117,10 +117,12 @@ const initGameLayout = async () => {
     client.sendChatMessage
   );
   client.on("connRes", "main", (data: IConnectResponseMessageExt) => {
-    if (data.status == "allowed") regModal.hide();
-    client.getSceneMeta();
-    focus.register(chat);
-    audio.startSoundtrack("iceworld");
+    if (data.status == "allowed") {
+      regModal.hide();
+      client.getSceneMeta();
+      focus.register(chat);
+      audio.startSoundtrack("iceworld");
+    }
   });
   client.on("serverChat", "chat", (data: IServerChatMessageExt) => {
     chat.receiveMessage(data.sender, data.message);

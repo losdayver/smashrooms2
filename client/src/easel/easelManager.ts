@@ -23,6 +23,8 @@ export class EaselManager {
   private propList: IEaselProp[] = [];
   private stage: StageExt;
   client: Client;
+  private clientPropNameTag: string;
+  private clientPropID: string;
 
   private loadProp = (prop: IBehaviouredPropExt) => {
     const img = document.createElement("img");
@@ -50,6 +52,11 @@ export class EaselManager {
       lastMoved: new Date(),
     } satisfies IEaselProp;
     this.propList.push(easelProp);
+
+    if (!this.clientPropID) {
+      if (prop.nameTagged && prop.nameTagged.tag == this.clientPropNameTag)
+        this.clientPropID = prop.ID;
+    }
   };
 
   private updateProps = (update: ISceneUpdatesMessageData["update"]) => {
@@ -112,7 +119,11 @@ export class EaselManager {
     }
   };
 
-  private onConnectHandler = (status: boolean) => {};
+  private onConnectHandler = (data: IConnectResponseMessageExt) => {
+    if (data.status == "allowed") {
+      this.clientPropNameTag = data.nameTag;
+    }
+  };
   private onSceneEventHandler = (data: ISceneUpdatesMessageData) => {
     data.load?.forEach((prop) => {
       if (prop.drawable) this.loadProp(prop);
@@ -123,7 +134,6 @@ export class EaselManager {
   };
 
   private constructStage = (stage: StageExt) => {
-    console.log(stage);
     const tileSize = stage.meta.gridSize;
     this.layoutPivot = document.createElement("div") as HTMLDivElement;
     this.layoutPivot.style.position = "relative";
@@ -164,7 +174,7 @@ export class EaselManager {
     this.client = client;
 
     client.on("connRes", "easel", (data: IConnectResponseMessageExt) =>
-      this.onConnectHandler(data.status == "allowed")
+      this.onConnectHandler(data)
     );
     client.on("scene", "easel", (data: ISceneUpdatesMessageExt) =>
       this.onSceneEventHandler(data.data)
