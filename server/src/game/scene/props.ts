@@ -54,6 +54,9 @@ export class Player
             },
           });
         } else if (code == "fire") {
+          if (this.scene.tickNum - this.startedFiringOnTick >= this.fireDelay) {
+            this.startedFiringOnTick = this.scene.tickNum;
+          }
           this.firing = true;
         } else if (code == "jump" && !this.$isInAir) {
           this.$vSpeed = -this.jumpSpeed;
@@ -109,7 +112,10 @@ export class Player
   private jumpSpeed = 22;
 
   private firing = false;
-  private fireDelay = 3;
+  private fireDelay = 6;
+  private startedFiringOnTick = 0;
+
+  private healing = 0.5;
 
   private isAlreadyDead = false;
 
@@ -244,13 +250,18 @@ export class Player
   onTick: Prop["onTick"] = (tick) => {
     this.doSpriteChange();
     this.doLayoutPhysics();
-    if (this.firing && tick % this.fireDelay == 0) {
+    if (
+      this.firing &&
+      (tick - this.startedFiringOnTick) % this.fireDelay == 0
+    ) {
       this.fireBullet();
     }
     if (this.damageable.health <= 0 && !this.isAlreadyDead) {
       this.isAlreadyDead = true;
       this.scene.destroyPropAction(this.ID);
       this.scene.sendNotification(`${this.nameTagged.tag} died`, "dead");
+    } else {
+      this.damageable.health += this.healing;
     }
   };
 
@@ -286,7 +297,7 @@ export class DummyBullet extends Prop implements IDrawable, IDamaging, IMoving {
         this.scene.destroyPropAction(this.ID);
     },
   };
-  damaging = { damage: 10 };
+  damaging = { damage: 40 };
   moving = {
     speedH: 32,
     speedV: 0,

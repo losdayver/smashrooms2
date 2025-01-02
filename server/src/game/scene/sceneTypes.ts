@@ -26,6 +26,7 @@ export interface IScene extends ISceneActions {
     type?: NotificationTypesExt,
     target?: ClientID | "all"
   ) => void;
+  readonly tickNum: number;
 }
 
 export interface ISceneActions {

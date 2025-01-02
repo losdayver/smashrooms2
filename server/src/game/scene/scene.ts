@@ -42,7 +42,7 @@ export class Scene implements IScene {
     IInternalEvent["name"],
     (data: any) => void
   >;
-  private tickNum = 0;
+  tickNum = 0;
   private stage: StageExt;
   private layoutLines: string[];
 
