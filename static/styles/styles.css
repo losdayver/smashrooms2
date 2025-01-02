@@ -1,5 +1,6 @@
 html,
 body {
+  --font-family: "Comic Sans MS", "Comic Sans", sans-serif;
   margin: 0;
   padding: 0;
   font-family: "Comic Sans MS", "Comic Sans", sans-serif;
