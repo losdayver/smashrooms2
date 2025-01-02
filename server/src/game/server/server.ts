@@ -3,7 +3,7 @@ import { config } from "../../config";
 import { severityLog } from "../../utils";
 import { Communicator } from "../communicator/communicator";
 import { ICommunicator } from "../communicator/communicatorTypes";
-import { propMap } from "../scene/smshProps";
+import { smshPropFactory, smshPropMap } from "../scene/smshProps";
 import { Scene } from "../scene/scene";
 import { IScene } from "../scene/sceneTypes";
 import { WSSocketServer } from "../sockets/sockets";
@@ -34,7 +34,7 @@ export class Server {
 
 export const getWSTestingServer = (port: number) => {
   severityLog(`starting server on port ${port}`);
-  const scene = new Scene(propMap, getStageFS("testing"));
+  const scene = new Scene(smshPropMap, getStageFS("testing"), smshPropFactory);
   const communicator = new Communicator(scene);
   const wsServer = new WSSocketServer(communicator, port);
   return new Server(wsServer, communicator, scene);

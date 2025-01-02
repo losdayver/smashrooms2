@@ -7,11 +7,13 @@ import {
   IMoving,
   INameTagged,
   IProp,
+  ISpawner,
   PropBehaviours,
 } from "./propTypes";
 import { IScene } from "./sceneTypes";
-import { getRandomBetween } from "../../utils";
+import { getRandomBetween, RecursivePartial } from "../../utils";
 import { Prop } from "./prop";
+import { StageExt } from "../../../../types/stage";
 
 export class Player
   extends Prop
@@ -72,7 +74,7 @@ export class Player
       }
     },
   };
-  positioned = { posX: 100, posY: 100 };
+  positioned;
   nameTagged = { tag: "player" };
   drawable = {
     animationCode: "playerIdle",
@@ -339,8 +341,36 @@ export class Crate extends Prop implements IDamageable, IDrawable {
   }
 }
 
-export const propMap = {
+export class PlayerSpawner extends Prop implements ISpawner {
+  spawner = { propName: "player" };
+  positioned;
+
+  constructor(scene: IScene, behaviourPresets?: PropBehaviours) {
+    super(scene, behaviourPresets);
+  }
+}
+
+export const smshPropMap = {
   player: Player,
   crate: Crate,
   bullet: DummyBullet,
+  playerSpawner: PlayerSpawner,
+} as const;
+
+export const smshPropFactory: (scene: IScene, stage: StageExt) => void = (
+  scene,
+  stage
+) => {
+  const preload = (stage.meta.extra as IStageMetaExtra)?.preload;
+  if (!preload) return;
+  for (const p of preload) {
+    scene.spawnPropAction(p.name, p.behaviours);
+  }
 };
+
+interface IStageMetaExtra {
+  preload: {
+    name: keyof typeof smshPropMap;
+    behaviours?: RecursivePartial<PropBehaviours>;
+  }[];
+}

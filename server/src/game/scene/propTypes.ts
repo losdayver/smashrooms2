@@ -23,7 +23,8 @@ export type PropBehaviours = Partial<
     IDamageable &
     IDamaging &
     INameTagged &
-    IMoving
+    IMoving &
+    ISpawner
 >;
 
 export interface IProp extends IPropExt {
@@ -36,6 +37,12 @@ export interface IMoving {
   moving: {
     speedH: number;
     speedV: number;
+  };
+}
+
+export interface ISpawner extends IPositioned {
+  spawner: {
+    propName: string;
   };
 }
 

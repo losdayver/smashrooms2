@@ -292,6 +292,11 @@ export class Scene implements IScene {
     const propType = this.propMap[data.propName];
     if (propType) {
       const prop = new propType(data.clientID, this);
+      const spawners =
+        this.propList.filter((prop) => prop.spawner?.propName == "player") ??
+        [];
+      const spawner = spawners[Math.floor(Math.random() * spawners.length)];
+      if (spawner) prop.positioned = spawner.positioned;
       if (data.nameTag) prop.nameTagged = { tag: data.nameTag };
       if (prop.controlled) {
         this.propList.unshift(prop);

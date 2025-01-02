@@ -2,5 +2,45 @@
   "stageName": "testing",
   "stageSystemName": "testing",
   "gridSize": 32,
-  "author": "losdayver"
+  "author": "losdayver",
+  "extra": {
+    "preload": [
+      {
+        "name": "playerSpawner",
+        "behaviours": {
+          "positioned": {
+            "posX": 160,
+            "posY": 160
+          }
+        }
+      },
+      {
+        "name": "playerSpawner",
+        "behaviours": {
+          "positioned": {
+            "posX": 1408,
+            "posY": 64
+          }
+        }
+      },
+      {
+        "name": "playerSpawner",
+        "behaviours": {
+          "positioned": {
+            "posX": 1344,
+            "posY": 512
+          }
+        }
+      },
+      {
+        "name": "playerSpawner",
+        "behaviours": {
+          "positioned": {
+            "posX": 448,
+            "posY": 768
+          }
+        }
+      }
+    ]
+  }
 }
