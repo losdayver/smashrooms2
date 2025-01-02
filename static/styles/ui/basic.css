@@ -12,7 +12,7 @@
 
 .smsh-input {
   padding: 0.2em 0.5em;
-  font-family: "Comic Sans MS", "Comic Sans", cursive;
+  font-family: "Comic Sans MS", "Comic Sans", sans-serif;
   font-size: 1em;
   line-height: 1.5em;
 
@@ -32,7 +32,7 @@
 
 .smsh-button {
   padding: 0.2em 0.5em;
-  font-family: "Comic Sans MS", "Comic Sans", cursive;
+  font-family: "Comic Sans MS", "Comic Sans", sans-serif;
   font-size: 1em;
   line-height: 1.5em;
 
