@@ -11,6 +11,7 @@ import {
 } from "./propTypes";
 import { randomUUID } from "crypto";
 import { IScene } from "./sceneTypes";
+import { getRandomBetween } from "../../utils";
 
 export abstract class Prop implements IProp {
   ID: string;
@@ -77,6 +78,7 @@ export class Player
     onCollide: (prop: Prop & PropBehaviours) => {
       if (prop.damaging && prop.collidable.colGroup != this.ID) {
         if (prop.moving) this.$punchH = 2 * Math.sign(prop.moving.speedH);
+        this.damageable.health -= prop.damaging.damage;
         this.scene.animatePropAction(this.ID, "hit");
       }
     },
@@ -109,11 +111,13 @@ export class Player
   private firing = false;
   private fireDelay = 3;
 
+  private isAlreadyDead = false;
+
   fireBullet = () => {
     this.scene.spawnPropAction("bullet", {
       positioned: {
         posX: this.positioned.posX,
-        posY: this.positioned.posY + 40,
+        posY: this.positioned.posY + getRandomBetween(30, 40),
       },
       drawable: {
         facing: this.drawable.facing,
@@ -242,6 +246,10 @@ export class Player
     this.doLayoutPhysics();
     if (this.firing && tick % this.fireDelay == 0) {
       this.fireBullet();
+    }
+    if (this.damageable.health <= 0 && !this.isAlreadyDead) {
+      this.isAlreadyDead = true;
+      this.scene.destroyPropAction(this.ID);
     }
   };
 

@@ -338,7 +338,8 @@ export class Scene implements IScene {
     const prop = this.propList.find(
       (prop) => prop.controlled?.clientID == data.clientID
     ) as IProp & IControlled;
-    prop.controlled.onReceive?.(data.code, data.status);
+    if (!prop) return;
+    prop.controlled.onReceive(data.code, data.status);
   };
   private animatePropHandler = (data: IAnimatePropEvent["data"]) => {
     const prop = this.propList.find((prop) => prop.ID == data.ID) as IProp &

@@ -79,3 +79,6 @@ export const doBenchmark = () => {
   const start = new Date().getTime();
   return () => new Date().getTime() - start;
 };
+export const getRandomBetween = (min: number, max: number) => {
+  return Math.random() * (max - min) + min;
+};
