@@ -16,6 +16,7 @@ export abstract class Prop implements IProp {
   ID: string;
   scene: IScene;
   onCreated?: IProp["onCreated"];
+  onTick?: IProp["onTick"];
   constructor(scene: IScene, behaviourPresets?: PropBehaviours) {
     this.ID = randomUUID();
     this.scene = scene;
@@ -52,18 +53,7 @@ export class Player
             },
           });
         } else if (code == "fire") {
-          this.scene.spawnPropAction("bullet", {
-            positioned: {
-              posX: this.positioned.posX,
-              posY: this.positioned.posY + 32,
-            },
-            drawable: {
-              facing: this.drawable.facing,
-            },
-            collidable: {
-              colGroup: this.ID,
-            },
-          });
+          this.firing = true;
         } else if (code == "jump" && !this.$isInAir) {
           this.$vSpeed = -this.jumpSpeed;
         } else if (code == "duck") {
@@ -74,6 +64,7 @@ export class Player
       } else {
         if (code == "right" && this.$hSpeed > 0) this.$hSpeed = 0;
         else if (code == "left" && this.$hSpeed < 0) this.$hSpeed = 0;
+        else if (code == "fire") this.firing = false;
       }
     },
   };
@@ -114,6 +105,24 @@ export class Player
   private maxVSpeed = 20;
   private vAcc = 1.5;
   private jumpSpeed = 22;
+
+  private firing = false;
+  private fireDelay = 3;
+
+  fireBullet = () => {
+    this.scene.spawnPropAction("bullet", {
+      positioned: {
+        posX: this.positioned.posX,
+        posY: this.positioned.posY + 40,
+      },
+      drawable: {
+        facing: this.drawable.facing,
+      },
+      collidable: {
+        colGroup: this.ID,
+      },
+    });
+  };
 
   doLayoutPhysics = () => {
     this.$lastVSpeed = this.$vSpeed;
@@ -228,12 +237,15 @@ export class Player
     }
   };
 
-  onTick = () => {
+  onTick: Prop["onTick"] = (tick) => {
     this.doSpriteChange();
     this.doLayoutPhysics();
+    if (this.firing && tick % this.fireDelay == 0) {
+      this.fireBullet();
+    }
   };
 
-  onCreated = (tickNum: number) => {
+  onCreated = () => {
     this.collidable.colGroup = this.ID;
   };
 
@@ -252,14 +264,14 @@ export class DummyBullet extends Prop implements IDrawable, IDamaging, IMoving {
   drawable = {
     animationCode: "bullet",
     facing: "right",
-    pivotOffsetX: 16,
-    pivotOffsetY: 16,
+    pivotOffsetX: 8,
+    pivotOffsetY: 8,
   };
   collidable: ICollidable["collidable"] = {
     sizeX: 8,
     sizeY: 8,
-    offsetX: -16,
-    offsetY: -16,
+    offsetX: -8,
+    offsetY: -8,
     onCollide: (prop: Prop & PropBehaviours) => {
       if (prop.collidable.colGroup != this.collidable.colGroup)
         this.scene.destroyPropAction(this.ID);
@@ -280,7 +292,7 @@ export class DummyBullet extends Prop implements IDrawable, IDamaging, IMoving {
 
   onTick = (tickNum: number) => {
     if (
-      tickNum - this.createdOn > 20 ||
+      tickNum - this.createdOn > 30 ||
       this.scene.getLayoutAt(this.positioned.posX, this.positioned.posY)
         .solidity == "solid"
     ) {

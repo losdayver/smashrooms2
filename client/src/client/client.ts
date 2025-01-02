@@ -44,6 +44,7 @@ export class Client
       else if (e.code == "ArrowLeft") this.sendInput("left", "released");
       if (e.code == "ArrowUp") this.sendInput("jump", "released");
       else if (e.code == "ArrowDown") this.sendInput("duck", "released");
+      if (e.code == "Space") this.sendInput("fire", "released");
     }
   };
   onFocusRegistered: IFocusable["onFocusRegistered"] = (focusManager) => {
