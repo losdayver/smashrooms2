@@ -250,6 +250,7 @@ export class Player
     if (this.damageable.health <= 0 && !this.isAlreadyDead) {
       this.isAlreadyDead = true;
       this.scene.destroyPropAction(this.ID);
+      this.scene.sendNotification(`${this.nameTagged.tag} died`, "dead");
     }
   };
 

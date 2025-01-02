@@ -57,6 +57,8 @@ export class Scene implements IScene {
     partialChunkUpdate: Partial<ChunkUpdate>,
     positionedProp: IProp & IPositioned
   ) => {
+    if (!positionedProp) return;
+
     const coordID = `${Math.floor(
       positionedProp.positioned.posX / this.chunkSize
     )}_${Math.floor(positionedProp.positioned.posY / this.chunkSize)}`;
@@ -187,10 +189,6 @@ export class Scene implements IScene {
         );
     });
 
-    this.propList.forEach((prop) => {
-      if (prop.onTick) prop.onTick(this.tickNum);
-    });
-
     if (this.internalEventQueueMutex.value.length) {
       const unlock = await this.internalEventQueueMutex.acquire();
       try {
@@ -259,6 +257,11 @@ export class Scene implements IScene {
         }
       }
     }
+
+    this.propList.forEach((prop) => {
+      if (prop.onTick) prop.onTick(this.tickNum);
+    });
+
     this.$generateExternalEventBatch("all", "everyUpdate");
     this.tickNum++;
     this.$isProcessingTick = false;
@@ -297,7 +300,12 @@ export class Scene implements IScene {
           { props: [prop], load: [prop] },
           prop as IProp & IPositioned
         );
-        this.sendNotification(`${data.nameTag} connected!`, "connected");
+        this.sendNotification(
+          `${data.nameTag} ${
+            data.type == "connected" ? "connected" : "is back"
+          }!`,
+          data.type
+        );
       }
     }
   };
@@ -338,8 +346,18 @@ export class Scene implements IScene {
     const prop = this.propList.find(
       (prop) => prop.controlled?.clientID == data.clientID
     ) as IProp & IControlled;
-    if (!prop) return;
-    prop.controlled.onReceive(data.code, data.status);
+    if (!prop) {
+      if (data.code == "revive") {
+        this.spawnControlledPropHandler({
+          clientID: data.clientID,
+          nameTag: data.nameTag,
+          posX: 100,
+          posY: 100,
+          propName: "player",
+          type: "revived",
+        });
+      }
+    } else prop.controlled.onReceive(data.code, data.status);
   };
   private animatePropHandler = (data: IAnimatePropEvent["data"]) => {
     const prop = this.propList.find((prop) => prop.ID == data.ID) as IProp &
@@ -358,7 +376,12 @@ export class Scene implements IScene {
     );
   };
 
-  clientAction: IScene["clientAction"] = async (clientID, code, status?) => {
+  clientAction: IScene["clientAction"] = async (
+    clientID,
+    code,
+    nameTag,
+    status?
+  ) => {
     const unlock = await this.internalEventQueueMutex.acquire();
     try {
       this.internalEventQueueMutex.value.unshift({
@@ -366,6 +389,7 @@ export class Scene implements IScene {
         data: {
           clientID,
           code,
+          nameTag,
           status,
         },
       });
@@ -373,7 +397,7 @@ export class Scene implements IScene {
       unlock();
     }
   };
-  connectAction: IScene["connectAction"] = async (clientID, nameTag?) => {
+  connectAction: IScene["connectAction"] = async (clientID, nameTag) => {
     const unlock = await this.internalEventQueueMutex.acquire();
     try {
       const event = {
@@ -383,8 +407,10 @@ export class Scene implements IScene {
           posX: 0,
           posY: 0,
           propName: "player",
+          nameTag,
+          type: "connected",
         },
-      } as ISpawnControlledPropEvent;
+      } satisfies ISpawnControlledPropEvent;
       if (nameTag) event.data.nameTag = nameTag;
       this.internalEventQueueMutex.value.unshift(event);
     } finally {

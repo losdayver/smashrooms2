@@ -32,6 +32,7 @@ export interface ISceneActions {
   clientAction: (
     clientID: string,
     code: ClientActionCodesExt,
+    nameTag: string,
     status?: ClientActionStatusExt
   ) => void | Promise<void>;
   connectAction: (clientID: string, nameTag?: string) => void | Promise<void>;
@@ -72,7 +73,8 @@ export interface ISpawnControlledPropEvent {
     posY: number;
     propName: string;
     clientID: ClientID;
-    nameTag?: string;
+    type: "connected" | "revived";
+    nameTag: string;
   };
 }
 export interface IDestroyControlledPropEvent {
@@ -98,6 +100,7 @@ export interface IClientActionEvent {
     clientID: ClientID;
     code: ClientActionCodesExt;
     status?: ClientActionStatusExt;
+    nameTag?: string;
   };
 }
 

@@ -58,7 +58,9 @@ export type NotificationTypesExt =
   | "warning"
   | "connected"
   | "disconnected"
-  | "music";
+  | "music"
+  | "dead"
+  | "revived";
 
 export interface IGenericMessageExt {
   name: string;
@@ -84,5 +86,11 @@ export interface IClientActionMessageExt extends IGenericMessageExt {
     status: ClientActionStatusExt;
   };
 }
-export type ClientActionCodesExt = "left" | "right" | "jump" | "fire" | "duck";
+export type ClientActionCodesExt =
+  | "left"
+  | "right"
+  | "jump"
+  | "fire"
+  | "duck"
+  | "revive";
 export type ClientActionStatusExt = "pressed" | "released";

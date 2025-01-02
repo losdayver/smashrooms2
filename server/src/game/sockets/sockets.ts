@@ -94,6 +94,20 @@ export class WSSocketServer implements ISocketServer {
         clientSocket.close();
         return;
       }
+      if (!message.clientName) {
+        wslogSend(
+          clientSocket,
+          {
+            name: "connRes",
+            status: "restricted",
+            cause: "name not provided",
+          } satisfies IConnectResponseMessageExt,
+          `sockets rejected client connection. name was not provided`,
+          "warning"
+        );
+        clientSocket.close();
+        return;
+      }
     }
 
     const clientID = randomUUID();
@@ -155,8 +169,10 @@ export class WSSocketServer implements ISocketServer {
     message: IGenericMessageExt
   ) => {
     let clientID: ClientID;
+    let currentClinet: IWSClient;
     for (const [ID, client] of this.clientMap.entries())
       if (clientSocket == client.socket) {
+        currentClinet = client;
         clientID = ID;
         break;
       }
@@ -169,7 +185,8 @@ export class WSSocketServer implements ISocketServer {
       );
       return;
     }
-    this.communicator.processMessage(clientID, message);
+
+    this.communicator.processMessage(clientID, message, currentClinet.name);
   };
 
   private messageResolveMap: Partial<
