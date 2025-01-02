@@ -55,3 +55,28 @@
   transform: translate(0, 2px);
   background: #9b9b9b;
 }
+
+.shmsh-form {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+}
+
+.shmsh-form > label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.shmsh-form > label input {
+  width: var(--input-width, 50%);
+}
+
+.shmsh-form > label + .shmsh-form > label {
+  margin-top: 8px;
+}
+
+.shmsh-form > input[type="submit"] {
+  margin-top: 8px;
+  width: fit-content;
+}

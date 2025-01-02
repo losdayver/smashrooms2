@@ -1,3 +1,4 @@
+import { EmptyModal } from "../modal/modal.js";
 import { Toast } from "./toast.js";
 
 const toastContainer = document.querySelector(
@@ -13,4 +14,23 @@ const toastButton = document.querySelector(
 const toast = new Toast(toastContainer);
 toastButton.onclick = () => {
   toast.notify(toastInput.value, "info");
+};
+
+const modalShowButton = document.querySelector(
+  "#library-modal-show-button"
+) as HTMLButtonElement;
+const modalContainer = document.querySelector(
+  "#library-modal-container"
+) as HTMLDivElement;
+
+const modal = new EmptyModal(modalContainer, {
+  height: 700,
+  width: 500,
+  title: "settings",
+});
+
+modal.show();
+
+modalShowButton.onclick = () => {
+  modal.show();
 };

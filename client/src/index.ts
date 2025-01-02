@@ -9,9 +9,50 @@ import { AudioManager } from "./audio/audioManager.js";
 import { Client } from "./client/client.js";
 import { EaselManager } from "./easel/easelManager.js";
 import { FocusManager } from "./focus/focusManager.js";
+import { Modal } from "./modal/modal.js";
 import { stagesRoute } from "./routes.js";
 import { Chat } from "./ui/chat.js";
 import { Toast } from "./ui/toast.js";
+
+export class RegModal extends Modal {
+  private onSubmit: (clientName: string) => void;
+  constructor(
+    container: HTMLDivElement,
+    onSubmit: (clientName: string) => void
+  ) {
+    super(container, {
+      title: "Enter game",
+      width: 500,
+      noCloseButton: true,
+    });
+    this.onSubmit = onSubmit;
+  }
+  protected getContent = () => {
+    const label = document.createElement("label");
+
+    const input = document.createElement("input");
+    input.classList.add("smsh-input");
+    input.type = "text";
+
+    label.append("Enter player name:", input);
+
+    const submit = document.createElement("input");
+    submit.classList.add("smsh-button");
+    submit.type = "submit";
+
+    const form = document.createElement("form");
+
+    form.append(label, submit);
+
+    form.addEventListener("submit", (event) => {
+      event.preventDefault();
+      this.onSubmit(input.value);
+    });
+    form.classList.add("shmsh-form");
+
+    return form;
+  };
+}
 
 const tempTopLevelFunction = async () => {
   // todo this function is certified spaghetti fest. Needs some kind of architecture pattern
@@ -23,7 +64,7 @@ const tempTopLevelFunction = async () => {
   );
 
   client.on("connRes", "main", (data: IConnectResponseMessageExt) => {
-    if (data.status == "allowed") regModal.style.display = "none";
+    if (data.status == "allowed") regModal.hide();
     client.getSceneMeta();
     focus.register(chat);
     audio.startSoundtrack("iceworld");
@@ -74,14 +115,13 @@ const tempTopLevelFunction = async () => {
     }
   );
 
-  const regModal = document.querySelector<HTMLDivElement>(".reg-modal");
-  const clientNameInput =
-    regModal.querySelector<HTMLInputElement>(".client-name-input");
-  const regForm = regModal.querySelector("form");
-  regForm.addEventListener("submit", (event) => {
-    event.preventDefault();
-    client.connectByClientName(clientNameInput.value);
-  });
+  const regModal = new RegModal(
+    document.querySelector<HTMLDivElement>(".modal-container"),
+    (clientName: string) => {
+      client.connectByClientName(clientName);
+    }
+  );
+  regModal.show();
 
   const focus = new FocusManager();
   focus.register(client);
