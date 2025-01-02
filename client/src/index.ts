@@ -38,6 +38,7 @@ export class RegModal extends Modal {
     const submit = document.createElement("input");
     submit.classList.add("smsh-button");
     submit.type = "submit";
+    submit.value = "Connect";
 
     const form = document.createElement("form");
 
@@ -156,7 +157,9 @@ const initGameLayout = async () => {
 
   const regModal = new RegModal(
     document.querySelector<HTMLDivElement>(".modal-container"),
-    (clientName: string) => client.connectByClientName(clientName)
+    (clientName: string) => {
+      if (clientName.trim()) client.connectByClientName(clientName);
+    }
   );
   regModal.show();
 };
