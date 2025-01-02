@@ -57,6 +57,8 @@ export class Scene implements IScene {
     partialChunkUpdate: Partial<ChunkUpdate>,
     positionedProp: IProp & IPositioned
   ) => {
+    if (!positionedProp) return;
+
     const coordID = `${Math.floor(
       positionedProp.positioned.posX / this.chunkSize
     )}_${Math.floor(positionedProp.positioned.posY / this.chunkSize)}`;
