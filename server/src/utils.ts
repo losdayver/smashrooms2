@@ -82,3 +82,5 @@ export const doBenchmark = () => {
 export const getRandomBetween = (min: number, max: number) => {
   return Math.random() * (max - min) + min;
 };
+export const pickRandom = (array: any[]) =>
+  array[Math.floor(Math.random() * array.length)];

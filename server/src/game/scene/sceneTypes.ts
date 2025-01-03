@@ -61,8 +61,6 @@ export type IInternalEvent =
 export interface ISpawnPropEvent {
   name: "spawnProp";
   data: {
-    posX: number;
-    posY: number;
     propName: string;
     behaviours?: RecursivePartial<PropBehaviours>;
   };

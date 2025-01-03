@@ -7,13 +7,19 @@ import {
   IMoving,
   INameTagged,
   IProp,
-  ISpawner,
   PropBehaviours,
 } from "./propTypes";
 import { IScene } from "./sceneTypes";
-import { getRandomBetween, RecursivePartial } from "../../utils";
+import { getRandomBetween, pickRandom, RecursivePartial } from "../../utils";
 import { Prop } from "./prop";
 import { StageExt } from "../../../../types/stage";
+import {
+  ItemProp,
+  ItemSpawner,
+  PistolItem,
+  PlayerSpawner,
+  ShotgunItem,
+} from "./shmsSpawners";
 
 export class Player
   extends Prop
@@ -71,6 +77,11 @@ export class Player
         if (prop.moving) this.$punchH = 2 * Math.sign(prop.moving.speedH);
         this.damageable.health -= prop.damaging.damage;
         this.scene.animatePropAction(this.ID, "hit");
+      } else if (prop instanceof ItemProp) {
+        (prop.hasMaster.master as ItemSpawner).pickedOnTick =
+          this.scene.tickNum;
+        (prop.hasMaster.master as ItemSpawner).isEmpty = true;
+        this.scene.destroyPropAction(prop.ID);
       }
     },
   };
@@ -341,20 +352,14 @@ export class Crate extends Prop implements IDamageable, IDrawable {
   }
 }
 
-export class PlayerSpawner extends Prop implements ISpawner {
-  spawner = { propName: "player" };
-  positioned;
-
-  constructor(scene: IScene, behaviourPresets?: PropBehaviours) {
-    super(scene, behaviourPresets);
-  }
-}
-
 export const smshPropMap = {
   player: Player,
   crate: Crate,
   bullet: DummyBullet,
   playerSpawner: PlayerSpawner,
+  itemSpawner: ItemSpawner,
+  shotgunItem: ShotgunItem,
+  pistolItem: PistolItem,
 } as const;
 
 export const smshPropFactory: (scene: IScene, stage: StageExt) => void = (

@@ -13,6 +13,7 @@ import {
   IPropExt,
   INameTaggedExt,
   IPositionedExt,
+  IHasMasterExt,
 } from "../../../../types/sceneTypes";
 
 export type PropBehaviours = Partial<
@@ -24,7 +25,8 @@ export type PropBehaviours = Partial<
     IDamaging &
     INameTagged &
     IMoving &
-    ISpawner
+    ISpawner &
+    IHasMasterExt
 >;
 
 export interface IProp extends IPropExt {
@@ -40,9 +42,9 @@ export interface IMoving {
   };
 }
 
-export interface ISpawner extends IPositioned {
+export interface ISpawner<T extends string = string> extends IPositioned {
   spawner: {
-    propName: string;
+    props: T[];
   };
 }
 

@@ -49,3 +49,51 @@
     filter: none;
   }
 }
+
+.easel__prop-sprite--wobble {
+  animation: wobble__keyframes 0.5s linear infinite;
+}
+
+@keyframes wobble__keyframes {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(2);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.easel__prop-sprite--spinY {
+  animation: spinY__keyframes 0.5s linear infinite;
+}
+
+@keyframes spinY__keyframes {
+  0% {
+    transform: rotateY(0deg);
+  }
+  50% {
+    transform: rotateY(360deg);
+  }
+  100% {
+    transform: rotateY(0deg);
+  }
+}
+
+.easel__prop-sprite--itemSpin {
+  animation: itemSpin__keyframes 2s linear infinite;
+}
+
+@keyframes itemSpin__keyframes {
+  0% {
+    transform: rotateY(0deg) translate(0, 4px) scale(1);
+  }
+  50% {
+    transform: rotateY(360deg) translate(0, 0) scale(1.5);
+  }
+  100% {
+    transform: rotateY(0deg) translate(0, 4px) scale(1);
+  }
+}

@@ -70,6 +70,12 @@ export interface INameTaggedExt extends IDrawableExt {
   };
 }
 
+export interface IHasMasterExt {
+  hasMaster: {
+    master: IPropExt;
+  };
+}
+
 export type PropBehavioursExt = Partial<
   IPositionedExt &
     IControlledExt &

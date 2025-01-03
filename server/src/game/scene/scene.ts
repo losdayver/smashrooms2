@@ -12,7 +12,7 @@ import {
   ISpawnControlledPropEvent,
   ISpawnPropEvent,
 } from "./sceneTypes";
-import { doBenchmark, Mutex } from "./../../utils";
+import { doBenchmark, Mutex, pickRandom } from "./../../utils";
 import { Prop } from "./prop";
 import { IControlled, IPositioned, IProp, PropBehaviours } from "./propTypes";
 import { IAnimationExt, PropIDExt } from "../../../../types/sceneTypes";
@@ -189,18 +189,6 @@ export class Scene implements IScene {
         );
     });
 
-    if (this.internalEventQueueMutex.value.length) {
-      const unlock = await this.internalEventQueueMutex.acquire();
-      try {
-        while (this.internalEventQueueMutex.value.length) {
-          const event = this.internalEventQueueMutex.value.pop();
-          this.internalEventHandlerMap[event.name]?.(event.data);
-        }
-      } finally {
-        unlock();
-      }
-    }
-
     // collision detection
     const checkedCollisions: PropIDExt[] = [];
     for (const [coord, chunk] of Object.entries(this.$chunkedUpdates)) {
@@ -258,6 +246,18 @@ export class Scene implements IScene {
       }
     }
 
+    if (this.internalEventQueueMutex.value.length) {
+      const unlock = await this.internalEventQueueMutex.acquire();
+      try {
+        while (this.internalEventQueueMutex.value.length) {
+          const event = this.internalEventQueueMutex.value.pop();
+          this.internalEventHandlerMap[event.name]?.(event.data);
+        }
+      } finally {
+        unlock();
+      }
+    }
+
     this.propList.forEach((prop) => {
       if (prop.onTick) prop.onTick(this.tickNum);
     });
@@ -293,9 +293,10 @@ export class Scene implements IScene {
     if (propType) {
       const prop = new propType(data.clientID, this);
       const spawners =
-        this.propList.filter((prop) => prop.spawner?.propName == "player") ??
-        [];
-      const spawner = spawners[Math.floor(Math.random() * spawners.length)];
+        this.propList.filter((prop) =>
+          prop.spawner?.props.includes("player")
+        ) ?? [];
+      const spawner = pickRandom(spawners);
       if (spawner) prop.positioned = spawner.positioned;
       if (data.nameTag) prop.nameTagged = { tag: data.nameTag };
       if (prop.controlled) {
@@ -457,8 +458,6 @@ export class Scene implements IScene {
     const event = {
       name: "spawnProp",
       data: {
-        posX: 0,
-        posY: 0,
         propName,
         behaviours,
       },

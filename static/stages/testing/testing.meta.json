@@ -40,6 +40,18 @@
             "posY": 768
           }
         }
+      },
+      {
+        "name": "itemSpawner",
+        "behaviours": {
+          "positioned": {
+            "posX": 512,
+            "posY": 768
+          },
+          "spawner": {
+            "props": ["shotgunItem", "pistolItem"]
+          }
+        }
       }
     ]
   }
