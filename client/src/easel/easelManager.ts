@@ -105,9 +105,9 @@ export class EaselManager {
       const prop = this.propList.find((prop) => prop.ID == a.ID);
       if (prop) {
         const animClass = `easel__prop-sprite--${a.name}`;
-        prop.img.classList.remove(animClass);
+        prop.img.className = "";
         void prop.img.offsetWidth;
-        prop.img.classList.add(animClass);
+        prop.img.className = animClass;
       }
     }
   };
@@ -128,7 +128,7 @@ export class EaselManager {
 
     if (update.drawable.anim) {
       const animClass = `easel__prop-sprite--${update.drawable.anim}`;
-      easelProp.img.classList.add(animClass);
+      easelProp.img.className = animClass;
     }
   };
 
