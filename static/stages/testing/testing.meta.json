@@ -45,11 +45,35 @@
         "name": "itemSpawner",
         "behaviours": {
           "positioned": {
-            "posX": 512,
-            "posY": 768
-          },
-          "spawner": {
-            "props": ["shotgunItem", "pistolItem"]
+            "posX": 300,
+            "posY": 300
+          }
+        }
+      },
+      {
+        "name": "itemSpawner",
+        "behaviours": {
+          "positioned": {
+            "posX": 750,
+            "posY": 800
+          }
+        }
+      },
+      {
+        "name": "itemSpawner",
+        "behaviours": {
+          "positioned": {
+            "posX": 1760,
+            "posY": 160
+          }
+        }
+      },
+      {
+        "name": "itemSpawner",
+        "behaviours": {
+          "positioned": {
+            "posX": 1696,
+            "posY": 672
           }
         }
       }

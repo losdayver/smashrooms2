@@ -56,6 +56,7 @@ export interface ICollidableExt extends IPositionedExt {
 export interface IDamageableExt extends ICollidableExt {
   damageable: {
     health: number;
+    maxHealth: number;
   };
 }
 

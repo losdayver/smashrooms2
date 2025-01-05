@@ -3,7 +3,7 @@ import { pickRandom } from "../../utils";
 import { Prop } from "./prop";
 import { ICollidable, IDrawable, ISpawner, PropBehaviours } from "./propTypes";
 import { IScene } from "./sceneTypes";
-import { smshPropMap } from "./smshProps";
+import { Player, smshPropMap } from "./smshProps";
 
 export class PlayerSpawner extends Prop implements ItemSpawnerType {
   spawner: ItemSpawnerType["spawner"] = {
@@ -18,11 +18,11 @@ export class PlayerSpawner extends Prop implements ItemSpawnerType {
 
 export class ItemSpawner extends Prop implements ItemSpawnerType {
   spawner: ItemSpawnerType["spawner"] = {
-    props: ["shotgunItem", "pistolItem"],
+    props: ["shotgunItem", "pistolItem", "medikit"],
   };
   positioned;
 
-  spawnDelay = 120;
+  spawnDelay = 60;
   pickedOnTick = 0;
   isEmpty = true;
 
@@ -54,6 +54,8 @@ export abstract class ItemProp
   abstract collidable: ICollidable["collidable"];
   positioned;
   hasMaster: IHasMasterExt["hasMaster"];
+  abstract modifyPlayer: (player: Player) => void;
+  isPickedUp = false;
 
   constructor(scene: IScene, behaviourPresets?: PropBehaviours) {
     super(scene, behaviourPresets);
@@ -74,6 +76,9 @@ export class ShotgunItem extends ItemProp {
     offsetX: -16,
     offsetY: -16,
   };
+  modifyPlayer = (player: Player) => {
+    player.changeWeapon("shotgun");
+  };
 }
 export class PistolItem extends ItemProp {
   drawable = {
@@ -88,6 +93,32 @@ export class PistolItem extends ItemProp {
     sizeY: 32,
     offsetX: -16,
     offsetY: -16,
+  };
+  modifyPlayer = (player: Player) => {
+    player.changeWeapon("pistol");
+  };
+}
+
+export class MedikitItem extends ItemProp {
+  drawable = {
+    sprite: "medikit",
+    facing: "right",
+    offsetX: 16,
+    offsetY: 16,
+    anim: "itemSpin",
+  };
+  collidable: ICollidable["collidable"] = {
+    sizeX: 32,
+    sizeY: 32,
+    offsetX: -16,
+    offsetY: -16,
+  };
+  modifyPlayer = (player: Player) => {
+    this.scene.animatePropAction(player.ID, "heal");
+    player.damageable.health = Math.min(
+      player.damageable.health + 50,
+      player.damageable.maxHealth
+    );
   };
 }
 
