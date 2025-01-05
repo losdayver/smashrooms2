@@ -29,10 +29,10 @@ export class EaselManager {
   private loadProp = (prop: IBehaviouredPropExt) => {
     const img = document.createElement("img");
     const container = document.createElement("span");
-    img.src = `${propSpriteRoute}${prop.drawable.animationCode}.gif`;
+    img.src = `${propSpriteRoute}${prop.drawable.sprite}.gif`;
 
-    container.style.transform = `translate(${-prop.drawable
-      .pivotOffsetX}px, ${-prop.drawable.pivotOffsetY}px)`;
+    container.style.transform = `translate(${-prop.drawable.offsetX}px, ${-prop
+      .drawable.offsetY}px)`;
 
     container.setAttribute("tag", prop?.nameTagged?.tag ?? "");
 
@@ -51,6 +51,9 @@ export class EaselManager {
       img,
       lastMoved: new Date(),
     } satisfies IEaselProp;
+
+    this.processDrawable(easelProp, prop);
+
     this.propList.push(easelProp);
 
     if (!this.clientPropID) {
@@ -80,17 +83,7 @@ export class EaselManager {
 
         prop.lastMoved = dateMoved;
       }
-
-      if (changes.drawable) {
-        if (changes.drawable.animationCode)
-          prop.img.src = `${propSpriteRoute}${changes.drawable.animationCode}.gif`;
-
-        if (changes.drawable.facing) {
-          if (changes.drawable.facing == "left")
-            prop.img.style.transform = "scaleX(-1)";
-          else prop.img.style.transform = "";
-        }
-      }
+      this.processDrawable(prop, changes as any);
     });
   };
 
@@ -116,6 +109,26 @@ export class EaselManager {
         void prop.img.offsetWidth;
         prop.img.classList.add(animClass);
       }
+    }
+  };
+
+  private processDrawable = (
+    easelProp: IEaselProp,
+    update: IBehaviouredPropExt
+  ) => {
+    if (!update.drawable) return;
+    if (update.drawable.sprite)
+      easelProp.img.src = `${propSpriteRoute}${update.drawable.sprite}.gif`;
+
+    if (update.drawable.facing) {
+      if (update.drawable.facing == "left")
+        easelProp.img.style.transform = "scaleX(-1)";
+      else easelProp.img.style.transform = "";
+    }
+
+    if (update.drawable.anim) {
+      const animClass = `easel__prop-sprite--${update.drawable.anim}`;
+      easelProp.img.classList.add(animClass);
     }
   };
 

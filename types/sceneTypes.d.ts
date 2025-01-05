@@ -35,10 +35,11 @@ export interface IControlledExt {
 
 export interface IDrawableExt extends IPositionedExt {
   drawable: {
-    animationCode: string;
+    sprite: string;
     facing: "right" | "left" | string;
-    pivotOffsetX: number;
-    pivotOffsetY: number;
+    offsetX: number;
+    offsetY: number;
+    anim?: string;
   };
 }
 

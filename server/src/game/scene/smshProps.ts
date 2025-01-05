@@ -88,10 +88,10 @@ export class Player
   positioned;
   nameTagged = { tag: "player" };
   drawable = {
-    animationCode: "playerIdle",
+    sprite: "playerIdle",
     facing: "right",
-    pivotOffsetX: 16,
-    pivotOffsetY: 0,
+    offsetX: 16,
+    offsetY: 0,
   };
 
   private $hSpeed = 0;
@@ -240,7 +240,7 @@ export class Player
       this.scene.mutatePropBehaviourAction(this as IProp, {
         name: "drawable",
         newValue: {
-          animationCode: newState,
+          sprite: newState,
         },
       });
     }
@@ -281,10 +281,11 @@ export class Player
 export class DummyBullet extends Prop implements IDrawable, IDamaging, IMoving {
   positioned = { posX: 100, posY: 100 };
   drawable = {
-    animationCode: "bullet",
+    sprite: "bullet",
     facing: "right",
-    pivotOffsetX: 8,
-    pivotOffsetY: 8,
+    offsetX: 8,
+    offsetY: 8,
+    anim: "appear",
   };
   collidable: ICollidable["collidable"] = {
     sizeX: 8,
@@ -339,10 +340,10 @@ export class Crate extends Prop implements IDamageable, IDrawable {
   collidable = { sizeX: 64, sizeY: 64, offsetX: 0, offsetY: 0 };
   positioned;
   drawable = {
-    animationCode: "crate",
+    sprite: "crate",
     facing: "right",
-    pivotOffsetX: 0,
-    pivotOffsetY: 0,
+    offsetX: 0,
+    offsetY: 0,
   };
 
   onCreated = () => {};
