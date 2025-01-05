@@ -16,6 +16,7 @@ import { StageExt } from "../../../../types/stage";
 import {
   ItemProp,
   ItemSpawner,
+  MedikitItem,
   PistolItem,
   PlayerSpawner,
   ShotgunItem,
@@ -47,8 +48,11 @@ export class Player
               facing: "left",
             },
           });
-        } else if (code == "fire") {
-          if (this.scene.tickNum - this.startedFiringOnTick >= this.fireDelay) {
+        } else if (code == "fire" && this.currentWeapon != "none") {
+          if (
+            this.scene.tickNum - this.startedFiringOnTick >=
+            Player.weaponMap[this.currentWeapon].stats.delay
+          ) {
             this.startedFiringOnTick = this.scene.tickNum;
           }
           this.firing = true;
@@ -66,7 +70,7 @@ export class Player
       }
     },
   };
-  damageable = { health: 100 };
+  damageable = { health: 80, maxHealth: 80 };
   collidable: ICollidable["collidable"] = {
     sizeX: 32,
     sizeY: 64,
@@ -77,10 +81,12 @@ export class Player
         if (prop.moving) this.$punchH = 2 * Math.sign(prop.moving.speedH);
         this.damageable.health -= prop.damaging.damage;
         this.scene.animatePropAction(this.ID, "hit");
-      } else if (prop instanceof ItemProp) {
+      } else if (prop instanceof ItemProp && !prop.isPickedUp) {
         (prop.hasMaster.master as ItemSpawner).pickedOnTick =
           this.scene.tickNum;
         (prop.hasMaster.master as ItemSpawner).isEmpty = true;
+        prop.isPickedUp = true; // todo fix double
+        prop.modifyPlayer(this);
         this.scene.destroyPropAction(prop.ID);
       }
     },
@@ -110,27 +116,83 @@ export class Player
   private vAcc = 1.5;
   private jumpSpeed = 22;
 
-  private firing = false;
-  private fireDelay = 6;
-  private startedFiringOnTick = 0;
-
   private healing = 0.5;
 
   private isAlreadyDead = false;
 
+  private firing = false;
+  private startedFiringOnTick = 0;
+  private currentWeapon: keyof typeof Player.weaponMap = "none";
+  private ammo = 0;
+
+  static weaponMap: Record<
+    string,
+    {
+      stats?: { damage: number; delay: number; ammo: number };
+      onFire?: (player: any) => void;
+    }
+  > = {
+    // todo move these to item classes
+    none: {},
+    shotgun: {
+      stats: {
+        damage: 10,
+        delay: 10,
+        ammo: 20,
+      },
+      onFire: (player: any) => {
+        for (let i = -1; i < 2; i++)
+          player.scene.spawnPropAction("bullet", {
+            positioned: {
+              posX: player.positioned.posX,
+              posY: player.positioned.posY + 40,
+            },
+            drawable: {
+              facing: player.drawable.facing,
+            },
+            collidable: {
+              colGroup: player.ID,
+            },
+            moving: {
+              speedV: i * 4,
+            },
+          });
+      },
+    },
+    pistol: {
+      stats: {
+        damage: 10,
+        delay: 5,
+        ammo: 20,
+      },
+      onFire: (player: any) => {
+        player.scene.spawnPropAction("bullet", {
+          positioned: {
+            posX: player.positioned.posX,
+            posY: player.positioned.posY + 40,
+          },
+          drawable: {
+            facing: player.drawable.facing,
+          },
+          collidable: {
+            colGroup: player.ID,
+          },
+          moving: {
+            speedV: getRandomBetween(-3, 3),
+          },
+        });
+      },
+    },
+  };
+
+  changeWeapon = (weapon: keyof typeof Player.weaponMap) => {
+    this.currentWeapon = weapon;
+    this.ammo = Player.weaponMap[weapon].stats.ammo;
+  };
+
   fireBullet = () => {
-    this.scene.spawnPropAction("bullet", {
-      positioned: {
-        posX: this.positioned.posX,
-        posY: this.positioned.posY + getRandomBetween(30, 40),
-      },
-      drawable: {
-        facing: this.drawable.facing,
-      },
-      collidable: {
-        colGroup: this.ID,
-      },
-    });
+    if (this.currentWeapon == "none") return;
+    Player.weaponMap[this.currentWeapon].onFire(this);
   };
 
   doLayoutPhysics = () => {
@@ -251,7 +313,9 @@ export class Player
     this.doLayoutPhysics();
     if (
       this.firing &&
-      (tick - this.startedFiringOnTick) % this.fireDelay == 0
+      (tick - this.startedFiringOnTick) %
+        Player.weaponMap[this.currentWeapon].stats.delay ==
+        0
     ) {
       this.fireBullet();
     }
@@ -260,7 +324,10 @@ export class Player
       this.scene.destroyPropAction(this.ID);
       this.scene.sendNotification(`${this.nameTagged.tag} died`, "dead");
     } else {
-      this.damageable.health += this.healing;
+      this.damageable.health = Math.min(
+        this.damageable.health + this.healing,
+        this.damageable.maxHealth
+      );
     }
   };
 
@@ -324,6 +391,7 @@ export class DummyBullet extends Prop implements IDrawable, IDamaging, IMoving {
       newValue: {
         ...this.positioned,
         posX: (this.positioned.posX += this.moving.speedH),
+        posY: (this.positioned.posY += this.moving.speedV),
       },
     });
   };
@@ -331,12 +399,10 @@ export class DummyBullet extends Prop implements IDrawable, IDamaging, IMoving {
   constructor(scene: IScene) {
     super(scene);
   }
-  speedH: number;
-  speedV: number;
 }
 
 export class Crate extends Prop implements IDamageable, IDrawable {
-  damageable = { health: 10 };
+  damageable = { health: 10, maxHealth: 10 };
   collidable = { sizeX: 64, sizeY: 64, offsetX: 0, offsetY: 0 };
   positioned;
   drawable = {
@@ -361,6 +427,7 @@ export const smshPropMap = {
   itemSpawner: ItemSpawner,
   shotgunItem: ShotgunItem,
   pistolItem: PistolItem,
+  medikit: MedikitItem,
 } as const;
 
 export const smshPropFactory: (scene: IScene, stage: StageExt) => void = (
