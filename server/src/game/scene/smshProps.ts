@@ -364,7 +364,7 @@ export class DummyBullet extends Prop implements IDrawable, IDamaging, IMoving {
         this.scene.destroyPropAction(this.ID);
     },
   };
-  damaging = { damage: 40 };
+  damaging = { damage: 25 };
   moving = {
     speedH: 32,
     speedV: 0,
