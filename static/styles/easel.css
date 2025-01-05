@@ -88,12 +88,25 @@
 
 @keyframes itemSpin__keyframes {
   0% {
-    transform: rotateY(0deg) translate(0, 4px) scale(1);
+    transform: rotateY(0deg) translate(0, 0) scale(1.2);
   }
   50% {
-    transform: rotateY(360deg) translate(0, 0) scale(1.5);
+    transform: rotateY(360deg) translate(0, 2px) scale(1.5);
   }
   100% {
-    transform: rotateY(0deg) translate(0, 4px) scale(1);
+    transform: rotateY(0deg) translate(0, 0) scale(1.2);
+  }
+}
+
+.easel__prop-sprite--appear {
+  animation: appear__keyframes 80ms linear;
+}
+
+@keyframes appear__keyframes {
+  0% {
+    transform: scale(0.1);
+  }
+  100% {
+    transform: scale(1);
   }
 }

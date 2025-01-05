@@ -55,10 +55,6 @@ export abstract class ItemProp
   positioned;
   hasMaster: IHasMasterExt["hasMaster"];
 
-  onCreated = () => {
-    this.scene.animatePropAction(this.ID, "itemSpin");
-  };
-
   constructor(scene: IScene, behaviourPresets?: PropBehaviours) {
     super(scene, behaviourPresets);
   }
@@ -66,10 +62,11 @@ export abstract class ItemProp
 
 export class ShotgunItem extends ItemProp {
   drawable = {
-    animationCode: "shotgun",
+    sprite: "shotgun",
     facing: "right",
-    pivotOffsetX: 16,
-    pivotOffsetY: 16,
+    offsetX: 16,
+    offsetY: 16,
+    anim: "itemSpin",
   };
   collidable: ICollidable["collidable"] = {
     sizeX: 32,
@@ -80,10 +77,11 @@ export class ShotgunItem extends ItemProp {
 }
 export class PistolItem extends ItemProp {
   drawable = {
-    animationCode: "pistol",
+    sprite: "pistol",
     facing: "right",
-    pivotOffsetX: 16,
-    pivotOffsetY: 16,
+    offsetX: 16,
+    offsetY: 16,
+    anim: "itemSpin",
   };
   collidable: ICollidable["collidable"] = {
     sizeX: 32,
