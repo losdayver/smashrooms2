@@ -339,15 +339,21 @@ export class Player
     }
   };
 
+  private lastShotOn = 0;
+
   onTick: Prop["onTick"] = (tick) => {
     this.doSpriteChange();
     this.doLayoutPhysics();
     if (
       this.firing &&
+      (this.startedFiringOnTick - this.lastShotOn >
+        Player.weaponMap[this.currentWeapon].delay ||
+        tick - this.startedFiringOnTick > 0) &&
       (tick - this.startedFiringOnTick) %
         Player.weaponMap[this.currentWeapon].delay ==
         0
     ) {
+      this.lastShotOn = tick;
       this.fireBullet();
     }
     if (this.damageable.health <= 0 && !this.isAlreadyDead) {
@@ -489,15 +495,15 @@ export class Rocket extends Prop implements IDrawable, IDamaging, IMoving {
   drawable = {
     sprite: "rocket",
     facing: "right",
-    offsetX: 8,
-    offsetY: 8,
+    offsetX: 16,
+    offsetY: 16,
     anim: "appear",
   };
   collidable: ICollidable["collidable"] = {
     sizeX: 8,
     sizeY: 8,
-    offsetX: -8,
-    offsetY: -8,
+    offsetX: -16,
+    offsetY: -16,
     onCollide: (prop: Prop & PropBehaviours) => {
       if (prop.collidable.colGroup != this.collidable.colGroup)
         this.onExplode();

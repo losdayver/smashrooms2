@@ -78,8 +78,16 @@ export class GameMenuModal extends Modal implements IFocusable {
     }
   };
 
+  controlsModal;
+
   onFocusRegistered = (focusManager: FocusManager) => {
     this.focusManager = focusManager;
+
+    this.controlsModal = new ControlsModal(
+      document.querySelector<HTMLDivElement>(".modal-container"),
+      this
+    );
+    this.focusManager.register(this.controlsModal);
   };
 
   protected getContent = () => {
@@ -97,8 +105,12 @@ export class GameMenuModal extends Modal implements IFocusable {
     options.style.gap = "8px";
 
     options.append(
-      makeBtn("Controls", () => {}),
-      makeBtn("Visit repo", () => {
+      makeBtn("Controls", () => {
+        this.hide();
+        this.focusManager.setFocus("controls");
+        this.controlsModal.show();
+      }),
+      makeBtn("Github", () => {
         document.location = repoRoute;
       }),
       makeBtn("Exit game", () => (document.location = document.location)),
@@ -106,6 +118,58 @@ export class GameMenuModal extends Modal implements IFocusable {
     );
 
     return options;
+  };
+}
+
+export class ControlsModal extends Modal implements IFocusable {
+  constructor(container: HTMLDivElement, parent: Modal) {
+    super(container, {
+      title: "Controls",
+      width: 500,
+    });
+    this.parent = parent;
+  }
+  parent: Modal;
+  private focusManager: FocusManager;
+
+  onClose = () => {
+    this.focusManager.setFocus("menu");
+    this.parent.show();
+  };
+
+  getFocusTag = () => "controls";
+  onFocused = this.show;
+
+  onFocusReceiveKey: IFocusable["onFocusReceiveKey"] = (e, status) => {
+    if (e.repeat) return;
+    if (status == "down") {
+      if (e.code == "Escape") this.hide();
+    }
+  };
+
+  onFocusRegistered = (focusManager: FocusManager) => {
+    this.focusManager = focusManager;
+  };
+
+  protected getContent = () => {
+    const d = document;
+    const content = d.createElement("div");
+
+    content.innerHTML = `
+    <h3>Control Scheme:</h3>
+    <p><b>Arrows</b> - movement</p>
+    <p><b>Space</b> - fire</p>
+    <p><b>R</b> - respawn</p>
+    <p><b>T</b> - focus on chat</p>
+    <p><b>Escape</b> - open menu</p>
+    <br />
+    <h3>Tips and tricks:</h3>
+    <p>Pressing down arrow whilst standing on semi-solid platforms lets you fall through them</p>
+    <p>Quick tapping fire button does not let you fire faster. Just hold it down</p>
+    <p>You can mute music by right clicking the browser tab and choosing "mute" option</p>
+    `;
+
+    return content;
   };
 }
 
