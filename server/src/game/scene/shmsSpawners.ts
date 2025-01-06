@@ -18,7 +18,7 @@ export class PlayerSpawner extends Prop implements ItemSpawnerType {
 
 export class ItemSpawner extends Prop implements ItemSpawnerType {
   spawner: ItemSpawnerType["spawner"] = {
-    props: ["shotgunItem", "pistolItem", "medikit"],
+    props: ["shotgunItem", "pistolItem", "medikitItem", "bazookaItem"],
   };
   positioned;
 
@@ -96,6 +96,25 @@ export class PistolItem extends ItemProp {
   };
   modifyPlayer = (player: Player) => {
     player.changeWeapon("pistol");
+  };
+}
+
+export class BazookaItem extends ItemProp {
+  drawable = {
+    sprite: "bazooka",
+    facing: "right",
+    offsetX: 16,
+    offsetY: 16,
+    anim: "itemSpin",
+  };
+  collidable: ICollidable["collidable"] = {
+    sizeX: 32,
+    sizeY: 32,
+    offsetX: -16,
+    offsetY: -16,
+  };
+  modifyPlayer = (player: Player) => {
+    player.changeWeapon("bazooka");
   };
 }
 

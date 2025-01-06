@@ -14,6 +14,7 @@ import { getRandomBetween, pickRandom, RecursivePartial } from "../../utils";
 import { Prop } from "./prop";
 import { StageExt } from "../../../../types/stage";
 import {
+  BazookaItem,
   ItemProp,
   ItemSpawner,
   MedikitItem,
@@ -48,10 +49,10 @@ export class Player
               facing: "left",
             },
           });
-        } else if (code == "fire" && this.currentWeapon != "none") {
+        } else if (code == "fire" && this.currentWeapon) {
           if (
             this.scene.tickNum - this.startedFiringOnTick >=
-            Player.weaponMap[this.currentWeapon].stats.delay
+            Player.weaponMap[this.currentWeapon].delay
           ) {
             this.startedFiringOnTick = this.scene.tickNum;
           }
@@ -78,13 +79,16 @@ export class Player
     offsetY: 0,
     onCollide: (prop: Prop & PropBehaviours) => {
       if (prop.damaging && prop.collidable.colGroup != this.ID) {
+        console.log(prop.drawable.sprite);
         if (prop.moving) this.$punchH = 2 * Math.sign(prop.moving.speedH);
         this.damageable.health -= prop.damaging.damage;
         this.scene.animatePropAction(this.ID, "hit");
       } else if (prop instanceof ItemProp && !prop.isPickedUp) {
-        (prop.hasMaster.master as ItemSpawner).pickedOnTick =
-          this.scene.tickNum;
-        (prop.hasMaster.master as ItemSpawner).isEmpty = true;
+        if (prop.hasMaster) {
+          (prop.hasMaster.master as ItemSpawner).pickedOnTick =
+            this.scene.tickNum;
+          (prop.hasMaster.master as ItemSpawner).isEmpty = true;
+        }
         prop.isPickedUp = true; // todo fix double
         prop.modifyPlayer(this);
         this.scene.destroyPropAction(prop.ID);
@@ -122,24 +126,36 @@ export class Player
 
   private firing = false;
   private startedFiringOnTick = 0;
-  private currentWeapon: keyof typeof Player.weaponMap = "none";
+  private currentWeapon: keyof typeof Player.weaponMap = "fist";
   private ammo = 0;
 
   static weaponMap: Record<
     string,
     {
-      stats?: { damage: number; delay: number; ammo: number };
+      delay?: number;
       onFire?: (player: any) => void;
     }
   > = {
     // todo move these to item classes
-    none: {},
-    shotgun: {
-      stats: {
-        damage: 10,
-        delay: 10,
-        ammo: 20,
+    fist: {
+      delay: 10,
+      onFire: (player: any) => {
+        player.scene.spawnPropAction("fist", {
+          positioned: {
+            posX: player.positioned.posX,
+            posY: player.positioned.posY + 40,
+          },
+          drawable: {
+            facing: player.drawable.facing,
+          },
+          collidable: {
+            colGroup: player.ID,
+          },
+        });
       },
+    },
+    shotgun: {
+      delay: 10,
       onFire: (player: any) => {
         for (let i = -1; i < 2; i++)
           player.scene.spawnPropAction("bullet", {
@@ -160,11 +176,7 @@ export class Player
       },
     },
     pistol: {
-      stats: {
-        damage: 10,
-        delay: 5,
-        ammo: 20,
-      },
+      delay: 5,
       onFire: (player: any) => {
         player.scene.spawnPropAction("bullet", {
           positioned: {
@@ -183,15 +195,34 @@ export class Player
         });
       },
     },
+    bazooka: {
+      delay: 40,
+      onFire: (player: any) => {
+        player.scene.spawnPropAction("rocket", {
+          positioned: {
+            posX: player.positioned.posX,
+            posY: player.positioned.posY + 40,
+          },
+          drawable: {
+            facing: player.drawable.facing,
+          },
+          collidable: {
+            colGroup: player.ID,
+          },
+          moving: {
+            speedV: getRandomBetween(-1, 1),
+          },
+        });
+      },
+    },
   };
 
   changeWeapon = (weapon: keyof typeof Player.weaponMap) => {
     this.currentWeapon = weapon;
-    this.ammo = Player.weaponMap[weapon].stats.ammo;
   };
 
   fireBullet = () => {
-    if (this.currentWeapon == "none") return;
+    if (!this.currentWeapon) return;
     Player.weaponMap[this.currentWeapon].onFire(this);
   };
 
@@ -314,7 +345,7 @@ export class Player
     if (
       this.firing &&
       (tick - this.startedFiringOnTick) %
-        Player.weaponMap[this.currentWeapon].stats.delay ==
+        Player.weaponMap[this.currentWeapon].delay ==
         0
     ) {
       this.fireBullet();
@@ -345,8 +376,8 @@ export class Player
   }
 }
 
-export class DummyBullet extends Prop implements IDrawable, IDamaging, IMoving {
-  positioned = { posX: 100, posY: 100 };
+export class Bullet extends Prop implements IDrawable, IDamaging, IMoving {
+  positioned;
   drawable = {
     sprite: "bullet",
     facing: "right",
@@ -401,6 +432,154 @@ export class DummyBullet extends Prop implements IDrawable, IDamaging, IMoving {
   }
 }
 
+export class Fist extends Prop implements IDrawable, IDamaging, IMoving {
+  positioned;
+  drawable = {
+    sprite: "fist",
+    facing: "right",
+    offsetX: 32,
+    offsetY: 32,
+    anim: "appear",
+  };
+  collidable: ICollidable["collidable"] = {
+    sizeX: 8,
+    sizeY: 8,
+    offsetX: -32,
+    offsetY: -32,
+    onCollide: (prop: Prop & PropBehaviours) => {
+      if (prop.collidable.colGroup != this.collidable.colGroup)
+        this.scene.destroyPropAction(this.ID);
+    },
+  };
+  damaging = { damage: 10 };
+  moving = {
+    speedH: 16,
+    speedV: 0,
+  };
+
+  createdOn: number;
+
+  onCreated = (tickNum: number) => {
+    this.createdOn = tickNum;
+    if (this.drawable.facing == "left") this.moving.speedH *= -1;
+  };
+
+  onTick = (tickNum: number) => {
+    if (tickNum - this.createdOn > 2) {
+      this.scene.destroyPropAction(this.ID);
+      return;
+    }
+    this.scene.mutatePropBehaviourAction(this as Prop, {
+      name: "positioned",
+      newValue: {
+        ...this.positioned,
+        posX: (this.positioned.posX += this.moving.speedH),
+        posY: (this.positioned.posY += this.moving.speedV),
+      },
+    });
+  };
+
+  constructor(scene: IScene) {
+    super(scene);
+  }
+}
+
+export class Rocket extends Prop implements IDrawable, IDamaging, IMoving {
+  positioned;
+  drawable = {
+    sprite: "rocket",
+    facing: "right",
+    offsetX: 8,
+    offsetY: 8,
+    anim: "appear",
+  };
+  collidable: ICollidable["collidable"] = {
+    sizeX: 8,
+    sizeY: 8,
+    offsetX: -8,
+    offsetY: -8,
+    onCollide: (prop: Prop & PropBehaviours) => {
+      if (prop.collidable.colGroup != this.collidable.colGroup)
+        this.onExplode();
+    },
+  };
+  damaging = { damage: 40 };
+  moving = {
+    speedH: 25,
+    speedV: 0,
+  };
+
+  createdOn: number;
+  isExploded = false;
+
+  onExplode = () => {
+    if (this.isExploded) return;
+    this.isExploded = true;
+    this.scene.spawnPropAction("explosion", {
+      positioned: {
+        posX: this.positioned.posX,
+        posY: this.positioned.posY,
+      },
+    });
+    this.scene.destroyPropAction(this.ID);
+  };
+
+  onCreated = (tickNum: number) => {
+    this.createdOn = tickNum;
+    if (this.drawable.facing == "left") this.moving.speedH *= -1;
+  };
+
+  onTick = () => {
+    if (
+      this.scene.getLayoutAt(this.positioned.posX, this.positioned.posY)
+        .solidity == "solid"
+    ) {
+      this.onExplode();
+      return;
+    }
+    this.scene.mutatePropBehaviourAction(this as Prop, {
+      name: "positioned",
+      newValue: {
+        ...this.positioned,
+        posX: (this.positioned.posX += this.moving.speedH),
+        posY: (this.positioned.posY += this.moving.speedV),
+      },
+    });
+  };
+
+  constructor(scene: IScene) {
+    super(scene);
+  }
+}
+
+export class Explosion extends Prop implements IDrawable, IDamaging {
+  positioned;
+  drawable = {
+    sprite: "explosion",
+    facing: "right",
+    offsetX: 64,
+    offsetY: 64,
+    anim: "appear",
+  };
+  collidable = { sizeX: 128, sizeY: 128, offsetX: -64, offsetY: -64 };
+  damaging = { damage: 60 };
+
+  createdOnTick: number;
+
+  onCreated = (tickNum: number) => {
+    this.createdOnTick = tickNum;
+  };
+
+  onTick = (tickNum: number) => {
+    if (tickNum - this.createdOnTick > 0) {
+      this.damaging.damage = 0;
+      if (tickNum - this.createdOnTick > 2) {
+        this.scene.destroyPropAction(this.ID);
+      }
+    }
+  };
+}
+
 export class Crate extends Prop implements IDamageable, IDrawable {
   damageable = { health: 10, maxHealth: 10 };
   collidable = { sizeX: 64, sizeY: 64, offsetX: 0, offsetY: 0 };
@@ -422,12 +601,16 @@ export class Crate extends Prop implements IDamageable, IDrawable {
 export const smshPropMap = {
   player: Player,
   crate: Crate,
-  bullet: DummyBullet,
+  bullet: Bullet,
+  rocket: Rocket,
+  fist: Fist,
   playerSpawner: PlayerSpawner,
   itemSpawner: ItemSpawner,
   shotgunItem: ShotgunItem,
+  bazookaItem: BazookaItem,
   pistolItem: PistolItem,
-  medikit: MedikitItem,
+  medikitItem: MedikitItem,
+  explosion: Explosion,
 } as const;
 
 export const smshPropFactory: (scene: IScene, stage: StageExt) => void = (

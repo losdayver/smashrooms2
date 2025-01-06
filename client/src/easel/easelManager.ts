@@ -42,8 +42,6 @@ export class EaselManager {
     container.style.left = prop.positioned.posX.toString();
 
     container.id = prop.ID;
-    container.appendChild(img);
-    this.pivot.appendChild(container);
 
     const easelProp = {
       ...prop,
@@ -55,6 +53,9 @@ export class EaselManager {
     this.processDrawable(easelProp, prop);
 
     this.propList.push(easelProp);
+
+    container.appendChild(img);
+    this.pivot.appendChild(container);
 
     if (!this.clientPropID) {
       if (prop.nameTagged && prop.nameTagged.tag == this.clientPropNameTag)
