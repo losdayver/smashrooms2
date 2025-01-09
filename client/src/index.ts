@@ -104,7 +104,7 @@ export class GameMenuModal extends Modal implements IFocusable {
       const a = d.createElement("a");
       a.href = url;
       const img = d.createElement("img");
-      img.setAttribute("src", `${iconRoute}/${iconBasename}`);
+      img.setAttribute("src", `${iconRoute}${iconBasename}`);
       img.setAttribute("width", "32px");
       a.appendChild(img);
       return a;
@@ -112,7 +112,6 @@ export class GameMenuModal extends Modal implements IFocusable {
     const options = d.createElement("div");
     options.style.display = "flex";
     options.style.flexDirection = "column";
-    // TODO: добавить align-items: center, но тогда кнопки в опциях сплющатся, поэтому также и width поправить им.
     options.style.alignItems = "center";
     options.style.gap = "8px";
 
@@ -123,8 +122,7 @@ export class GameMenuModal extends Modal implements IFocusable {
         this.controlsModal.show();
       }),
       makeBtn("Exit game", () => (document.location = document.location)),
-      // TODO: maybe we should store icon outside of options container? Somewhere in modal__footer?
-      makeIconLink("github.png", "https://github.com/losdayver/smashrooms2"),
+      makeIconLink("github.png", repoRoute),
     );
 
     return options;
