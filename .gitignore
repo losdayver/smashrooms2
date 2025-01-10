@@ -1,4 +1,9 @@
+.DS_Store
+.directory
+
 node_modules/
 package-lock.json
 dist/
 scripts/
+
+/test-sounds/

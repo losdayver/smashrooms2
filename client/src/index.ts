@@ -8,7 +8,7 @@ import { Client } from "./client/client.js";
 import { EaselManager } from "./easel/easelManager.js";
 import { FocusManager, IFocusable } from "./focus/focusManager.js";
 import { Modal } from "./modal/modal.js";
-import { repoRoute } from "./routes.js";
+import { iconRoute, repoRoute } from "./routes.js";
 import { Chat } from "./ui/chat.js";
 import { Toast } from "./ui/toast.js";
 
@@ -95,13 +95,24 @@ export class GameMenuModal extends Modal implements IFocusable {
     const makeBtn = (text: string, onClick: () => void) => {
       const button = d.createElement("button");
       button.classList.add("smsh-button");
+      button.style.width = "95%";
       button.innerText = text;
       button.onclick = onClick;
       return button;
     };
+    const makeIconLink = (iconBasename: string, url: string) => {
+      const a = d.createElement("a");
+      a.href = url;
+      const img = d.createElement("img");
+      img.setAttribute("src", `${iconRoute}${iconBasename}`);
+      img.setAttribute("width", "32px");
+      a.appendChild(img);
+      return a;
+    }
     const options = d.createElement("div");
     options.style.display = "flex";
     options.style.flexDirection = "column";
+    options.style.alignItems = "center";
     options.style.gap = "8px";
 
     options.append(
@@ -110,11 +121,8 @@ export class GameMenuModal extends Modal implements IFocusable {
         this.focusManager.setFocus("controls");
         this.controlsModal.show();
       }),
-      makeBtn("Github", () => {
-        document.location = repoRoute;
-      }),
       makeBtn("Exit game", () => (document.location = document.location)),
-      makeBtn("Close menu", this.hide)
+      makeIconLink("github.png", repoRoute),
     );
 
     return options;
