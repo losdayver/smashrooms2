@@ -6,8 +6,4 @@ package-lock.json
 dist/
 scripts/
 
-<<<<<<< HEAD
-/sounds/
-=======
 /test-sounds/
->>>>>>> e8ac03f (oops)
