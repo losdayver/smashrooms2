@@ -17,7 +17,10 @@ import {
 export interface IScene extends ISceneActions {
   subscribe: (sceneSubscriber: ISceneSubscriber) => void;
   tick: () => void;
-  getSceneMeta: () => IServerSceneMetaMessageExt;
+  getSceneMeta: () => Omit<
+    IServerSceneMetaMessageExt,
+    "currPlayerCount" | "maxPlayerCount"
+  >;
   getLayoutAt: (x: number, y: number) => ILayoutTile;
   getLayoutAtNormalized: (x: number, y: number) => ILayoutTile;
   checkLayoutCollision: (prop: ICollidableExt, ignoreSemi?: boolean) => boolean;

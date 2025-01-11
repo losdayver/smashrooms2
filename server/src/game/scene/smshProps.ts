@@ -79,7 +79,6 @@ export class Player
     offsetY: 0,
     onCollide: (prop: Prop & PropBehaviours) => {
       if (prop.damaging && prop.collidable.colGroup != this.ID) {
-        console.log(prop.drawable.sprite);
         if (prop.moving) this.$punchH = 2 * Math.sign(prop.moving.speedH);
         this.damageable.health -= prop.damaging.damage;
         this.scene.animatePropAction(this.ID, "hit");

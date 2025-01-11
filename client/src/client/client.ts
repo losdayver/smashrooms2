@@ -6,25 +6,33 @@ import {
   IConnectMessageExt,
   IMessageExt,
   IClientSceneMetaMessageExt,
+  IConnectResponseMessageExt,
 } from "../../../types/messages";
 import { PropIDExt } from "../../../types/sceneTypes";
 import { FocusManager, IFocusable } from "../focus/focusManager.js";
 import { EventEmitter, IEventEmitterPublicInterface } from "../utils.js";
 
+type ClientEventEmitterType =
+  | IMessageExt["name"]
+  | "socketOpen"
+  | "socketClose";
+
 export class Client
-  implements IEventEmitterPublicInterface<IMessageExt["name"]>, IFocusable
+  implements IEventEmitterPublicInterface<ClientEventEmitterType>, IFocusable
 {
   private socket: WebSocket;
   private ID: PropIDExt;
   private connString: string;
 
-  private eventEmitter = new EventEmitter<IMessageExt["name"]>();
+  readonly isRegistered = false;
+
+  private eventEmitter = new EventEmitter<ClientEventEmitterType>();
   on = (
-    eventName: IMessageExt["name"],
+    eventName: ClientEventEmitterType,
     callbackID: string,
     callback: (data?: any) => void | Promise<void>
   ) => this.eventEmitter.on(eventName, callbackID, callback);
-  off = (eventName: IMessageExt["name"], callbackID: string) =>
+  off = (eventName: ClientEventEmitterType, callbackID: string) =>
     this.eventEmitter.off(eventName, callbackID);
 
   private focusManager: FocusManager;
@@ -54,6 +62,8 @@ export class Client
 
   private initSocket = () => {
     this.socket = new WebSocket(this.connString);
+    this.socket.onopen = () => this.eventEmitter.emit("socketOpen");
+    this.socket.onclose = () => this.eventEmitter.emit("socketClose");
     this.socket.onmessage = this.onmessage;
   };
 
@@ -90,7 +100,7 @@ export class Client
       message,
     } satisfies IClientChatMessageExt);
 
-  onmessage = async (message: MessageEvent<string>) => {
+  private onmessage = async (message: MessageEvent<string>) => {
     let parsedMsg: IMessageExt;
     try {
       parsedMsg = JSON.parse(message.data);
@@ -103,5 +113,12 @@ export class Client
   constructor(connString: string) {
     this.connString = connString;
     this.initSocket();
+    this.on("connRes", "self", (data: IConnectResponseMessageExt) => {
+      (this.isRegistered as any) = data.status == "allowed";
+    });
+    this.on("socketClose", "self", () => {
+      this.initSocket();
+      (this.isRegistered as any) = false;
+    });
   }
 }

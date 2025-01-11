@@ -2,29 +2,47 @@ import {
   IConnectResponseMessageExt,
   IServerChatMessageExt,
   IServerNotificationExt,
+  IServerSceneMetaMessageExt,
 } from "../../types/messages";
 import { AudioManager } from "./audio/audioManager.js";
 import { Client } from "./client/client.js";
 import { EaselManager } from "./easel/easelManager.js";
 import { FocusManager, IFocusable } from "./focus/focusManager.js";
 import { Modal } from "./modal/modal.js";
-import { iconRoute, repoRoute } from "./routes.js";
+import { repoRoute } from "./routes.js";
 import { Chat } from "./ui/chat.js";
 import { Toast } from "./ui/toast.js";
+import { makeIconButton, makeIconLink } from "./utils.js";
 
 export class RegModal extends Modal {
   private onSubmit: (clientName: string) => void;
+  private client: Client;
   constructor(
     container: HTMLDivElement,
-    onSubmit: (clientName: string) => void
+    onSubmit: (clientName: string) => void,
+    client: Client
   ) {
     super(container, {
       title: "Enter game",
       width: 500,
       noCloseButton: true,
     });
+    this.client = client;
     this.onSubmit = onSubmit;
+    client.on("socketOpen", "index", () => {
+      client.getSceneMeta();
+    });
+
+    client.on(
+      "serverSceneMeta",
+      "regModal",
+      (data: IServerSceneMetaMessageExt) => {
+        this.updateServerInfo(data);
+      }
+    );
   }
+
+  private infoContainer: HTMLDivElement;
 
   protected getContent = () => {
     const label = document.createElement("label");
@@ -42,7 +60,9 @@ export class RegModal extends Modal {
 
     const form = document.createElement("form");
 
-    form.append(label, submit);
+    this.infoContainer = document.createElement("div");
+
+    form.append(this.infoContainer, label, submit);
 
     form.addEventListener("submit", (event) => {
       event.preventDefault();
@@ -51,6 +71,30 @@ export class RegModal extends Modal {
     form.classList.add("shmsh-form");
 
     return form;
+  };
+
+  private updateServerInfo = (data: IServerSceneMetaMessageExt) => {
+    const d = document;
+    const getP = (title: string, contents: any) => {
+      const p = d.createElement("p");
+      const b = d.createElement("b");
+      b.innerText = contents ?? "";
+      p.append(title, ": ", b);
+      p.style.textAlign = "center";
+      return p;
+    };
+    const reload = makeIconButton("reload.png", this.client.getSceneMeta);
+    reload.style.position = "absolute";
+    reload.style.top = "8";
+    reload.style.left = "8";
+    this.infoContainer.innerHTML = "";
+    this.infoContainer.append(
+      reload,
+      getP("Stage name", data.stageName),
+      getP("Author", data.stageAuthor),
+      getP("Player count", data.currPlayerCount),
+      getP("Max players", data.maxPlayerCount)
+    );
   };
 }
 
@@ -100,15 +144,6 @@ export class GameMenuModal extends Modal implements IFocusable {
       button.onclick = onClick;
       return button;
     };
-    const makeIconLink = (iconBasename: string, url: string) => {
-      const a = d.createElement("a");
-      a.href = url;
-      const img = d.createElement("img");
-      img.setAttribute("src", `${iconRoute}${iconBasename}`);
-      img.setAttribute("width", "32px");
-      a.appendChild(img);
-      return a;
-    }
     const options = d.createElement("div");
     options.style.display = "flex";
     options.style.flexDirection = "column";
@@ -122,7 +157,7 @@ export class GameMenuModal extends Modal implements IFocusable {
         this.controlsModal.show();
       }),
       makeBtn("Exit game", () => (document.location = document.location)),
-      makeIconLink("github.png", repoRoute),
+      makeIconLink("github.png", repoRoute)
     );
 
     return options;
@@ -210,9 +245,10 @@ const initGameLayout = async () => {
     toast.notify(data.message, data.type)
   );
   client.on("connRes", "toast", (data: IConnectResponseMessageExt) => {
-    if (data.status == "allowed")
-      toast.notify("successfully connected!", "info");
-    else toast.notify("failed to connect!", "warning");
+    if (data.status != "allowed") {
+      toast.notify("failed to connect!", "warning");
+      toast.notify("cause: " + data.cause, "warning");
+    }
   });
 
   const easel = document.querySelector<HTMLDivElement>(".easel");
@@ -233,7 +269,8 @@ const initGameLayout = async () => {
     document.querySelector<HTMLDivElement>(".modal-container"),
     (clientName: string) => {
       if (clientName.trim()) client.connectByClientName(clientName);
-    }
+    },
+    client
   );
   regModal.show();
 };

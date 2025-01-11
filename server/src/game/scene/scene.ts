@@ -339,11 +339,11 @@ export class Scene implements IScene {
           { delete: [this.propList[i].ID] },
           this.propList[i] as IProp & IPositioned
         );
-        this.propList.splice(i, 1);
         this.sendNotification(
           `${this.propList[i]?.nameTagged?.tag || "player"} disconnected.`,
           "disconnected"
         );
+        this.propList.splice(i, 1);
         return;
       }
     }
@@ -489,10 +489,13 @@ export class Scene implements IScene {
   };
 
   getSceneMeta: IScene["getSceneMeta"] = () => {
+    const stageMeta = this.stage?.meta;
     return {
       name: "serverSceneMeta",
-      stageSystemName: this.stage?.meta.stageSystemName,
-      gridSize: this.stage?.meta.gridSize,
+      stageName: stageMeta?.stageName,
+      stageSystemName: stageMeta?.stageSystemName,
+      stageAuthor: stageMeta?.author,
+      gridSize: stageMeta?.gridSize,
     };
   };
 

@@ -197,6 +197,7 @@ export class EaselManager {
       "serverSceneMeta",
       "easel",
       async (data: IServerSceneMetaMessageExt) => {
+        if (!client.isRegistered) return;
         const layoutString = (await fetch(
           `${stagesRoute}${data.stageSystemName}/${data.stageSystemName}.layout`
         )
