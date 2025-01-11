@@ -17,7 +17,7 @@ export class Toast {
   private timeout: number;
   private removeTimeout: number;
   private static toastWidth = 300;
-  private static textAreaWidth = Toast.toastWidth - (22 + 3*5);
+  private static textAreaWidth = Toast.toastWidth - (22 + 3 * 5);
 
   constructor(
     parentEl: HTMLDivElement | HTMLSpanElement,
@@ -42,8 +42,7 @@ export class Toast {
   notify = (message: string, type: NotificationTypesExt) => {
     if (this.toastEl.children.length >= this.maxCount)
       this.toastEl.children[0].remove();
-    else if (this.toastEl.children.length == 0)
-      this.restartRemoveTimeout();
+    else if (this.toastEl.children.length == 0) this.restartRemoveTimeout();
 
     const notification = document.createElement("div");
     notification.className = "toast__notification";
@@ -66,15 +65,15 @@ export class Toast {
     if (notificationText.offsetWidth > Toast.textAreaWidth) {
       const XShiftAmount = notificationText.offsetWidth - Toast.textAreaWidth;
       setTimeout(() => {
-        notificationText.animate([
-          // { transform: "translateX(0%)" },
-          { transform: `translateX(-${XShiftAmount}px)` },
-        ], {
-          duration: 2500,
-          easing: "linear",
-          fill: "forwards",
-        })
+        notificationText.animate(
+          [{ transform: `translateX(-${XShiftAmount}px)` }],
+          {
+            duration: this.timeout / 2,
+            easing: "linear",
+            fill: "forwards",
+          }
+        );
       }, 1000);
-   }
+    }
   };
 }
