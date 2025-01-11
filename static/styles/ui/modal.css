@@ -47,6 +47,7 @@
 .modal__content {
   flex: 1;
   padding: 0.5em;
+  position: relative;
 }
 
 .modal__overlay {

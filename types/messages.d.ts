@@ -33,8 +33,12 @@ export interface IClientSceneMetaMessageExt {
 
 export interface IServerSceneMetaMessageExt {
   name: "serverSceneMeta";
+  stageName: LayoutMetaExt["stageName"];
   stageSystemName: LayoutMetaExt["stageSystemName"];
+  stageAuthor: LayoutMetaExt["author"];
   gridSize: LayoutMetaExt["gridSize"];
+  currPlayerCount: number;
+  maxPlayerCount: number | "infinite";
 }
 
 export interface IClientChatMessageExt {

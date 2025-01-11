@@ -12,6 +12,8 @@ import {
   IServerChatMessageExt,
   IMessageExt,
   IClientChatMessageExt,
+  IClientSceneMetaMessageExt,
+  IServerSceneMetaMessageExt,
 } from "../../../../types/messages";
 import { bufferFromObj, severityLog, wslogSend } from "./../../utils";
 import { ClientID } from "../commonTypes";
@@ -21,8 +23,10 @@ export class WSSocketServer implements ISocketServer {
   private port: number;
   private clientMap: Map<string, IWSClient> = new Map();
   private socketServer: WebSocketServer;
+  private maxClients: number;
 
-  constructor(communicator: ICommunicator, port: number) {
+  constructor(communicator: ICommunicator, port: number, maxClients?: number) {
+    this.maxClients = maxClients;
     this.communicator = communicator;
     this.port = port;
     this.init();
@@ -78,6 +82,20 @@ export class WSSocketServer implements ISocketServer {
           `sockets client ${message.clientName} is already connected`,
           "warning"
         );
+        return;
+      }
+      if (this.clientMap.size >= this.maxClients) {
+        wslogSend(
+          clientSocket,
+          {
+            name: "connRes",
+            status: "restricted",
+            cause: "server is full",
+          } satisfies IConnectResponseMessageExt,
+          `sockets rejected client connection ${message.clientName} due server being full`,
+          "warning"
+        );
+        clientSocket.close();
         return;
       }
       if (client.name == message.clientName) {
@@ -177,7 +195,7 @@ export class WSSocketServer implements ISocketServer {
         break;
       }
 
-    if (!clientID) {
+    if (!clientID && !["clientSceneMeta"].includes(message.name)) {
       clientSocket.send(
         bufferFromObj({
           name: "notReg",
@@ -186,7 +204,15 @@ export class WSSocketServer implements ISocketServer {
       return;
     }
 
-    this.communicator.processMessage(clientID, message, currentClinet.name);
+    if (message.name == "clientSceneMeta") {
+      const meta = this.communicator.processMessageSync(
+        message as IClientSceneMetaMessageExt
+      ) as IServerSceneMetaMessageExt;
+      meta.maxPlayerCount = this.maxClients ?? "infinite";
+      meta.currPlayerCount = this.clientMap.size;
+      wslogSend(clientSocket, meta);
+    } else
+      this.communicator.processMessage(clientID, message, currentClinet?.name);
   };
 
   private messageResolveMap: Partial<
