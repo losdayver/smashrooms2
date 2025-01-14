@@ -115,10 +115,9 @@ export class GameMenuModal extends Modal implements IFocusable {
   getFocusTag = () => "menu";
   onFocused = this.show;
 
-  onFocusReceiveKey: IFocusable["onFocusReceiveKey"] = (e, status) => {
-    if (e.repeat) return;
+  onFocusReceiveKey: IFocusable["onFocusReceiveKey"] = (key, status) => {
     if (status == "down") {
-      if (e.code == "Escape") this.hide();
+      if (key == "back") this.hide();
     }
   };
 
@@ -183,10 +182,9 @@ export class ControlsModal extends Modal implements IFocusable {
   getFocusTag = () => "controls";
   onFocused = this.show;
 
-  onFocusReceiveKey: IFocusable["onFocusReceiveKey"] = (e, status) => {
-    if (e.repeat) return;
+  onFocusReceiveKey: IFocusable["onFocusReceiveKey"] = (key, status) => {
     if (status == "down") {
-      if (e.code == "Escape") this.hide();
+      if (key == "back") this.hide();
     }
   };
 

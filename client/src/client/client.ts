@@ -9,6 +9,7 @@ import {
   IConnectResponseMessageExt,
 } from "../../../types/messages";
 import { PropIDExt } from "../../../types/sceneTypes";
+import { ControlsObjType } from "../config/config.js";
 import { FocusManager, IFocusable } from "../focus/focusManager.js";
 import { EventEmitter, IEventEmitterPublicInterface } from "../utils.js";
 
@@ -37,24 +38,30 @@ export class Client
 
   private focusManager: FocusManager;
   getFocusTag = () => "client";
-  onFocusReceiveKey: IFocusable["onFocusReceiveKey"] = (e, status) => {
-    if (e.repeat) return;
+  onFocusReceiveKey: IFocusable["onFocusReceiveKey"] = (key, status) => {
     if (status == "down") {
-      if (e.code == "ArrowRight") this.sendInput("right", "pressed");
-      else if (e.code == "ArrowLeft") this.sendInput("left", "pressed");
-      if (e.code == "ArrowUp") this.sendInput("jump", "pressed");
-      else if (e.code == "ArrowDown") this.sendInput("duck", "pressed");
-      if (e.code == "Space") this.sendInput("fire", "pressed");
-      if (e.code == "KeyR") this.sendInput("revive", "pressed");
-      else if (e.code == "KeyT") this.focusManager.setFocus("chat");
-      else if (e.code == "Escape") this.focusManager.setFocus("menu");
+      this.controlsHandler(key, true);
+      if (key == "chat") this.focusManager.setFocus("chat");
+      else if (key == "back") this.focusManager.setFocus("menu");
     } else {
-      if (e.code == "ArrowRight") this.sendInput("right", "released");
-      else if (e.code == "ArrowLeft") this.sendInput("left", "released");
-      if (e.code == "ArrowUp") this.sendInput("jump", "released");
-      else if (e.code == "ArrowDown") this.sendInput("duck", "released");
-      if (e.code == "Space") this.sendInput("fire", "released");
+      this.controlsHandler(key, false);
     }
+  };
+  private controlsHandler = (
+    key: keyof ControlsObjType,
+    isPressed: boolean
+  ) => {
+    const map: Partial<Record<keyof ControlsObjType, ClientActionCodesExt>> = {
+      up: "jump",
+      right: "right",
+      down: "duck",
+      left: "left",
+      fire: "fire",
+      revive: "revive",
+    };
+    const control = map[key];
+    if (!control) return;
+    this.sendInput(control, isPressed ? "pressed" : "released");
   };
   onFocusRegistered: IFocusable["onFocusRegistered"] = (focusManager) => {
     this.focusManager = focusManager;

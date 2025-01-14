@@ -1,6 +1,13 @@
+import {
+  ControlsConfig,
+  controlsList,
+  ControlsObjType,
+} from "../config/config.js";
+
 export class FocusManager {
   private registeredReceivers: Map<string, IFocusable> = new Map();
   private currentFocusedTag: string;
+  private controlsConfig = new ControlsConfig();
   private getCurrent = () =>
     this.registeredReceivers.get(this.currentFocusedTag);
   register = (receiver: IFocusable) => {
@@ -18,22 +25,28 @@ export class FocusManager {
     newReceiver.onFocused?.();
     this.currentFocusedTag = tag;
   };
+  private keyListener = async (e: KeyboardEvent, isDown: boolean) => {
+    if (e.repeat) return;
+    for (const key of controlsList) {
+      if (this.controlsConfig.getValue(key).includes(e.code)) {
+        await this.getCurrent()?.onFocusReceiveKey?.(
+          key,
+          isDown ? "down" : "up"
+        );
+        return;
+      }
+    }
+  };
   constructor() {
-    document.addEventListener(
-      "keydown",
-      async (e) => await this.getCurrent()?.onFocusReceiveKey?.(e, "down")
-    );
-    document.addEventListener(
-      "keyup",
-      async (e) => await this.getCurrent()?.onFocusReceiveKey?.(e, "up")
-    );
+    document.addEventListener("keydown", (e) => this.keyListener(e, true));
+    document.addEventListener("keyup", (e) => this.keyListener(e, false));
   }
 }
 
 export interface IFocusable {
   getFocusTag: () => string;
   onFocusReceiveKey?: (
-    e: KeyboardEvent,
+    key: keyof ControlsObjType,
     status: "down" | "up"
   ) => void | Promise<void>;
   onFocused?: () => void | Promise<void>;
