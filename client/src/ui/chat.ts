@@ -32,10 +32,9 @@ export class Chat implements IFocusable {
 
   private focusManager: FocusManager;
   getFocusTag = () => "chat";
-  onFocusReceiveKey: IFocusable["onFocusReceiveKey"] = (e) => {
-    if (e.repeat) return;
-    if (e.code == "Escape") this.focusManager.setFocus("client");
-    if (e.code == "Enter") this.send();
+  onFocusReceiveKey: IFocusable["onFocusReceiveKey"] = (key) => {
+    if (key == "back") this.focusManager.setFocus("client");
+    if (key == "confirm") this.send();
   };
   onUnfocused = () => {
     this.input.blur();

@@ -43,29 +43,35 @@ export abstract class LSConfig<C extends object = object> {
   }
 }
 
-export class ControlsConfig extends LSConfig<IControlMap> {
+export class ControlsConfig extends LSConfig<ControlsObjType> {
   protected getDefaultObj = () =>
     ({
-      up: ["ArrowUp"],
-      right: ["ArrowRight"],
-      down: ["ArrowDown"],
-      left: ["ArrowLeft"],
-      fire: ["Space"],
+      up: ["ArrowUp", "Space"],
+      right: ["ArrowRight", "KeyD"],
+      down: ["ArrowDown", "KeyS"],
+      left: ["ArrowLeft", "KeyA"],
+      fire: ["ShiftLeft"],
       chat: ["KeyT"],
       back: ["Escape"],
       confirm: ["Enter"],
       revive: ["KeyR"],
-    } satisfies IControlMap);
+    } satisfies ControlsObjType);
+
+  constructor() {
+    super("controls");
+  }
 }
 
-export interface IControlMap {
-  up: string[];
-  right: string[];
-  down: string[];
-  left: string[];
-  fire: string[];
-  chat: string[];
-  back: string[];
-  confirm: string[];
-  revive: string[];
-}
+export const controlsList = [
+  "up",
+  "right",
+  "down",
+  "left",
+  "fire",
+  "chat",
+  "back",
+  "confirm",
+  "revive",
+] as const;
+
+export type ControlsObjType = Record<(typeof controlsList)[number], string[]>;

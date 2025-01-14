@@ -9,7 +9,7 @@ import {
   IConnectResponseMessageExt,
 } from "../../../types/messages";
 import { PropIDExt } from "../../../types/sceneTypes";
-import { ControlsConfig, IControlMap } from "../config/config.js";
+import { ControlsObjType } from "../config/config.js";
 import { FocusManager, IFocusable } from "../focus/focusManager.js";
 import { EventEmitter, IEventEmitterPublicInterface } from "../utils.js";
 
@@ -21,7 +21,6 @@ type ClientEventEmitterType =
 export class Client
   implements IEventEmitterPublicInterface<ClientEventEmitterType>, IFocusable
 {
-  private controlsConfig: ControlsConfig;
   private socket: WebSocket;
   private ID: PropIDExt;
   private connString: string;
@@ -39,18 +38,20 @@ export class Client
 
   private focusManager: FocusManager;
   getFocusTag = () => "client";
-  onFocusReceiveKey: IFocusable["onFocusReceiveKey"] = (e, status) => {
-    if (e.repeat) return;
+  onFocusReceiveKey: IFocusable["onFocusReceiveKey"] = (key, status) => {
     if (status == "down") {
-      this.controlsHandler(e.code, true);
-      if (e.code == "KeyT") this.focusManager.setFocus("chat");
-      else if (e.code == "Escape") this.focusManager.setFocus("menu");
+      this.controlsHandler(key, true);
+      if (key == "chat") this.focusManager.setFocus("chat");
+      else if (key == "back") this.focusManager.setFocus("menu");
     } else {
-      this.controlsHandler(e.code, false);
+      this.controlsHandler(key, false);
     }
   };
-  private controlsHandler = (eCode: string, isPressed: boolean) => {
-    const map: Partial<Record<keyof IControlMap, ClientActionCodesExt>> = {
+  private controlsHandler = (
+    key: keyof ControlsObjType,
+    isPressed: boolean
+  ) => {
+    const map: Partial<Record<keyof ControlsObjType, ClientActionCodesExt>> = {
       up: "jump",
       right: "right",
       down: "duck",
@@ -58,17 +59,9 @@ export class Client
       fire: "fire",
       revive: "revive",
     };
-    for (const [k, v] of Object.entries(map)) {
-      if (
-        this.controlsConfig.getValue(k as keyof IControlMap).includes(eCode)
-      ) {
-        this.sendInput(
-          v as ClientActionCodesExt,
-          isPressed ? "pressed" : "released"
-        );
-        return;
-      }
-    }
+    const control = map[key];
+    if (!control) return;
+    this.sendInput(control, isPressed ? "pressed" : "released");
   };
   onFocusRegistered: IFocusable["onFocusRegistered"] = (focusManager) => {
     this.focusManager = focusManager;
@@ -125,7 +118,6 @@ export class Client
   };
 
   constructor(connString: string) {
-    this.controlsConfig = new ControlsConfig("controls");
     this.connString = connString;
     this.initSocket();
     this.on("connRes", "self", (data: IConnectResponseMessageExt) => {
