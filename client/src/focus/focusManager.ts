@@ -31,11 +31,17 @@ export class FocusManager {
       if (this.controlsConfig.getValue(key).includes(e.code)) {
         await this.getCurrent()?.onFocusReceiveKey?.(
           key,
-          isDown ? "down" : "up"
+          isDown ? "down" : "up",
+          e.code
         );
         return;
       }
     }
+    await this.getCurrent()?.onFocusReceiveKey?.(
+      null,
+      isDown ? "down" : "up",
+      e.code
+    );
   };
   constructor() {
     document.addEventListener("keydown", (e) => this.keyListener(e, true));
@@ -47,7 +53,8 @@ export interface IFocusable {
   getFocusTag: () => string;
   onFocusReceiveKey?: (
     key: keyof ControlsObjType,
-    status: "down" | "up"
+    status: "down" | "up",
+    realKeyCode: string
   ) => void | Promise<void>;
   onFocused?: () => void | Promise<void>;
   onUnfocused?: () => void | Promise<void>;
