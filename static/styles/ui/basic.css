@@ -56,6 +56,10 @@
   background: #9b9b9b;
 }
 
+.smsh-button--activated {
+  border-color: rgb(218, 23, 10) !important;
+}
+
 .shmsh-form {
   display: flex;
   flex-direction: column;

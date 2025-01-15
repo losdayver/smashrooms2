@@ -44,23 +44,27 @@ export abstract class LSConfig<C extends object = object> {
 }
 
 export class ControlsConfig extends LSConfig<ControlsObjType> {
-  protected getDefaultObj = () =>
-    ({
-      up: ["ArrowUp", "Space"],
-      right: ["ArrowRight", "KeyD"],
-      down: ["ArrowDown", "KeyS"],
-      left: ["ArrowLeft", "KeyA"],
-      fire: ["ShiftLeft"],
-      chat: ["KeyT"],
-      back: ["Escape"],
-      confirm: ["Enter"],
-      revive: ["KeyR"],
-    } satisfies ControlsObjType);
+  static instance: ControlsConfig;
+  protected getDefaultObj = () => defaultControlsObj;
 
   constructor() {
     super("controls");
+    if (!ControlsConfig.instance) ControlsConfig.instance = this;
+    return ControlsConfig.instance;
   }
 }
+
+export const defaultControlsObj: ControlsObjType = {
+  up: ["ArrowUp", "Space"],
+  right: ["ArrowRight", "KeyD"],
+  down: ["ArrowDown", "KeyS"],
+  left: ["ArrowLeft", "KeyA"],
+  fire: ["ShiftLeft"],
+  chat: ["KeyT"],
+  back: ["Escape"],
+  confirm: ["Enter"],
+  revive: ["KeyR"],
+};
 
 export const controlsList = [
   "up",

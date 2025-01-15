@@ -48,6 +48,7 @@
   flex: 1;
   padding: 0.5em;
   position: relative;
+  overflow-y: auto;
 }
 
 .modal__overlay {
