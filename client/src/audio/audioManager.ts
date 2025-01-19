@@ -3,11 +3,11 @@ import { EventEmitter, IEventEmitterPublicInterface } from "../utils.js";
 
 abstract class AudioManager {
   protected abstract storeSound(
-    name: keyof typeof soundEventMap | keyof typeof soundTrackMap,
+    name: keyof typeof soundEventMap | keyof typeof soundTrackMap
   ): void;
 
   public abstract playSound(
-    name: keyof typeof soundEventMap | keyof typeof soundTrackMap,
+    name: keyof typeof soundEventMap | keyof typeof soundTrackMap
   ): number | null;
 
   public abstract pauseSound(soundID: number | null): void;
@@ -23,7 +23,7 @@ export class AudioTrackManager
   on = (
     eventName: SoundTrackEventsType,
     callbackID: string,
-    callback: (data?: any) => void | Promise<void>,
+    callback: (data?: any) => void | Promise<void>
   ) => this.eventEmitter.on(eventName, callbackID, callback);
   off = (eventName: SoundTrackEventsType, callbackID: string) =>
     this.eventEmitter.off(eventName, callbackID);
