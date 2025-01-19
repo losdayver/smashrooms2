@@ -67,7 +67,7 @@ export class AudioEventManager extends AudioManager {
     this.currentSoundEvents
       .get(sndIdex)
       .audioElement.addEventListener("ended", () => {
-        this.currentSoundEvents.delete(sndIdex);
+        this.deleteSound(sndIndex);
       });
     return sndIdex;
   };
@@ -86,7 +86,12 @@ export class AudioEventManager extends AudioManager {
   stopSound = (soundID: number) => {
     this.pauseSound(soundID);
     this.currentSoundEvents.get(soundID).audioElement.currentTime = 0;
+    this.deleteSound(soundID);
   };
+
+  private deleteSound = (soundID: number) => {
+    this.currentSoundEvents.delete(soundID);
+  }
 
   // TODO: add calculation of channel balance value based on sound event's srcX
 
