@@ -8,6 +8,7 @@ import {
   ISceneUpdatesMessageData,
 } from "../../../types/sceneTypes";
 import { StageExt } from "../../../types/stage";
+import { AudioEventManager, soundEventMap } from "../audio/audioManager.js";
 import { Client } from "../client/client.js";
 import {
   backgroundRoute,
@@ -25,6 +26,16 @@ export class EaselManager {
   client: Client;
   private clientPropNameTag: string;
   private clientPropID: string;
+  audioEventMgr: AudioEventManager;
+
+  private readonly loadPropSoundMap: Partial<
+    Record<string, keyof typeof soundEventMap>
+  > = {
+    bullet: "pistolShot",
+    fist: "punchAir",
+    rocket: "bazookaShot",
+    explosion: "bazookaExplosion",
+  } as const;
 
   private loadProp = (prop: IBehaviouredPropExt) => {
     const img = document.createElement("img");
@@ -56,6 +67,9 @@ export class EaselManager {
 
     container.appendChild(img);
     this.pivot.appendChild(container);
+
+    const sound = this.loadPropSoundMap[prop.drawable?.sprite];
+    if (sound) this.audioEventMgr.playSound(sound);
 
     if (!this.clientPropID) {
       if (prop.nameTagged && prop.nameTagged.tag == this.clientPropNameTag)
@@ -105,6 +119,7 @@ export class EaselManager {
       const a = anim.pop();
       const prop = this.propList.find((prop) => prop.ID == a.ID);
       if (prop) {
+        if (a.name == "hit") this.audioEventMgr.playSound("punch");
         const animClass = `easel__prop-sprite--${a.name}`;
         prop.img.className = "";
         void prop.img.offsetWidth;
@@ -174,14 +189,13 @@ export class EaselManager {
   constructor(
     easelDiv: HTMLDivElement | HTMLSpanElement,
     client: Client,
-    stage?: StageExt
+    audioEventMgr: AudioEventManager
   ) {
     this.easelDiv = easelDiv;
+    this.audioEventMgr = audioEventMgr;
 
     this.pivot = document.createElement("div");
     this.pivot.style.zIndex = "99";
-
-    if (stage) this.constructStage(stage);
 
     easelDiv.appendChild(this.pivot);
     this.pivot.style.position = "relative";

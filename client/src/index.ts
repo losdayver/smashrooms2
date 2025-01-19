@@ -4,7 +4,7 @@ import {
   IServerNotificationExt,
   IServerSceneMetaMessageExt,
 } from "../../types/messages";
-import { AudioManager } from "./audio/audioManager.js";
+import { AudioTrackManager, AudioEventManager } from "./audio/audioManager.js";
 import { Client } from "./client/client.js";
 import {
   ControlsConfig,
@@ -324,17 +324,20 @@ const initGameLayout = async () => {
       regModal.hide();
       client.getSceneMeta();
       focus.register(chat);
-      audio.startSoundtrack("iceworld");
+      soundTrackMgr.playSound("mycelium");
     }
   });
   client.on("serverChat", "chat", (data: IServerChatMessageExt) => {
     chat.receiveMessage(data.sender, data.message);
   });
 
-  const audio = new AudioManager();
-  audio.on("onStartedSoundtrack", "toast", (data) => {
-    toast.notify(`smsh2 OST — ${data.name}`, "music");
+  const soundTrackMgr = new AudioTrackManager();
+
+  soundTrackMgr.on("onStartedSoundtrack", "toast", (name: string) => {
+    toast.notify(`smsh2 OST — ${name}`, "music");
   });
+
+  const audioEventMgr = new AudioEventManager();
 
   const toast = new Toast(document.querySelector(".toast-container"));
   client.on("serverNotify", "toast", (data: IServerNotificationExt) =>
@@ -348,7 +351,7 @@ const initGameLayout = async () => {
   });
 
   const easel = document.querySelector<HTMLDivElement>(".easel");
-  const easelManager = new EaselManager(easel, client);
+  const easelManager = new EaselManager(easel, client, audioEventMgr);
 
   const focus = new FocusManager();
   focus.register(client);

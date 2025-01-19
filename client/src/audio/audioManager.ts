@@ -1,52 +1,183 @@
-import { soundtrackRoute } from "../routes.js";
+import { soundTrackRoute, soundEventRoute } from "../routes.js";
 import { EventEmitter, IEventEmitterPublicInterface } from "../utils.js";
 
-export class AudioManager implements IEventEmitterPublicInterface<AudioEvents> {
-  private eventEmitter = new EventEmitter<AudioEvents>();
+abstract class AudioManager {
+  protected abstract storeSound(
+    name: keyof typeof soundEventMap | keyof typeof soundTrackMap
+  ): void;
+
+  public abstract playSound(
+    name: keyof typeof soundEventMap | keyof typeof soundTrackMap
+  ): number | null;
+
+  public abstract pauseSound(soundID: number | null): void;
+
+  public abstract stopSound(soundID: number | null): void;
+}
+
+export class AudioTrackManager
+  extends AudioManager
+  implements IEventEmitterPublicInterface<SoundTrackEventsType>
+{
+  private eventEmitter = new EventEmitter<SoundTrackEventsType>();
   on = (
-    eventName: AudioEvents,
+    eventName: SoundTrackEventsType,
     callbackID: string,
     callback: (data?: any) => void | Promise<void>
   ) => this.eventEmitter.on(eventName, callbackID, callback);
-  off = (eventName: AudioEvents, callbackID: string) =>
+  off = (eventName: SoundTrackEventsType, callbackID: string) =>
     this.eventEmitter.off(eventName, callbackID);
 
-  startSoundtrack = (name: keyof typeof soundtrackMap) => {
-    if (!this.cache.soundtracks[name]) {
-      this.cache.soundtracks[name] = new Audio(
-        soundtrackRoute + soundtrackMap[name]
-      );
-      this.cache.soundtracks[name].autoplay = true;
-    }
-    if (this.currentSoundtrackName) this.stopCurrentSoundtrack();
-    this.currentSoundtrackName = name;
-    this.cache.soundtracks[name].loop = true;
-    this.cache.soundtracks[name].play();
-    this.eventEmitter.emit("onStartedSoundtrack", { name });
+  private currentSoundTrack: SoundTrack = null;
+  private currentSoundTrackName: string = null;
+
+  protected storeSound = (name: keyof typeof soundTrackMap) => {
+    this.currentSoundTrack = new SoundTrack(name);
+    this.currentSoundTrackName = name;
   };
-  private stopCurrentSoundtrack = () => {
-    if (!this.currentSoundtrackName) return;
-    this.cache.soundtracks[this.currentSoundtrackName].pause();
-    this.cache.soundtracks[this.currentSoundtrackName].currentTime = 0;
+
+  playSound = (name: keyof typeof soundTrackMap) => {
+    if (this.currentSoundTrack) this.stopSound();
+    this.storeSound(name);
+    this.currentSoundTrack.audioElement.play();
+    this.eventEmitter.emit("onStartedSoundtrack", this.currentSoundTrackName);
+    return null;
   };
-  private currentSoundtrackName: keyof typeof soundtrackMap = null;
-  private cache: {
-    soundtracks: Partial<Record<keyof typeof soundtrackMap, HTMLAudioElement>>;
-    sounds: Partial<Record<keyof typeof soundMap, HTMLAudioElement>>;
-  } = {
-    soundtracks: {},
-    sounds: {},
+
+  pauseSound = () => {
+    this.currentSoundTrack.audioElement.pause();
+  };
+
+  stopSound = () => {
+    this.pauseSound();
+    this.currentSoundTrack.audioElement.currentTime = 0;
+    this.eventEmitter.emit("onStoppedSoundtrack", this.currentSoundTrackName);
+  };
+}
+
+export class AudioEventManager extends AudioManager {
+  private audioCtx = new AudioContext();
+  // private soundEventsCache: { [key: string]: StereoSound } = {};
+  private currentSoundEvents = new Map<number, StereoSound>();
+
+  protected storeSound = (name: keyof typeof soundEventMap) => {
+    let sndIndex = 1;
+    while (this.currentSoundEvents.get(sndIndex)) sndIndex++;
+    this.currentSoundEvents.set(sndIndex, new StereoSound(name, this.audioCtx));
+    this.currentSoundEvents
+      .get(sndIndex)
+      .audioElement.addEventListener("ended", () => {
+        this.deleteSound(sndIndex);
+      });
+    return sndIndex;
+  };
+
+  playSound = (name: keyof typeof soundEventMap) => {
+    const soundID = this.storeSound(name);
+    if (this.audioCtx.state === "suspended") this.audioCtx.resume();
+    this.currentSoundEvents.get(soundID).audioElement.play();
+    return soundID;
+  };
+
+  pauseSound = (soundID: number) => {
+    this.currentSoundEvents.get(soundID).audioElement.pause();
+  };
+
+  stopSound = (soundID: number) => {
+    this.pauseSound(soundID);
+    this.currentSoundEvents.get(soundID).audioElement.currentTime = 0;
+    this.deleteSound(soundID);
+  };
+
+  private deleteSound = (soundID: number) => {
+    this.currentSoundEvents.delete(soundID);
+  };
+
+  // TODO: add calculation of channel balance value based on sound event's srcX
+
+  setSoundChannelBalance = (soundID: number, balanceVal: number) => {
+    this.currentSoundEvents.get(soundID).setChannelBalance(balanceVal);
   };
 
   constructor() {
-    new Audio();
+    super();
   }
 }
 
-type AudioEvents = "onStartedSoundtrack" | "onStoppedSoundtrack";
+abstract class Sound {
+  public audioElement: HTMLAudioElement;
 
-const soundtrackMap = {
+  constructor(soundRoute: string, baseName: string) {
+    this.audioElement = new Audio(soundRoute + baseName);
+  }
+}
+
+class SoundTrack extends Sound {
+  constructor(name: string) {
+    super(soundTrackRoute, soundTrackMap[name]);
+    this.audioElement.loop = true;
+  }
+}
+
+class StereoSound extends Sound {
+  private mediaSrc: MediaElementAudioSourceNode;
+  private gainNodeL: GainNode;
+  private gainNodeR: GainNode;
+  private splitterNode: ChannelSplitterNode;
+  private mergerNode: ChannelMergerNode;
+  private balanceValue: number = 0;
+  private static channelCount = 2; // or read from: 'audioSource.channelCount'
+
+  constructor(name: string, ctx: AudioContext) {
+    super(soundEventRoute, soundEventMap[name]);
+    // this.audioElement.crossOrigin = "anonymous";
+    this.mediaSrc = ctx.createMediaElementSource(this.audioElement);
+
+    this.gainNodeL = new GainNode(ctx);
+    this.gainNodeL.gain.value = 0.5;
+    this.gainNodeR = new GainNode(ctx);
+    this.gainNodeR.gain.value = 0.5;
+
+    this.splitterNode = new ChannelSplitterNode(ctx, {
+      numberOfOutputs: StereoSound.channelCount,
+    });
+    this.mergerNode = new ChannelMergerNode(ctx, {
+      numberOfInputs: StereoSound.channelCount,
+    });
+
+    this.mediaSrc.connect(this.splitterNode);
+    this.splitterNode.connect(this.gainNodeL, 0);
+    this.splitterNode.connect(this.gainNodeR, 1);
+
+    this.gainNodeL.connect(this.mergerNode, 0, 0);
+    this.gainNodeR.connect(this.mergerNode, 0, 1);
+
+    this.mergerNode.connect(ctx.destination);
+  }
+
+  setChannelBalance = (balanceVal: number) => {
+    this.gainNodeL.gain.value = 1 - balanceVal;
+    this.gainNodeR.gain.value = 1 + balanceVal;
+  };
+}
+
+// 2.1, 5.1, 7.1, ... ?
+
+type SoundTrackEventsType = "onStartedSoundtrack" | "onStoppedSoundtrack";
+
+const soundTrackMap = {
   iceworld: "iceworld.mp3",
+  mycelium: "mycelium.mp3",
 } as const;
 
-const soundMap = {} as const;
+// TODO jump, itemPickup
+export const soundEventMap = {
+  jump: "jump.mp3",
+  punchAir: "punch_air.mp3",
+  punch: "punch.mp3",
+  itemPickup: "item_pickup.m4a",
+  pistolShot: "pistol_shot.mp3",
+  shotgunShot: "shotgun_shot.mp3",
+  bazookaShot: "bazooka_rocket_launch.mp3",
+  bazookaExplosion: "bazooka_rocket_explosion.mp3",
+} as const;
