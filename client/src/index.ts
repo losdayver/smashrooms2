@@ -26,7 +26,7 @@ export class RegModal extends Modal {
   constructor(
     container: HTMLDivElement,
     onSubmit: (clientName: string) => void,
-    client: Client,
+    client: Client
   ) {
     super(container, {
       title: "Enter game",
@@ -44,7 +44,7 @@ export class RegModal extends Modal {
       "regModal",
       (data: IServerSceneMetaMessageExt) => {
         this.updateServerInfo(data);
-      },
+      }
     );
   }
 
@@ -99,7 +99,7 @@ export class RegModal extends Modal {
       getP("Stage name", data.stageName),
       getP("Author", data.stageAuthor),
       getP("Player count", data.currPlayerCount),
-      getP("Max players", data.maxPlayerCount),
+      getP("Max players", data.maxPlayerCount)
     );
   };
 }
@@ -134,7 +134,7 @@ export class GameMenuModal extends Modal implements IFocusable {
 
     this.controlsModal = new ControlsModal(
       document.querySelector<HTMLDivElement>(".modal-container"),
-      this,
+      this
     );
     this.focusManager.register(this.controlsModal);
   };
@@ -162,7 +162,7 @@ export class GameMenuModal extends Modal implements IFocusable {
         this.controlsModal.show();
       }),
       makeBtn("Exit game", () => (document.location = document.location)),
-      makeIconLink("github.png", repoRoute),
+      makeIconLink("github.png", repoRoute)
     );
 
     return options;
@@ -192,7 +192,7 @@ export class ControlsModal extends Modal implements IFocusable {
   onFocusReceiveKey: IFocusable["onFocusReceiveKey"] = (
     key,
     status,
-    realKeyCode,
+    realKeyCode
   ) => {
     if (status == "down") {
       if (key == "back" && !this.currentControlButtonRef) this.hide();
@@ -202,13 +202,13 @@ export class ControlsModal extends Modal implements IFocusable {
             ...new Set(
               this.controlsConfig
                 .getValue(this.currentControlKey)
-                .concat(realKeyCode),
+                .concat(realKeyCode)
             ),
           ];
           this.controlsConfig.setValue(this.currentControlKey, newControlList);
           this.currentControlButtonRef.innerText = newControlList.join(", ");
           this.currentControlButtonRef.classList.remove(
-            "smsh-button--activated",
+            "smsh-button--activated"
           );
           this.currentControlButtonRef = null;
           this.currentControlKey = null;
@@ -249,7 +249,7 @@ export class ControlsModal extends Modal implements IFocusable {
         this.controlButtonList.push(controlButton);
         controlButton.onclick = () => {
           this.currentControlButtonRef?.classList.remove(
-            "smsh-button--activated",
+            "smsh-button--activated"
           );
           if (this.currentControlButtonRef == controlButton) {
             this.currentControlButtonRef = null;
@@ -275,14 +275,14 @@ export class ControlsModal extends Modal implements IFocusable {
         resetButton.onclick = () => {
           this.controlsConfig.setValue(
             controlKey,
-            defaultControlsObj[controlKey],
+            defaultControlsObj[controlKey]
           );
           controlButton.innerText = this.controlsConfig
             .getValue(controlKey)
             .join(", ");
           controlButton.classList.remove("smsh-button--activated");
           this.currentControlButtonRef?.classList.remove(
-            "smsh-button--activated",
+            "smsh-button--activated"
           );
           this.currentControlButtonRef = null;
           this.currentControlKey = null;
@@ -317,7 +317,7 @@ const initGameLayout = async () => {
 
   const chat = new Chat(
     document.querySelector(".chat-container"),
-    client.sendChatMessage,
+    client.sendChatMessage
   );
   client.on("connRes", "main", (data: IConnectResponseMessageExt) => {
     if (data.status == "allowed") {
@@ -332,16 +332,16 @@ const initGameLayout = async () => {
   });
 
   const soundTrackMgr = new AudioTrackManager();
-  // TODO: this was broken after my rewrite of audioManager :(
-  soundTrackMgr.on("onStartedSoundtrack", "toast", (data) => {
-    toast.notify(`smsh2 OST — ${data.name}`, "music");
+
+  soundTrackMgr.on("onStartedSoundtrack", "toast", (name: string) => {
+    toast.notify(`smsh2 OST — ${name}`, "music");
   });
-  // const soundMgr = new AudioEventManager();
-  // TODO: implement conditions for playing sound events
+
+  const audioEventMgr = new AudioEventManager();
 
   const toast = new Toast(document.querySelector(".toast-container"));
   client.on("serverNotify", "toast", (data: IServerNotificationExt) =>
-    toast.notify(data.message, data.type),
+    toast.notify(data.message, data.type)
   );
   client.on("connRes", "toast", (data: IConnectResponseMessageExt) => {
     if (data.status != "allowed") {
@@ -351,7 +351,7 @@ const initGameLayout = async () => {
   });
 
   const easel = document.querySelector<HTMLDivElement>(".easel");
-  const easelManager = new EaselManager(easel, client);
+  const easelManager = new EaselManager(easel, client, audioEventMgr);
 
   const focus = new FocusManager();
   focus.register(client);
@@ -360,7 +360,7 @@ const initGameLayout = async () => {
   });
 
   const menuModal = new GameMenuModal(
-    document.querySelector<HTMLDivElement>(".modal-container"),
+    document.querySelector<HTMLDivElement>(".modal-container")
   );
   focus.register(menuModal);
 
@@ -369,7 +369,7 @@ const initGameLayout = async () => {
     (clientName: string) => {
       if (clientName.trim()) client.connectByClientName(clientName);
     },
-    client,
+    client
   );
   regModal.show();
 };

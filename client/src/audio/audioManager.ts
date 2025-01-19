@@ -3,29 +3,29 @@ import { EventEmitter, IEventEmitterPublicInterface } from "../utils.js";
 
 abstract class AudioManager {
   protected abstract storeSound(
-    name: keyof typeof soundEventMap | keyof typeof soundTrackMap,
+    name: keyof typeof soundEventMap | keyof typeof soundTrackMap
   ): void;
 
   public abstract playSound(
-    name: keyof typeof soundEventMap | keyof typeof soundTrackMap,
+    name: keyof typeof soundEventMap | keyof typeof soundTrackMap
   ): void;
 
   public abstract pauseSound(
-    name: keyof typeof soundEventMap | keyof typeof soundTrackMap,
+    name: keyof typeof soundEventMap | keyof typeof soundTrackMap
   ): void;
 }
 
 export class AudioTrackManager
   extends AudioManager
-  implements IEventEmitterPublicInterface<AudioEvents>
+  implements IEventEmitterPublicInterface<SoundTrackEventsType>
 {
-  private eventEmitter = new EventEmitter<AudioEvents>();
+  private eventEmitter = new EventEmitter<SoundTrackEventsType>();
   on = (
-    eventName: AudioEvents,
+    eventName: SoundTrackEventsType,
     callbackID: string,
-    callback: (data?: any) => void | Promise<void>,
+    callback: (data?: any) => void | Promise<void>
   ) => this.eventEmitter.on(eventName, callbackID, callback);
-  off = (eventName: AudioEvents, callbackID: string) =>
+  off = (eventName: SoundTrackEventsType, callbackID: string) =>
     this.eventEmitter.off(eventName, callbackID);
 
   private soundTrackCache: { [key: string]: SoundTrack } = {};
@@ -42,6 +42,7 @@ export class AudioTrackManager
     if (this.currentSoundtrackName) this.stopCurrentSound();
     this.currentSoundtrackName = name;
     this.soundTrackCache[name].audioElement.play();
+    this.eventEmitter.emit("onStartedSoundtrack", name);
   };
 
   pauseSound = (name: keyof typeof soundTrackMap) => {
@@ -50,16 +51,13 @@ export class AudioTrackManager
 
   stopCurrentSound = () => {
     this.pauseSound(this.currentSoundtrackName);
-    this.soundTrackCache[this.currentSoundtrackName].audioElement.currentTime =
-      0;
+    this.soundTrackCache[
+      this.currentSoundtrackName
+    ].audioElement.currentTime = 0;
+    this.eventEmitter.emit("onStoppedSoundtrack", this.currentSoundtrackName);
   };
-
-  constructor() {
-    super(); // ваще чётко
-  }
 }
 
-// TODO: event emmitter here?
 export class AudioEventManager extends AudioManager {
   private audioCtx = new AudioContext();
   private soundEventsCache: { [key: string]: StereoSound } = {};
@@ -71,6 +69,7 @@ export class AudioEventManager extends AudioManager {
   };
 
   playSound = (name: keyof typeof soundEventMap) => {
+    this.storeSound(name);
     if (this.audioCtx.state === "suspended") this.audioCtx.resume();
     this.soundEventsCache[name].audioElement.play();
   };
@@ -88,7 +87,7 @@ export class AudioEventManager extends AudioManager {
 
   setSoundChannelBalance = (
     name: keyof typeof soundEventMap,
-    balanceVal: number,
+    balanceVal: number
   ) => {
     this.soundEventsCache[name].setChannelBalance(balanceVal);
   };
@@ -128,9 +127,9 @@ class StereoSound extends Sound {
     this.mediaSrc = ctx.createMediaElementSource(this.audioElement);
 
     this.gainNodeL = new GainNode(ctx);
-    this.gainNodeL.gain.value = 2;
+    this.gainNodeL.gain.value = 1;
     this.gainNodeR = new GainNode(ctx);
-    this.gainNodeR.gain.value = 2;
+    this.gainNodeR.gain.value = 1;
 
     this.splitterNode = new ChannelSplitterNode(ctx, {
       numberOfOutputs: StereoSound.channelCount,
@@ -157,21 +156,21 @@ class StereoSound extends Sound {
 
 // 2.1, 5.1, 7.1, ... ?
 
-// TODO: are onStartEvent, onStopEvent needed?
-type AudioEvents = "onStartedSoundtrack" | "onStoppedSoundtrack";
+type SoundTrackEventsType = "onStartedSoundtrack" | "onStoppedSoundtrack";
 
 const soundTrackMap = {
   iceworld: "iceworld.mp3",
   mycelium: "mycelium.mp3",
 } as const;
 
+// TODO jump, itemPickup
 const soundEventMap = {
   jump: "jump.mp3",
-  punch_air: "punch_air.mp3",
+  punchAir: "punch_air.mp3",
   punch: "punch.mp3",
-  item_pickup: "item_pickup.m4a",
-  pistol_shot: "pistol_shot.mp3",
-  shotgun_shot: "shotgun_shot.mp3",
-  bazooka_shot: "bazooka_rocket_launch.mp3",
-  bazooka_explosion: "bazooka_rocket_explosion.mp3",
+  itemPickup: "item_pickup.m4a",
+  pistolShot: "pistol_shot.mp3",
+  shotgunShot: "shotgun_shot.mp3",
+  bazookaShot: "bazooka_rocket_launch.mp3",
+  bazookaExplosion: "bazooka_rocket_explosion.mp3",
 } as const;
