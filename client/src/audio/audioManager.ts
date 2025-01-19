@@ -61,15 +61,15 @@ export class AudioEventManager extends AudioManager {
   private currentSoundEvents = new Map<number, StereoSound>();
 
   protected storeSound = (name: keyof typeof soundEventMap) => {
-    let sndIdex = 1;
-    while (this.currentSoundEvents.get(sndIdex)) sndIdex++;
-    this.currentSoundEvents.set(sndIdex, new StereoSound(name, this.audioCtx));
+    let sndIndex = 1;
+    while (this.currentSoundEvents.get(sndIndex)) sndIndex++;
+    this.currentSoundEvents.set(sndIndex, new StereoSound(name, this.audioCtx));
     this.currentSoundEvents
-      .get(sndIdex)
+      .get(sndIndex)
       .audioElement.addEventListener("ended", () => {
         this.deleteSound(sndIndex);
       });
-    return sndIdex;
+    return sndIndex;
   };
 
   playSound = (name: keyof typeof soundEventMap) => {
@@ -91,7 +91,7 @@ export class AudioEventManager extends AudioManager {
 
   private deleteSound = (soundID: number) => {
     this.currentSoundEvents.delete(soundID);
-  }
+  };
 
   // TODO: add calculation of channel balance value based on sound event's srcX
 
