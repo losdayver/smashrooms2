@@ -8,7 +8,7 @@ import {
   ISceneUpdatesMessageData,
 } from "../../../types/sceneTypes";
 import { StageExt } from "../../../types/stage";
-import { AudioEventManager } from "../audio/audioManager.js";
+import { AudioEventManager, soundEventMap } from "../audio/audioManager.js";
 import { Client } from "../client/client.js";
 import {
   backgroundRoute,
@@ -27,6 +27,15 @@ export class EaselManager {
   private clientPropNameTag: string;
   private clientPropID: string;
   audioEventMgr: AudioEventManager;
+
+  private readonly loadPropSoundMap: Partial<
+    Record<string, keyof typeof soundEventMap>
+  > = {
+    bullet: "pistolShot",
+    fist: "punchAir",
+    rocket: "bazookaShot",
+    explosion: "bazookaExplosion",
+  } as const;
 
   private loadProp = (prop: IBehaviouredPropExt) => {
     const img = document.createElement("img");
@@ -59,14 +68,8 @@ export class EaselManager {
     container.appendChild(img);
     this.pivot.appendChild(container);
 
-    if (prop.drawable.sprite == "bullet")
-      this.audioEventMgr.playSound("pistolShot");
-    else if (prop.drawable.sprite == "fist")
-      this.audioEventMgr.playSound("punchAir");
-    else if (prop.drawable.sprite == "rocket")
-      this.audioEventMgr.playSound("bazookaShot");
-    else if (prop.drawable.sprite == "explosion")
-      this.audioEventMgr.playSound("bazookaExplosion");
+    const sound = this.loadPropSoundMap[prop.drawable?.sprite];
+    if (sound) this.audioEventMgr.playSound(sound);
 
     if (!this.clientPropID) {
       if (prop.nameTagged && prop.nameTagged.tag == this.clientPropNameTag)

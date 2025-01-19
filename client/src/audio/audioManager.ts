@@ -129,9 +129,9 @@ class StereoSound extends Sound {
     this.mediaSrc = ctx.createMediaElementSource(this.audioElement);
 
     this.gainNodeL = new GainNode(ctx);
-    this.gainNodeL.gain.value = 1;
+    this.gainNodeL.gain.value = 0.5;
     this.gainNodeR = new GainNode(ctx);
-    this.gainNodeR.gain.value = 1;
+    this.gainNodeR.gain.value = 0.5;
 
     this.splitterNode = new ChannelSplitterNode(ctx, {
       numberOfOutputs: StereoSound.channelCount,
@@ -166,7 +166,7 @@ const soundTrackMap = {
 } as const;
 
 // TODO jump, itemPickup
-const soundEventMap = {
+export const soundEventMap = {
   jump: "jump.mp3",
   punchAir: "punch_air.mp3",
   punch: "punch.mp3",
