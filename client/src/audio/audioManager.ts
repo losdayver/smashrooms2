@@ -3,16 +3,16 @@ import { EventEmitter, IEventEmitterPublicInterface } from "../utils.js";
 
 abstract class AudioManager {
   protected abstract storeSound(
-    name: keyof typeof soundEventMap | keyof typeof soundTrackMap
+    name: keyof typeof soundEventMap | keyof typeof soundTrackMap,
   ): void;
 
   public abstract playSound(
-    name: keyof typeof soundEventMap | keyof typeof soundTrackMap
-  ): void;
+    name: keyof typeof soundEventMap | keyof typeof soundTrackMap,
+  ): number | null;
 
-  public abstract pauseSound(
-    name: keyof typeof soundEventMap | keyof typeof soundTrackMap
-  ): void;
+  public abstract pauseSound(soundID: number | null): void;
+
+  public abstract stopSound(soundID: number | null): void;
 }
 
 export class AudioTrackManager
@@ -23,73 +23,75 @@ export class AudioTrackManager
   on = (
     eventName: SoundTrackEventsType,
     callbackID: string,
-    callback: (data?: any) => void | Promise<void>
+    callback: (data?: any) => void | Promise<void>,
   ) => this.eventEmitter.on(eventName, callbackID, callback);
   off = (eventName: SoundTrackEventsType, callbackID: string) =>
     this.eventEmitter.off(eventName, callbackID);
 
-  private soundTrackCache: { [key: string]: SoundTrack } = {};
-  private currentSoundtrackName: keyof typeof soundTrackMap = null;
+  private currentSoundTrack: SoundTrack = null;
+  private currentSoundTrackName: string = null;
 
   protected storeSound = (name: keyof typeof soundTrackMap) => {
-    if (!this.soundTrackCache[name]) {
-      this.soundTrackCache[name] = new SoundTrack(name);
-    }
+    this.currentSoundTrack = new SoundTrack(name);
+    this.currentSoundTrackName = name;
   };
 
   playSound = (name: keyof typeof soundTrackMap) => {
+    if (this.currentSoundTrack) this.stopSound();
     this.storeSound(name);
-    if (this.currentSoundtrackName) this.stopCurrentSound();
-    this.currentSoundtrackName = name;
-    this.soundTrackCache[name].audioElement.play();
-    this.eventEmitter.emit("onStartedSoundtrack", name);
+    this.currentSoundTrack.audioElement.play();
+    this.eventEmitter.emit("onStartedSoundtrack", this.currentSoundTrackName);
+    return null;
   };
 
-  pauseSound = (name: keyof typeof soundTrackMap) => {
-    this.soundTrackCache[name].audioElement.pause();
+  pauseSound = () => {
+    this.currentSoundTrack.audioElement.pause();
   };
 
-  stopCurrentSound = () => {
-    this.pauseSound(this.currentSoundtrackName);
-    this.soundTrackCache[
-      this.currentSoundtrackName
-    ].audioElement.currentTime = 0;
-    this.eventEmitter.emit("onStoppedSoundtrack", this.currentSoundtrackName);
+  stopSound = () => {
+    this.pauseSound();
+    this.currentSoundTrack.audioElement.currentTime = 0;
+    this.eventEmitter.emit("onStoppedSoundtrack", this.currentSoundTrackName);
   };
 }
 
 export class AudioEventManager extends AudioManager {
   private audioCtx = new AudioContext();
-  private soundEventsCache: { [key: string]: StereoSound } = {};
+  // private soundEventsCache: { [key: string]: StereoSound } = {};
+  private currentSoundEvents = new Map<number, StereoSound>();
 
   protected storeSound = (name: keyof typeof soundEventMap) => {
-    if (!this.soundEventsCache[name]) {
-      this.soundEventsCache[name] = new StereoSound(name, this.audioCtx);
-    }
+    let sndIdex = 1;
+    while (this.currentSoundEvents.get(sndIdex)) sndIdex++;
+    this.currentSoundEvents.set(sndIdex, new StereoSound(name, this.audioCtx));
+    this.currentSoundEvents
+      .get(sndIdex)
+      .audioElement.addEventListener("ended", () => {
+        this.currentSoundEvents.delete(sndIdex);
+      });
+    return sndIdex;
   };
 
   playSound = (name: keyof typeof soundEventMap) => {
-    this.storeSound(name);
+    const soundID = this.storeSound(name);
     if (this.audioCtx.state === "suspended") this.audioCtx.resume();
-    this.soundEventsCache[name].audioElement.play();
+    this.currentSoundEvents.get(soundID).audioElement.play();
+    return soundID;
   };
 
-  pauseSound = (name: keyof typeof soundEventMap) => {
-    this.soundEventsCache[name].audioElement.pause();
+  pauseSound = (soundID: number) => {
+    this.currentSoundEvents.get(soundID).audioElement.pause();
   };
 
-  stopSound = (name: keyof typeof soundTrackMap) => {
-    this.soundEventsCache[name].audioElement.pause();
-    this.soundEventsCache[name].audioElement.currentTime = 0;
+  stopSound = (soundID: number) => {
+    this.pauseSound(soundID);
+    this.currentSoundEvents.get(soundID).audioElement.currentTime = 0;
   };
 
   // TODO: add calculation of channel balance value based on sound event's srcX
 
-  setSoundChannelBalance = (
-    name: keyof typeof soundEventMap,
-    balanceVal: number
-  ) => {
-    this.soundEventsCache[name].setChannelBalance(balanceVal);
+  setSoundChannelBalance = (soundID: number, balanceVal: number) => {
+    this.currentSoundEvents.get(soundID).setChannelBalance(balanceVal);
   };
 
   constructor() {
