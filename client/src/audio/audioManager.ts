@@ -74,7 +74,7 @@ export class AudioEventManager extends AudioManager {
 
   protected storeSound = (name: keyof typeof soundEventMap) => {
     if (!this.audioBuffersCache.get(name))
-      fetch(soundEventMap[name])
+      fetch(soundEventRoute + soundEventMap[name])
         .then((response) => response.arrayBuffer())
         .then((buffer) => this.audioCtx.decodeAudioData(buffer))
         .then((decodedData) => {
@@ -171,7 +171,7 @@ const soundTrackMap = {
 } as const;
 
 // TODO jump, itemPickup
-const soundEventMap = {
+export const soundEventMap = {
   jump: "jump.mp3",
   punchAir: "punch_air.mp3",
   punch: "punch.mp3",
