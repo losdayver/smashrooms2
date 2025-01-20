@@ -91,7 +91,7 @@ export class AudioEventManager extends AudioManager {
       sndIndex,
       new StereoSound(this.audioCtx, this.audioBuffersCache.get(name))
     );
-    this.currentAudioEvents.get(sndIndex).audioSrc.start();
+    this.currentAudioEvents.get(sndIndex).audioSrc.start(0);
     this.currentAudioEvents
       .get(sndIndex)
       .audioSrc.addEventListener("ended", () => {
@@ -132,6 +132,7 @@ class StereoSound {
   constructor(ctx: AudioContext, audioBuf: AudioBuffer) {
     this.audioSrc = ctx.createBufferSource();
     this.audioSrc.buffer = audioBuf;
+    this.audioSrc.connect(ctx.destination);
 
     this.gainNodeL = new GainNode(ctx);
     this.gainNodeL.gain.value = 1;
