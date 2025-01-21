@@ -8,7 +8,7 @@ abstract class AudioManager {
 
   public abstract playSound(
     name: keyof typeof soundEventMap | keyof typeof soundTrackMap
-  ): number | null;
+  ): Promise<number> | null;
 
   public abstract pauseSound(soundID: number | null): void;
 
@@ -35,6 +35,7 @@ export class AudioTrackManager
     this.currentSoundTrack = new Audio(soundTrackRoute + soundTrackMap[name]);
     this.currentSoundTrack.loop = true;
     this.currentSoundTrackName = name;
+    return true;
   };
 
   playSound = (name: keyof typeof soundTrackMap) => {
@@ -56,25 +57,16 @@ export class AudioTrackManager
   };
 }
 
-class SoundTrack {
-  public audioElement: HTMLAudioElement;
-
-  constructor(baseName: string) {
-    this.audioElement = new Audio(soundTrackRoute + baseName);
-    this.audioElement.loop = true;
-  }
-}
-
 export class AudioEventManager extends AudioManager {
-  private audioCtx = new AudioContext();
-  // TODO: should we cache ArrayBuffers or AudioBuffers ?
-  //  AudioBuffers are basically decoded ArrayBuffers
+  private audioCtx: AudioContext = new AudioContext();
   private audioBuffersCache = new Map<string, AudioBuffer>();
   private currentAudioEvents = new Map<number, StereoSound>();
 
-  protected storeSound = (name: keyof typeof soundEventMap) => {
+  protected storeSound = async (
+    name: keyof typeof soundEventMap
+  ): Promise<void> => {
     if (!this.audioBuffersCache.get(name))
-      fetch(soundEventRoute + soundEventMap[name])
+      await fetch(soundEventRoute + soundEventMap[name])
         .then((response) => response.arrayBuffer())
         .then((buffer) => this.audioCtx.decodeAudioData(buffer))
         .then((decodedData) => {
@@ -82,21 +74,25 @@ export class AudioEventManager extends AudioManager {
         });
   };
 
-  playSound = (name: keyof typeof soundEventMap) => {
-    this.storeSound(name);
-    if (this.audioCtx.state === "suspended") this.audioCtx.resume();
+  private createSound = (name: keyof typeof soundEventMap): number => {
     let sndIndex = 1;
     while (this.currentAudioEvents.get(sndIndex)) sndIndex++;
     this.currentAudioEvents.set(
       sndIndex,
       new StereoSound(this.audioCtx, this.audioBuffersCache.get(name))
     );
-    this.currentAudioEvents.get(sndIndex).audioSrc.start(0);
-    this.currentAudioEvents
-      .get(sndIndex)
-      .audioSrc.addEventListener("ended", () => {
-        this.currentAudioEvents.delete(sndIndex);
-      });
+    return sndIndex;
+  };
+
+  playSound = async (name: keyof typeof soundEventMap): Promise<number> => {
+    if (this.audioCtx.state === "suspended") await this.audioCtx.resume();
+    await this.storeSound(name);
+    const sndIndex = this.createSound(name);
+    const currentAudioEvent = this.currentAudioEvents.get(sndIndex);
+    currentAudioEvent.audioSrc.start();
+    currentAudioEvent.audioSrc.addEventListener("ended", () => {
+      this.currentAudioEvents.delete(sndIndex);
+    });
     return sndIndex;
   };
 
@@ -109,7 +105,8 @@ export class AudioEventManager extends AudioManager {
     this.currentAudioEvents.delete(soundID);
   };
 
-  // TODO: add calculation of channel balance value based on sound event's srcX
+  // TODO: add calculation of channel balance value based on sound event's srcX (and srcY), or maybe even more complex logic
+  //  and think about where it should be incapsulated
 
   setSoundChannelBalance = (soundID: number, balanceVal: number) => {
     this.currentAudioEvents.get(soundID).setChannelBalance(balanceVal);
@@ -120,24 +117,45 @@ export class AudioEventManager extends AudioManager {
   }
 }
 
-class StereoSound {
+// TODO: better name?
+abstract class SoundMixer {
+  protected static defaultGain: number = 0.5;
+  protected abstract passThroughMixer(ctx: AudioContext): void;
+}
+
+class StereoSound extends SoundMixer {
+  // TODO: get it from audioSrc.channelCount
+  //  and then dynamically create various types of sounds, make SoundFactory
+  public static channelCount: number = 2;
   public audioSrc: AudioBufferSourceNode;
-  private gainNodeL: GainNode;
-  private gainNodeR: GainNode;
   private splitterNode: ChannelSplitterNode;
   private mergerNode: ChannelMergerNode;
-  private dest: MediaStreamAudioDestinationNode;
-  private static channelCount: number = 2; // or read from: 'audioSource.channelCount
+  private gainNodeL: GainNode;
+  private gainNodeR: GainNode;
+
+  setChannelBalance = (balanceVal: number) => {
+    this.gainNodeL.gain.value = StereoSound.defaultGain - balanceVal;
+    this.gainNodeR.gain.value = StereoSound.defaultGain + balanceVal;
+  };
+
+  protected passThroughMixer = (ctx: AudioContext): void => {
+    this.audioSrc.connect(this.splitterNode);
+    this.splitterNode.connect(this.gainNodeL, 0);
+    this.splitterNode.connect(this.gainNodeR, 1);
+    this.gainNodeL.connect(this.mergerNode, 0, 0);
+    this.gainNodeR.connect(this.mergerNode, 0, 1);
+    this.mergerNode.connect(ctx.destination);
+  };
 
   constructor(ctx: AudioContext, audioBuf: AudioBuffer) {
+    super();
     this.audioSrc = ctx.createBufferSource();
     this.audioSrc.buffer = audioBuf;
-    this.audioSrc.connect(ctx.destination);
 
     this.gainNodeL = new GainNode(ctx);
-    this.gainNodeL.gain.value = 1;
+    this.gainNodeL.gain.value = StereoSound.defaultGain;
     this.gainNodeR = new GainNode(ctx);
-    this.gainNodeR.gain.value = 1;
+    this.gainNodeR.gain.value = StereoSound.defaultGain;
 
     this.splitterNode = new ChannelSplitterNode(ctx, {
       numberOfOutputs: StereoSound.channelCount,
@@ -146,23 +164,11 @@ class StereoSound {
       numberOfInputs: StereoSound.channelCount,
     });
 
-    this.splitterNode.connect(this.gainNodeL, 0);
-    this.splitterNode.connect(this.gainNodeR, 1);
-
-    this.gainNodeL.connect(this.mergerNode, 0, 0);
-    this.gainNodeR.connect(this.mergerNode, 0, 1);
-
-    this.dest = ctx.createMediaStreamDestination();
-    this.mergerNode.connect(ctx.destination);
+    this.passThroughMixer(ctx);
   }
-
-  setChannelBalance = (balanceVal: number) => {
-    this.gainNodeL.gain.value = 1 - balanceVal;
-    this.gainNodeR.gain.value = 1 + balanceVal;
-  };
 }
 
-// 2.1, 5.1, 7.1, ... ?
+// class FivePointOneSound, class SevenPointOneSound, ...
 
 type SoundTrackEventsType = "onStartedSoundtrack" | "onStoppedSoundtrack";
 
