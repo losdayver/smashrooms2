@@ -60,7 +60,7 @@ export class AudioTrackManager
 export class AudioEventManager extends AudioManager {
   private audioCtx: AudioContext = new AudioContext();
   private audioBuffersCache = new Map<string, AudioBuffer>();
-  private currentAudioEvents = new Map<number, StereoSound>();
+  private currentAudioEvents = new Map<number, StereoAudioEvent>();
 
   protected storeSound = async (
     name: keyof typeof soundEventMap
@@ -79,7 +79,7 @@ export class AudioEventManager extends AudioManager {
     while (this.currentAudioEvents.get(sndIndex)) sndIndex++;
     this.currentAudioEvents.set(
       sndIndex,
-      new StereoSound(this.audioCtx, this.audioBuffersCache.get(name))
+      new StereoAudioEvent(this.audioCtx, this.audioBuffersCache.get(name))
     );
     return sndIndex;
   };
@@ -97,7 +97,7 @@ export class AudioEventManager extends AudioManager {
   };
 
   pauseSound = (soundID: number) => {
-    this.currentAudioEvents.get(soundID).audioSrc.stop();
+    this.currentAudioEvents.get(soundID).audioSrc?.stop();
   };
 
   stopSound = (soundID: number) => {
@@ -111,19 +111,14 @@ export class AudioEventManager extends AudioManager {
   setSoundChannelBalance = (soundID: number, balanceVal: number) => {
     this.currentAudioEvents.get(soundID).setChannelBalance(balanceVal);
   };
-
-  constructor() {
-    super();
-  }
 }
 
-// TODO: better name?
-abstract class SoundMixer {
+abstract class AudioPreamp {
   protected static defaultGain: number = 0.5;
   protected abstract passThroughMixer(ctx: AudioContext): void;
 }
 
-class StereoSound extends SoundMixer {
+class StereoAudioEvent extends AudioPreamp {
   // TODO: get it from audioSrc.channelCount
   //  and then dynamically create various types of sounds, make SoundFactory
   public static channelCount: number = 2;
@@ -134,8 +129,8 @@ class StereoSound extends SoundMixer {
   private gainNodeR: GainNode;
 
   setChannelBalance = (balanceVal: number) => {
-    this.gainNodeL.gain.value = StereoSound.defaultGain - balanceVal;
-    this.gainNodeR.gain.value = StereoSound.defaultGain + balanceVal;
+    this.gainNodeL.gain.value = StereoAudioEvent.defaultGain - balanceVal;
+    this.gainNodeR.gain.value = StereoAudioEvent.defaultGain + balanceVal;
   };
 
   protected passThroughMixer = (ctx: AudioContext): void => {
@@ -153,15 +148,15 @@ class StereoSound extends SoundMixer {
     this.audioSrc.buffer = audioBuf;
 
     this.gainNodeL = new GainNode(ctx);
-    this.gainNodeL.gain.value = StereoSound.defaultGain;
+    this.gainNodeL.gain.value = StereoAudioEvent.defaultGain;
     this.gainNodeR = new GainNode(ctx);
-    this.gainNodeR.gain.value = StereoSound.defaultGain;
+    this.gainNodeR.gain.value = StereoAudioEvent.defaultGain;
 
     this.splitterNode = new ChannelSplitterNode(ctx, {
-      numberOfOutputs: StereoSound.channelCount,
+      numberOfOutputs: StereoAudioEvent.channelCount,
     });
     this.mergerNode = new ChannelMergerNode(ctx, {
-      numberOfInputs: StereoSound.channelCount,
+      numberOfInputs: StereoAudioEvent.channelCount,
     });
 
     this.passThroughMixer(ctx);
