@@ -371,7 +371,7 @@ const initGameLayout = async () => {
     document.querySelector<HTMLDivElement>(".modal-container"),
     (desiredClientName: string) => {
       if (desiredClientName.trim()) {
-        clientName = ""; // TODO: is it the best way?
+        clientName = "";
         client.connectByClientName(desiredClientName);
         clientName = desiredClientName;
       }
