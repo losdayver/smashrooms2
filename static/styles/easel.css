@@ -32,7 +32,7 @@
 }
 
 .easel__prop-sprite.you::after {
-  border: 2.5px ridge var(--borderColor) !important;
+  border: 2.5px ridge var(--easel__prop-sprite--border-color) !important;
 }
 
 .easel__layout-tile {

@@ -232,9 +232,8 @@ export class EaselManager {
         this.constructStage(stage);
       }
     );
-    // :root
-    document.documentElement.style.setProperty(
-      "--borderColor",
+    this.easelDiv.style.setProperty(
+      "--easel__prop-sprite--border-color",
       EaselManager.defaultNicknameHighlightColor
     );
   }
