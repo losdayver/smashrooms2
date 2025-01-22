@@ -26,6 +26,8 @@ export class EaselManager {
   client: Client;
   private clientPropNameTag: string;
   private clientPropID: string;
+  // TODO: make it random or user-set in the future
+  private static readonly defaultNicknameHighlightColor = "yellow";
   audioEventMgr: AudioEventManager;
 
   private readonly loadPropSoundMap: Partial<
@@ -184,6 +186,16 @@ export class EaselManager {
 
     this.easelDiv.style.backgroundImage = `url(${backgroundRoute}forest.png)`;
     this.easelDiv.appendChild(this.layoutPivot);
+  };
+
+  highlightPlayer = (nickname: string) => {
+    const highlightingStylesheet = document.createElement("style");
+    highlightingStylesheet.textContent = `
+      span[tag=\"${nickname}\"]::after {
+        border: 2.5px ridge ${EaselManager.defaultNicknameHighlightColor};
+      }
+    `;
+    document.head.appendChild(highlightingStylesheet);
   };
 
   constructor(
