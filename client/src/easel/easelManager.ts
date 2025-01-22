@@ -26,6 +26,7 @@ export class EaselManager {
   client: Client;
   private clientPropNameTag: string;
   private clientPropID: string;
+  private static readonly defaultNicknameHighlightColor = "yellow";
   audioEventMgr: AudioEventManager;
 
   private readonly loadPropSoundMap: Partial<
@@ -46,7 +47,6 @@ export class EaselManager {
       .drawable.offsetY}px)`;
 
     container.setAttribute("tag", prop?.nameTagged?.tag ?? "");
-
     container.className = "easel__prop-sprite";
 
     container.style.top = prop.positioned.posY.toString();
@@ -75,6 +75,7 @@ export class EaselManager {
       if (prop.nameTagged && prop.nameTagged.tag == this.clientPropNameTag)
         this.clientPropID = prop.ID;
     }
+    if (this.clientPropID === prop.ID) container.classList.add("you");
   };
 
   private updateProps = (update: ISceneUpdatesMessageData["update"]) => {
@@ -229,6 +230,10 @@ export class EaselManager {
 
         this.constructStage(stage);
       }
+    );
+    this.easelDiv.style.setProperty(
+      "--easel__prop-sprite--border-color",
+      EaselManager.defaultNicknameHighlightColor
     );
   }
 }

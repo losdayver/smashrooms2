@@ -31,6 +31,10 @@
   z-index: 99;
 }
 
+.easel__prop-sprite.you::after {
+  border: 2.5px ridge var(--easel__prop-sprite--border-color) !important;
+}
+
 .easel__layout-tile {
   position: absolute;
   border: 1px solid #000000ba;
