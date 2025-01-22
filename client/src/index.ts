@@ -314,8 +314,6 @@ export class ControlsModal extends Modal implements IFocusable {
 
 const initGameLayout = async () => {
   const client = new Client(`ws://${window.location.hostname}:5889`);
-  // TODO: make it a list/map in the future to enable multiple highlights in One Screen game mode
-  let clientName: string;
 
   const chat = new Chat(
     document.querySelector(".chat-container"),
@@ -344,7 +342,6 @@ const initGameLayout = async () => {
   const toast = new Toast(document.querySelector(".toast-container"));
   client.on("serverNotify", "toast", (data: IServerNotificationExt) => {
     toast.notify(data.message, data.type);
-    easelManager.highlightPlayer(clientName);
   });
   client.on("connRes", "toast", (data: IConnectResponseMessageExt) => {
     if (data.status != "allowed") {
@@ -370,11 +367,8 @@ const initGameLayout = async () => {
   const regModal = new RegModal(
     document.querySelector<HTMLDivElement>(".modal-container"),
     (desiredClientName: string) => {
-      if (desiredClientName.trim()) {
-        clientName = "";
+      if (desiredClientName.trim())
         client.connectByClientName(desiredClientName);
-        clientName = desiredClientName;
-      }
     },
     client
   );

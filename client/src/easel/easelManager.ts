@@ -48,8 +48,8 @@ export class EaselManager {
       .drawable.offsetY}px)`;
 
     container.setAttribute("tag", prop?.nameTagged?.tag ?? "");
-
     container.className = "easel__prop-sprite";
+    if (this.clientPropID === prop.ID) container.classList.add("you");
 
     container.style.top = prop.positioned.posY.toString();
     container.style.left = prop.positioned.posX.toString();
@@ -188,16 +188,6 @@ export class EaselManager {
     this.easelDiv.appendChild(this.layoutPivot);
   };
 
-  highlightPlayer = (nickname: string) => {
-    const highlightingStylesheet = document.createElement("style");
-    highlightingStylesheet.textContent = `
-      span[tag=\"${nickname}\"]::after {
-        border: 2.5px ridge ${EaselManager.defaultNicknameHighlightColor};
-      }
-    `;
-    document.head.appendChild(highlightingStylesheet);
-  };
-
   constructor(
     easelDiv: HTMLDivElement | HTMLSpanElement,
     client: Client,
@@ -241,6 +231,11 @@ export class EaselManager {
 
         this.constructStage(stage);
       }
+    );
+    // :root
+    document.documentElement.style.setProperty(
+      "--borderColor",
+      EaselManager.defaultNicknameHighlightColor
     );
   }
 }
