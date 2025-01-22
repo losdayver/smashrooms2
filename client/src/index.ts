@@ -340,9 +340,9 @@ const initGameLayout = async () => {
   const audioEventMgr = new AudioEventManager();
 
   const toast = new Toast(document.querySelector(".toast-container"));
-  client.on("serverNotify", "toast", (data: IServerNotificationExt) => {
-    toast.notify(data.message, data.type);
-  });
+  client.on("serverNotify", "toast", (data: IServerNotificationExt) =>
+    toast.notify(data.message, data.type)
+  );
   client.on("connRes", "toast", (data: IConnectResponseMessageExt) => {
     if (data.status != "allowed") {
       toast.notify("failed to connect!", "warning");
@@ -366,9 +366,8 @@ const initGameLayout = async () => {
 
   const regModal = new RegModal(
     document.querySelector<HTMLDivElement>(".modal-container"),
-    (desiredClientName: string) => {
-      if (desiredClientName.trim())
-        client.connectByClientName(desiredClientName);
+    (clientName: string) => {
+      if (clientName.trim()) client.connectByClientName(clientName);
     },
     client
   );
