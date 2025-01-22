@@ -49,7 +49,6 @@ export class EaselManager {
 
     container.setAttribute("tag", prop?.nameTagged?.tag ?? "");
     container.className = "easel__prop-sprite";
-    if (this.clientPropID === prop.ID) container.classList.add("you");
 
     container.style.top = prop.positioned.posY.toString();
     container.style.left = prop.positioned.posX.toString();
@@ -77,6 +76,7 @@ export class EaselManager {
       if (prop.nameTagged && prop.nameTagged.tag == this.clientPropNameTag)
         this.clientPropID = prop.ID;
     }
+    if (this.clientPropID === prop.ID) container.classList.add("you");
   };
 
   private updateProps = (update: ISceneUpdatesMessageData["update"]) => {
