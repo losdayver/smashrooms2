@@ -26,7 +26,6 @@ export class EaselManager {
   client: Client;
   private clientPropNameTag: string;
   private clientPropID: string;
-  // TODO: make it random or user-set in the future
   private static readonly defaultNicknameHighlightColor = "yellow";
   audioEventMgr: AudioEventManager;
 
