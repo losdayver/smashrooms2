@@ -8,7 +8,7 @@ abstract class AudioManager {
 
   public abstract playSound(
     name: keyof typeof soundEventMap | keyof typeof soundTrackMap
-  ): number | null;
+  ): Promise<number> | null;
 
   public abstract pauseSound(soundID: number | null): void;
 
@@ -28,140 +28,142 @@ export class AudioTrackManager
   off = (eventName: SoundTrackEventsType, callbackID: string) =>
     this.eventEmitter.off(eventName, callbackID);
 
-  private currentSoundTrack: SoundTrack = null;
-  private currentSoundTrackName: string = null;
+  private currentSoundTrack: HTMLAudioElement;
+  private currentSoundTrackName: string;
 
   protected storeSound = (name: keyof typeof soundTrackMap) => {
-    this.currentSoundTrack = new SoundTrack(name);
+    this.currentSoundTrack = new Audio(soundTrackRoute + soundTrackMap[name]);
+    this.currentSoundTrack.loop = true;
     this.currentSoundTrackName = name;
+    return true;
   };
 
   playSound = (name: keyof typeof soundTrackMap) => {
     if (this.currentSoundTrack) this.stopSound();
     this.storeSound(name);
-    this.currentSoundTrack.audioElement.play();
+    this.currentSoundTrack.play();
     this.eventEmitter.emit("onStartedSoundtrack", this.currentSoundTrackName);
     return null;
   };
 
   pauseSound = () => {
-    this.currentSoundTrack.audioElement.pause();
+    this.currentSoundTrack.pause();
   };
 
   stopSound = () => {
     this.pauseSound();
-    this.currentSoundTrack.audioElement.currentTime = 0;
+    this.currentSoundTrack.currentTime = 0;
     this.eventEmitter.emit("onStoppedSoundtrack", this.currentSoundTrackName);
   };
 }
 
 export class AudioEventManager extends AudioManager {
-  private audioCtx = new AudioContext();
-  // private soundEventsCache: { [key: string]: StereoSound } = {};
-  private currentSoundEvents = new Map<number, StereoSound>();
+  private audioCtx: AudioContext = new AudioContext();
+  private audioBuffersCache = new Map<string, AudioBuffer>();
+  private currentAudioEvents = new Map<number, StereoAudioEvent>();
 
-  protected storeSound = (name: keyof typeof soundEventMap) => {
+  protected storeSound = async (
+    name: keyof typeof soundEventMap
+  ): Promise<void> => {
+    if (!this.audioBuffersCache.get(name))
+      await fetch(soundEventRoute + soundEventMap[name])
+        .then((response) => response.arrayBuffer())
+        .then((buffer) => this.audioCtx.decodeAudioData(buffer))
+        .then((decodedData) => {
+          this.audioBuffersCache.set(name, decodedData);
+        });
+  };
+
+  private createSound = (name: keyof typeof soundEventMap): number => {
     let sndIndex = 1;
-    while (this.currentSoundEvents.get(sndIndex)) sndIndex++;
-    this.currentSoundEvents.set(sndIndex, new StereoSound(name, this.audioCtx));
-    this.currentSoundEvents
-      .get(sndIndex)
-      .audioElement.addEventListener("ended", () => {
-        this.deleteSound(sndIndex);
-      });
+    while (this.currentAudioEvents.get(sndIndex)) sndIndex++;
+    this.currentAudioEvents.set(
+      sndIndex,
+      new StereoAudioEvent(this.audioCtx, this.audioBuffersCache.get(name))
+    );
     return sndIndex;
   };
 
-  playSound = (name: keyof typeof soundEventMap) => {
-    const soundID = this.storeSound(name);
-    if (this.audioCtx.state === "suspended") this.audioCtx.resume();
-    this.currentSoundEvents.get(soundID).audioElement.play();
-    return soundID;
+  playSound = async (name: keyof typeof soundEventMap): Promise<number> => {
+    if (this.audioCtx.state === "suspended") await this.audioCtx.resume();
+    await this.storeSound(name);
+    const sndIndex = this.createSound(name);
+    const currentAudioEvent = this.currentAudioEvents.get(sndIndex);
+    currentAudioEvent.audioSrc.start();
+    currentAudioEvent.audioSrc.addEventListener("ended", () => {
+      this.currentAudioEvents.delete(sndIndex);
+    });
+    return sndIndex;
   };
 
   pauseSound = (soundID: number) => {
-    this.currentSoundEvents.get(soundID).audioElement.pause();
+    this.currentAudioEvents.get(soundID).audioSrc?.stop();
   };
 
   stopSound = (soundID: number) => {
     this.pauseSound(soundID);
-    this.currentSoundEvents.get(soundID).audioElement.currentTime = 0;
-    this.deleteSound(soundID);
+    this.currentAudioEvents.delete(soundID);
   };
 
-  private deleteSound = (soundID: number) => {
-    this.currentSoundEvents.delete(soundID);
-  };
-
-  // TODO: add calculation of channel balance value based on sound event's srcX
+  // TODO: add calculation of channel balance value based on sound event's srcX (and srcY), or maybe even more complex logic
+  //  and think about where it should be incapsulated
 
   setSoundChannelBalance = (soundID: number, balanceVal: number) => {
-    this.currentSoundEvents.get(soundID).setChannelBalance(balanceVal);
+    this.currentAudioEvents.get(soundID).setChannelBalance(balanceVal);
   };
-
-  constructor() {
-    super();
-  }
 }
 
-abstract class Sound {
-  public audioElement: HTMLAudioElement;
-
-  constructor(soundRoute: string, baseName: string) {
-    this.audioElement = new Audio(soundRoute + baseName);
-  }
+abstract class AudioPreamp {
+  protected static defaultGain: number = 0.5;
+  protected abstract passThroughMixer(ctx: AudioContext): void;
 }
 
-class SoundTrack extends Sound {
-  constructor(name: string) {
-    super(soundTrackRoute, soundTrackMap[name]);
-    this.audioElement.loop = true;
-  }
-}
-
-class StereoSound extends Sound {
-  private mediaSrc: MediaElementAudioSourceNode;
-  private gainNodeL: GainNode;
-  private gainNodeR: GainNode;
+class StereoAudioEvent extends AudioPreamp {
+  // TODO: get it from audioSrc.channelCount
+  //  and then dynamically create various types of sounds, make SoundFactory
+  public static channelCount: number = 2;
+  public audioSrc: AudioBufferSourceNode;
   private splitterNode: ChannelSplitterNode;
   private mergerNode: ChannelMergerNode;
-  private balanceValue: number = 0;
-  private static channelCount = 2; // or read from: 'audioSource.channelCount'
-
-  constructor(name: string, ctx: AudioContext) {
-    super(soundEventRoute, soundEventMap[name]);
-    // this.audioElement.crossOrigin = "anonymous";
-    this.mediaSrc = ctx.createMediaElementSource(this.audioElement);
-
-    this.gainNodeL = new GainNode(ctx);
-    this.gainNodeL.gain.value = 0.5;
-    this.gainNodeR = new GainNode(ctx);
-    this.gainNodeR.gain.value = 0.5;
-
-    this.splitterNode = new ChannelSplitterNode(ctx, {
-      numberOfOutputs: StereoSound.channelCount,
-    });
-    this.mergerNode = new ChannelMergerNode(ctx, {
-      numberOfInputs: StereoSound.channelCount,
-    });
-
-    this.mediaSrc.connect(this.splitterNode);
-    this.splitterNode.connect(this.gainNodeL, 0);
-    this.splitterNode.connect(this.gainNodeR, 1);
-
-    this.gainNodeL.connect(this.mergerNode, 0, 0);
-    this.gainNodeR.connect(this.mergerNode, 0, 1);
-
-    this.mergerNode.connect(ctx.destination);
-  }
+  private gainNodeL: GainNode;
+  private gainNodeR: GainNode;
 
   setChannelBalance = (balanceVal: number) => {
-    this.gainNodeL.gain.value = 1 - balanceVal;
-    this.gainNodeR.gain.value = 1 + balanceVal;
+    this.gainNodeL.gain.value = StereoAudioEvent.defaultGain - balanceVal;
+    this.gainNodeR.gain.value = StereoAudioEvent.defaultGain + balanceVal;
   };
+
+  protected passThroughMixer = (ctx: AudioContext): void => {
+    this.audioSrc.connect(this.splitterNode);
+    this.splitterNode.connect(this.gainNodeL, 0);
+    this.splitterNode.connect(this.gainNodeR, 1);
+    this.gainNodeL.connect(this.mergerNode, 0, 0);
+    this.gainNodeR.connect(this.mergerNode, 0, 1);
+    this.mergerNode.connect(ctx.destination);
+  };
+
+  constructor(ctx: AudioContext, audioBuf: AudioBuffer) {
+    super();
+    this.audioSrc = ctx.createBufferSource();
+    this.audioSrc.buffer = audioBuf;
+
+    this.gainNodeL = new GainNode(ctx);
+    this.gainNodeL.gain.value = StereoAudioEvent.defaultGain;
+    this.gainNodeR = new GainNode(ctx);
+    this.gainNodeR.gain.value = StereoAudioEvent.defaultGain;
+
+    this.splitterNode = new ChannelSplitterNode(ctx, {
+      numberOfOutputs: StereoAudioEvent.channelCount,
+    });
+    this.mergerNode = new ChannelMergerNode(ctx, {
+      numberOfInputs: StereoAudioEvent.channelCount,
+    });
+
+    this.passThroughMixer(ctx);
+  }
 }
 
-// 2.1, 5.1, 7.1, ... ?
+// class FivePointOneSound, class SevenPointOneSound, ...
 
 type SoundTrackEventsType = "onStartedSoundtrack" | "onStoppedSoundtrack";
 
