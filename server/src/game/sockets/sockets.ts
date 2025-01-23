@@ -22,6 +22,7 @@ export class WSSocketServer implements ISocketServer {
   private communicator: ICommunicator;
   private port: number;
   private clientMap: Map<string, IWSClient> = new Map();
+  private clientRequirementChecks: Map<string, clientCheck> = new Map();
   private socketServer: WebSocketServer;
   private maxClients: number;
   private static readonly maxNicknameLength: number = 16;
@@ -150,8 +151,6 @@ export class WSSocketServer implements ISocketServer {
     }
     return true;
   };
-
-  private clientRequirementChecks: Map<string, clientCheck> = new Map();
 
   private initClientRequirementChecks = (): void => {
     this.clientRequirementChecks.set("nameExists", {
