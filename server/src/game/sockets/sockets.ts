@@ -31,6 +31,7 @@ export class WSSocketServer implements ISocketServer {
     this.communicator = communicator;
     this.port = port;
     this.init();
+    this.initClientRequirementChecks();
   }
   onReceiveMessageFromCommunicator = (
     event: any,
@@ -71,16 +72,33 @@ export class WSSocketServer implements ISocketServer {
     clientSocket: WebSocket,
     message: IConnectMessageExt
   ): void => {
-    const thresholdA = 2;
-    const thresholdB = this.clientRequirementChecks.length;
-
-    for (let i: number = 0; i < thresholdA; i++)
-      if (!this.checkClientForRequirement(i, clientSocket, message)) return;
-    for (const [_, client] of this.clientMap.entries())
-      for (let i: number = thresholdA; i < thresholdB; i++)
-        if (!this.checkClientForRequirement(i, clientSocket, message, client))
+    let suitable = true;
+    ["nameExists", "nameDoesntExceedLimit"].forEach((requirement) => {
+      if (!this.checkClientForRequirement(requirement, clientSocket, message)) {
+        suitable = false;
+        return;
+      }
+    });
+    if (!suitable) return;
+    for (const [_, client] of this.clientMap.entries()) {
+      ["notAlreadyConnected", "nameNotOccupied"].forEach((requirement) => {
+        if (
+          !this.checkClientForRequirement(
+            requirement,
+            clientSocket,
+            message,
+            client
+          )
+        ) {
+          suitable = false;
           return;
-    if (!this.checkClientForRequirement(thresholdB - 1, clientSocket, message))
+        }
+      });
+    }
+    if (!suitable) return;
+    if (
+      !this.checkClientForRequirement("serverHasPlaces", clientSocket, message)
+    )
       return;
 
     const clientID = randomUUID();
@@ -104,39 +122,39 @@ export class WSSocketServer implements ISocketServer {
   };
 
   private checkClientForRequirement = (
-    reqIndex: number,
+    reqKey: string,
     clientSocket: WebSocket,
     clientMsg: IConnectMessageExt,
     extraInfo: any = null
   ): boolean => {
     if (
-      !this.clientRequirementChecks[reqIndex].successCondition(
-        clientSocket,
-        clientMsg,
-        extraInfo
-      )
+      !this.clientRequirementChecks
+        .get(reqKey)
+        .successCondition(clientSocket, clientMsg, extraInfo)
     ) {
       wslogSend(
         clientSocket,
         {
           name: "connRes",
           status: "restricted",
-          cause: this.clientRequirementChecks[reqIndex].restrictionCause,
+          cause: this.clientRequirementChecks.get(reqKey).restrictionCause,
         } satisfies IConnectResponseMessageExt,
-        this.clientRequirementChecks[reqIndex].getLogFailureMsg(
-          clientMsg.clientName
-        ),
+        this.clientRequirementChecks
+          .get(reqKey)
+          .getLogFailureMsg(clientMsg.clientName),
         "warning"
       );
-      if (this.clientRequirementChecks[reqIndex].closeSocketAtFailure)
+      if (this.clientRequirementChecks.get(reqKey).closeSocketAtFailure)
         clientSocket.close();
       return false;
     }
     return true;
   };
 
-  private clientRequirementChecks: clientCheck[] = [
-    {
+  private clientRequirementChecks: Map<string, clientCheck> = new Map();
+
+  private initClientRequirementChecks = (): void => {
+    this.clientRequirementChecks.set("nameExists", {
       restrictionCause: "name not provided",
       successCondition: (
         clientSocket: WebSocket,
@@ -147,8 +165,8 @@ export class WSSocketServer implements ISocketServer {
       getLogFailureMsg: () =>
         "sockets rejected client connection. name was not provided",
       closeSocketAtFailure: true,
-    },
-    {
+    });
+    this.clientRequirementChecks.set("nameDoesntExceedLimit", {
       restrictionCause: "nickname must fit in 16 characters",
       successCondition: (
         clientSocket: WebSocket,
@@ -159,8 +177,8 @@ export class WSSocketServer implements ISocketServer {
       getLogFailureMsg: (clientName: string) =>
         `sockets rejected client connection ${clientName} due to nickname length excess`,
       closeSocketAtFailure: true,
-    },
-    {
+    });
+    this.clientRequirementChecks.set("notAlreadyConnected", {
       restrictionCause: "already connected",
       successCondition: (
         clientSocket: WebSocket,
@@ -173,8 +191,8 @@ export class WSSocketServer implements ISocketServer {
       getLogFailureMsg: (clientName: string) =>
         `sockets client ${clientName} is already connected`,
       closeSocketAtFailure: false,
-    },
-    {
+    });
+    this.clientRequirementChecks.set("nameNotOccupied", {
       restrictionCause: "name is already occupied",
       successCondition: (
         clientSocket: WebSocket,
@@ -187,8 +205,8 @@ export class WSSocketServer implements ISocketServer {
       getLogFailureMsg: (clientName: string) =>
         `sockets rejected client connection ${clientName} due to name already being occupied`,
       closeSocketAtFailure: true,
-    },
-    {
+    });
+    this.clientRequirementChecks.set("serverHasPlaces", {
       restrictionCause: "server is full",
       successCondition: () => {
         return this.clientMap.size < this.maxClients;
@@ -196,8 +214,8 @@ export class WSSocketServer implements ISocketServer {
       getLogFailureMsg: (clientName: string) =>
         `sockets rejected client connection ${clientName} due server being full`,
       closeSocketAtFailure: true,
-    },
-  ];
+    });
+  };
 
   private resolveDisconnect = (clientSocket: WebSocket) => {
     for (const [clientID, client] of this.clientMap.entries()) {
