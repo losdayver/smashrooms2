@@ -75,14 +75,28 @@ export class WSSocketServer implements ISocketServer {
     message: IConnectMessageExt
   ): void => {
     for (const req of ["nameExists", "nameDoesntExceedLimit"])
-      if (!this.checkClientForRequirement(req, clientSocket, message)) return;
+      if (!this.checkClientForConnectionRequirement(req, clientSocket, message))
+        return;
 
-    if (!this.checkClientForRequirement("serverNotFull", clientSocket, message))
+    if (
+      !this.checkClientForConnectionRequirement(
+        "serverNotFull",
+        clientSocket,
+        message
+      )
+    )
       return;
 
     for (const [_, client] of this.clientMap.entries())
       for (const req of ["nameExists"])
-        if (!this.checkClientForRequirement(req, clientSocket, message, client))
+        if (
+          !this.checkClientForConnectionRequirement(
+            req,
+            clientSocket,
+            message,
+            client
+          )
+        )
           return;
 
     const clientID = randomUUID();
@@ -105,7 +119,7 @@ export class WSSocketServer implements ISocketServer {
     this.communicator.processMessage(clientID, connectRes);
   };
 
-  private checkClientForRequirement = (
+  private checkClientForConnectionRequirement = (
     reqKey: string,
     clientSocket: WebSocket,
     clientMsg: IConnectMessageExt,
