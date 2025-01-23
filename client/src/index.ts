@@ -345,8 +345,8 @@ const initGameLayout = async () => {
   );
   client.on("connRes", "toast", (data: IConnectResponseMessageExt) => {
     if (data.status != "allowed") {
-      toast.notify("failed to connect!", "warning");
-      toast.notify("cause: " + data.cause, "warning");
+      toast.notify("Failed to connect!", "warning");
+      toast.notify(`Cause: ${data.cause}!`, "warning");
     }
   });
 

@@ -19,7 +19,7 @@
   content: attr(tag);
 
   position: absolute;
-  max-width: 150px;
+  max-width: 200px;
   left: 50%;
   top: -50%;
   transform: translateX(-50%);
@@ -28,6 +28,7 @@
   border-radius: 0.2em;
 
   background-color: #33fbb8aa;
+  overflow-y: hidden;
   z-index: 99;
 }
 
