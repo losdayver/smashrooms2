@@ -25,14 +25,14 @@ export class WSSocketServer implements ISocketServer {
   private clientConnectionChecks: Map<string, clientCheck> = new Map();
   private socketServer: WebSocketServer;
   private maxClients: number;
-  private static readonly maxNicknameLength: number = 16;
+  private readonly maxClientNameLength: number = 16;
 
   constructor(communicator: ICommunicator, port: number, maxClients?: number) {
     this.maxClients = maxClients;
     this.communicator = communicator;
     this.port = port;
     this.init();
-    this.initClientRequirementChecks();
+    this.initClientConnectionChecks();
   }
   onReceiveMessageFromCommunicator = (
     event: any,
@@ -134,7 +134,7 @@ export class WSSocketServer implements ISocketServer {
     return true;
   };
 
-  private initClientRequirementChecks = (): void => {
+  private initClientConnectionChecks = (): void => {
     const map = this.clientConnectionChecks;
 
     map.set("nameExists", {
@@ -148,9 +148,10 @@ export class WSSocketServer implements ISocketServer {
     });
 
     map.set("nameDoesntExceedLimit", {
-      restrictionCause: "nickname must fit in 16 characters",
+      restrictionCause: `nickname must fit in ${this.maxClientNameLength} characters`,
       successCondition: (clientSocket, msg): boolean => {
-        return msg.clientName.length <= 16;
+        if (!this.maxClientNameLength) return true;
+        return msg.clientName.length <= this.maxClientNameLength;
       },
       getLogFailureMsg: (clientName: string) =>
         `sockets rejected client connection ${clientName} due to nickname length excess`,
