@@ -24,6 +24,7 @@ export class WSSocketServer implements ISocketServer {
   private clientMap: Map<string, IWSClient> = new Map();
   private socketServer: WebSocketServer;
   private maxClients: number;
+  private static readonly maxNicknameLength: number = 16;
 
   constructor(communicator: ICommunicator, port: number, maxClients?: number) {
     this.maxClients = maxClients;
@@ -69,64 +70,18 @@ export class WSSocketServer implements ISocketServer {
   private resolveConnectMessage = (
     clientSocket: WebSocket,
     message: IConnectMessageExt
-  ) => {
-    for (const [_, client] of this.clientMap.entries()) {
-      if (clientSocket == client.socket) {
-        wslogSend(
-          clientSocket,
-          {
-            name: "connRes",
-            status: "restricted",
-            cause: "already connected",
-          } satisfies IConnectResponseMessageExt,
-          `sockets client ${message.clientName} is already connected`,
-          "warning"
-        );
-        return;
-      }
-      if (this.clientMap.size >= this.maxClients) {
-        wslogSend(
-          clientSocket,
-          {
-            name: "connRes",
-            status: "restricted",
-            cause: "server is full",
-          } satisfies IConnectResponseMessageExt,
-          `sockets rejected client connection ${message.clientName} due server being full`,
-          "warning"
-        );
-        clientSocket.close();
-        return;
-      }
-      if (client.name == message.clientName) {
-        wslogSend(
-          clientSocket,
-          {
-            name: "connRes",
-            status: "restricted",
-            cause: "name is already occupied",
-          } satisfies IConnectResponseMessageExt,
-          `sockets rejected client connection ${message.clientName} due to name already being occupied`,
-          "warning"
-        );
-        clientSocket.close();
-        return;
-      }
-      if (!message.clientName) {
-        wslogSend(
-          clientSocket,
-          {
-            name: "connRes",
-            status: "restricted",
-            cause: "name not provided",
-          } satisfies IConnectResponseMessageExt,
-          `sockets rejected client connection. name was not provided`,
-          "warning"
-        );
-        clientSocket.close();
-        return;
-      }
-    }
+  ): void => {
+    const thresholdA = 2;
+    const thresholdB = this.clientRequirementChecks.length;
+
+    for (let i: number = 0; i < thresholdA; i++)
+      if (!this.checkClientForRequirement(i, clientSocket, message)) return;
+    for (const [_, client] of this.clientMap.entries())
+      for (let i: number = thresholdA; i < thresholdB; i++)
+        if (!this.checkClientForRequirement(i, clientSocket, message, client))
+          return;
+    if (!this.checkClientForRequirement(thresholdB - 1, clientSocket, message))
+      return;
 
     const clientID = randomUUID();
     this.clientMap.set(clientID, {
@@ -147,6 +102,102 @@ export class WSSocketServer implements ISocketServer {
     );
     this.communicator.processMessage(clientID, connectRes);
   };
+
+  private checkClientForRequirement = (
+    reqIndex: number,
+    clientSocket: WebSocket,
+    clientMsg: IConnectMessageExt,
+    extraInfo: any = null
+  ): boolean => {
+    if (
+      !this.clientRequirementChecks[reqIndex].successCondition(
+        clientSocket,
+        clientMsg,
+        extraInfo
+      )
+    ) {
+      wslogSend(
+        clientSocket,
+        {
+          name: "connRes",
+          status: "restricted",
+          cause: this.clientRequirementChecks[reqIndex].restrictionCause,
+        } satisfies IConnectResponseMessageExt,
+        this.clientRequirementChecks[reqIndex].getLogFailureMsg(
+          clientMsg.clientName
+        ),
+        "warning"
+      );
+      if (this.clientRequirementChecks[reqIndex].closeSocketAtFailure)
+        clientSocket.close();
+      return false;
+    }
+    return true;
+  };
+
+  private clientRequirementChecks: connectionScenario[] = [
+    {
+      restrictionCause: "name not provided",
+      successCondition: (
+        clientSocket: WebSocket,
+        msg: IConnectMessageExt
+      ): boolean => {
+        return msg.clientName ? true : false;
+      },
+      getLogFailureMsg: () =>
+        "sockets rejected client connection. name was not provided",
+      closeSocketAtFailure: true,
+    },
+    {
+      restrictionCause: "nickname must fit in 16 characters",
+      successCondition: (
+        clientSocket: WebSocket,
+        msg: IConnectMessageExt
+      ): boolean => {
+        return msg.clientName.length <= 16;
+      },
+      getLogFailureMsg: (clientName: string) =>
+        `sockets rejected client connection ${clientName} due to nickname length excess`,
+      closeSocketAtFailure: true,
+    },
+    {
+      restrictionCause: "already connected",
+      successCondition: (
+        clientSocket: WebSocket,
+        msg: IConnectMessageExt,
+        clientFromMap: IWSClient
+      ): boolean => {
+        if (clientSocket == clientFromMap.socket) return false;
+        return true;
+      },
+      getLogFailureMsg: (clientName: string) =>
+        `sockets client ${clientName} is already connected`,
+      closeSocketAtFailure: false,
+    },
+    {
+      restrictionCause: "name is already occupied",
+      successCondition: (
+        clientSocket: WebSocket,
+        clientMsg: IConnectMessageExt,
+        clientFromMap: IWSClient
+      ): boolean => {
+        if (clientFromMap.name == clientMsg.clientName) return false;
+        return true;
+      },
+      getLogFailureMsg: (clientName: string) =>
+        `sockets rejected client connection ${clientName} due to name already being occupied`,
+      closeSocketAtFailure: true,
+    },
+    {
+      restrictionCause: "server is full",
+      successCondition: () => {
+        return this.clientMap.size < this.maxClients;
+      },
+      getLogFailureMsg: (clientName: string) =>
+        `sockets rejected client connection ${clientName} due server being full`,
+      closeSocketAtFailure: true,
+    },
+  ];
 
   private resolveDisconnect = (clientSocket: WebSocket) => {
     for (const [clientID, client] of this.clientMap.entries()) {
@@ -231,4 +282,15 @@ export interface IWSClient {
   name: string;
   socket: WebSocket;
   lastPing: Date;
+}
+
+interface connectionScenario {
+  successCondition: (
+    clientSock: WebSocket,
+    clientMsg: IConnectMessageExt,
+    extraInfo: any
+  ) => boolean;
+  restrictionCause: string;
+  getLogFailureMsg: (name: string) => string;
+  closeSocketAtFailure: boolean;
 }

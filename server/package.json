@@ -8,7 +8,7 @@
     "dev": "nodemon -L -e ts,json --exec \"tsc & node dist/index.js\""
   },
   "author": "",
-  "license": "ISC",
+  "license": "GPL-3.0",
   "description": "",
   "dependencies": {
     "ws": "^8.18.0"
