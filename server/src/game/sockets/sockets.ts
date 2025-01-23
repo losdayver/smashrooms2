@@ -22,7 +22,8 @@ export class WSSocketServer implements ISocketServer {
   private communicator: ICommunicator;
   private port: number;
   private clientMap: Map<string, IWSClient> = new Map();
-  private clientConnectionChecks: Map<string, clientCheck> = new Map();
+  private clientConnectionChecks: Map<string, IClientConnectionCheck> =
+    new Map();
   private socketServer: WebSocketServer;
   private maxClients: number;
   private readonly maxClientNameLength: number = 16;
@@ -276,7 +277,7 @@ export interface IWSClient {
   lastPing: Date;
 }
 
-interface clientCheck {
+interface IClientConnectionCheck {
   successCondition: (
     clientSock: WebSocket,
     clientMsg: IConnectMessageExt,
