@@ -135,7 +135,7 @@ export class WSSocketServer implements ISocketServer {
     return true;
   };
 
-  private clientRequirementChecks: connectionScenario[] = [
+  private clientRequirementChecks: clientCheck[] = [
     {
       restrictionCause: "name not provided",
       successCondition: (
@@ -284,7 +284,7 @@ export interface IWSClient {
   lastPing: Date;
 }
 
-interface connectionScenario {
+interface clientCheck {
   successCondition: (
     clientSock: WebSocket,
     clientMsg: IConnectMessageExt,
