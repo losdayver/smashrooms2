@@ -35,7 +35,7 @@ export class ShotgunItem extends ItemProp {
     offsetY: -16,
   };
   modifyPlayer = (player: Player) => {
-    player.changeWeapon("shotgun");
+    player.weaponPocket.pickWeapon("shotgun");
   };
 }
 export class PistolItem extends ItemProp {
@@ -53,7 +53,7 @@ export class PistolItem extends ItemProp {
     offsetY: -16,
   };
   modifyPlayer = (player: Player) => {
-    player.changeWeapon("pistol");
+    player.weaponPocket.pickWeapon("pistol");
   };
 }
 
@@ -72,7 +72,7 @@ export class BazookaItem extends ItemProp {
     offsetY: -16,
   };
   modifyPlayer = (player: Player) => {
-    player.changeWeapon("bazooka");
+    player.weaponPocket.pickWeapon("bazooka");
   };
 }
 

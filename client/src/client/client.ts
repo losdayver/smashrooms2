@@ -58,6 +58,7 @@ export class Client
       left: "left",
       fire: "fire",
       revive: "revive",
+      swap: "swap",
     };
     const control = map[key];
     if (!control) return;

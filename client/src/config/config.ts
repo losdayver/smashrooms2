@@ -64,6 +64,7 @@ export const defaultControlsObj: ControlsObjType = {
   back: ["Escape"],
   confirm: ["Enter"],
   revive: ["KeyR"],
+  swap: ["KeyQ"],
 };
 
 export const controlsList = [
@@ -76,6 +77,7 @@ export const controlsList = [
   "back",
   "confirm",
   "revive",
+  "swap",
 ] as const;
 
 export type ControlsObjType = Record<(typeof controlsList)[number], string[]>;

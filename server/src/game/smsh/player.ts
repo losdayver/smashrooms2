@@ -10,7 +10,7 @@ import {
 import { IScene } from "../scene/sceneTypes";
 import { ItemProp } from "./items";
 import { ItemSpawner } from "./spawners";
-import { weaponMap } from "./weapons";
+import { WeaponPocket } from "./weapons";
 
 export class Player
   extends Prop
@@ -38,13 +38,7 @@ export class Player
               facing: "left",
             },
           });
-        } else if (code == "fire" && this.currentWeapon) {
-          if (
-            this.scene.tickNum - this.startedFiringOnTick >=
-            weaponMap[this.currentWeapon].delay
-          ) {
-            this.startedFiringOnTick = this.scene.tickNum;
-          }
+        } else if (code == "fire") {
           this.firing = true;
         } else if (code == "jump" && !this.$isInAir) {
           this.$vSpeed = -this.jumpSpeed;
@@ -52,6 +46,8 @@ export class Player
           if (!this.$isInAir) {
             this.$passSemi = true;
           }
+        } else if (code == "swap") {
+          this.weaponPocket.changeWeapon();
         }
       } else {
         if (code == "right" && this.$hSpeed > 0) this.$hSpeed = 0;
@@ -92,6 +88,9 @@ export class Player
     offsetY: 0,
   };
 
+  weaponPocket = new WeaponPocket(this, "fist");
+
+  private firing = false;
   private $hSpeed = 0;
   private $vSpeed = 0;
   private $lastVSpeed = 0;
@@ -111,20 +110,6 @@ export class Player
   private healing = 0.5;
 
   private isAlreadyDead = false;
-
-  private firing = false;
-  private startedFiringOnTick = 0;
-  private currentWeapon: keyof typeof weaponMap = "fist";
-  private ammo = 0;
-
-  changeWeapon = (weapon: keyof typeof weaponMap) => {
-    this.currentWeapon = weapon;
-  };
-
-  fireBullet = () => {
-    if (!this.currentWeapon) return;
-    weaponMap[this.currentWeapon].onFire(this);
-  };
 
   doLayoutPhysics = () => {
     this.$lastVSpeed = this.$vSpeed;
@@ -239,22 +224,10 @@ export class Player
     }
   };
 
-  private lastShotOn = 0;
-
   onTick: Prop["onTick"] = (tick) => {
     this.doSpriteChange();
     this.doLayoutPhysics();
-    if (
-      this.firing &&
-      (this.startedFiringOnTick - this.lastShotOn >
-        weaponMap[this.currentWeapon].delay ||
-        tick - this.startedFiringOnTick > 0) &&
-      (tick - this.startedFiringOnTick) % weaponMap[this.currentWeapon].delay ==
-        0
-    ) {
-      this.lastShotOn = tick;
-      this.fireBullet();
-    }
+    this.weaponPocket.fireWeapon(this.firing, tick);
     if (this.damageable.health <= 0 && !this.isAlreadyDead) {
       this.isAlreadyDead = true;
       this.scene.destroyPropAction(this.ID);
