@@ -16,6 +16,7 @@ export class WeaponPocket {
   currentWeapon: WeaponType;
 
   pickWeapon = (weapon: keyof typeof weaponMap) => {
+    if (this.pocket.has(weapon)) return;
     if (this.pocket.size >= this.maxWeaponCount)
       this.pocket.delete(this.currentWeapon);
     this.currentWeapon = weapon;
