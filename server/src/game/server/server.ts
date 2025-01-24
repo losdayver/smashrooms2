@@ -3,7 +3,7 @@ import { config } from "../../config";
 import { severityLog } from "../../utils";
 import { Communicator } from "../communicator/communicator";
 import { ICommunicator } from "../communicator/communicatorTypes";
-import { smshPropFactory, smshPropMap } from "../scene/smshProps";
+import { smshPropFactory, smshPropMap } from "../smsh/props";
 import { Scene } from "../scene/scene";
 import { IScene } from "../scene/sceneTypes";
 import { WSSocketServer } from "../sockets/sockets";

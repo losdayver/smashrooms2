@@ -96,5 +96,6 @@ export type ClientActionCodesExt =
   | "jump"
   | "fire"
   | "duck"
-  | "revive";
+  | "revive"
+  | "swap";
 export type ClientActionStatusExt = "pressed" | "released";
