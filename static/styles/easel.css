@@ -19,6 +19,7 @@
   content: attr(tag);
 
   position: absolute;
+  width: max-content;
   max-width: 200px;
   left: 50%;
   top: -50%;
