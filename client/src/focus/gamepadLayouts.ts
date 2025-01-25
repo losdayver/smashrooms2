@@ -56,17 +56,20 @@ const xBoxKeyAliases: GamepadKeyAlias = {
   Center3: "Guide",
 } as const;
 
-export const getKeyAlias = (
+export const getKeyAlias = async (
   key: keyof typeof gamepadEventToKeyMap,
   layout: GamepadLayout = "PS"
-) => {
+): Promise<string> => {
   let alias: string;
   switch (layout) {
     case "PS":
       alias = playStationKeyAliases[key];
+      break;
     case "XBox":
       alias = xBoxKeyAliases[key];
+      break;
   }
+  console.log("Alias: ", alias);
   return alias ? alias : key;
 };
 
