@@ -61,6 +61,9 @@ export class EaselManager {
       lastMoved: new Date(),
     } satisfies IEaselProp;
 
+    // load health here
+    if (prop.damageable) console.log("initial health stats: ", prop.damageable);
+
     this.processDrawable(easelProp, prop);
 
     this.propList.push(easelProp);
@@ -82,6 +85,10 @@ export class EaselManager {
     Object.entries(update)?.forEach(([propID, changes]) => {
       const prop = this.propList.find((prop) => prop.ID == propID);
       if (!prop) return;
+
+      // update health here
+      if (changes.damageable)
+        console.log("loaded health stats: ", changes.damageable);
 
       if (changes.positioned) {
         const dateMoved = new Date();

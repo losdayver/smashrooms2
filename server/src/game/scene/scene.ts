@@ -132,14 +132,17 @@ export class Scene implements IScene {
       Object.values(this.$chunkedUpdates).forEach((chunkedUpdate) => {
         if (chunkedUpdate.update) {
           Object.entries(chunkedUpdate.update).forEach(([propID, update]) => {
-            if (!tempUpdate[propID] && (update.drawable || update.positioned))
+            if (
+              !tempUpdate[propID] &&
+              (update.drawable || update.positioned || update.damageable)
+            )
               tempUpdate[propID] = {};
 
             if (update.positioned)
               tempUpdate[propID].positioned = update.positioned;
-            if (update.drawable) {
-              tempUpdate[propID].drawable = update.drawable;
-            }
+            if (update.drawable) tempUpdate[propID].drawable = update.drawable;
+            if (update.damageable)
+              tempUpdate[propID].damageable = update.damageable;
           });
         }
 
@@ -151,8 +154,8 @@ export class Scene implements IScene {
               drawable: prop.drawable,
               positioned: prop.positioned,
             } as IProp & PropBehaviours;
-            if (prop.nameTagged)
-              tempProp.nameTagged = { tag: prop.nameTagged.tag };
+            if (prop.nameTagged) tempProp.nameTagged = prop.nameTagged;
+            if (prop.nameTagged) tempProp.damageable = prop.damageable;
             tempLoad.push(tempProp);
           });
         }
