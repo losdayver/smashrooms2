@@ -94,7 +94,6 @@ export class FocusManager {
         if (isActivated(gamepad)) {
           if (!previouslyActivated) {
             this.activeGamepadKeys.add(gpKey);
-            // console.log("Нажатая клавиша: ", getKeyAlias(gpKey));
             await this.getCurrentTag()?.onFocusReceiveKey?.(
               keyControl,
               "down",
