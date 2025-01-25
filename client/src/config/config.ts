@@ -8,7 +8,7 @@ export abstract class LSConfig<C extends object = object> {
     let obj: C;
     const str = localStorage.getItem(this.lskey);
     if (!str) {
-      obj = this.getDefaultObj();
+      obj = { ...this.getDefaultObj() };
       this.saveObj(obj);
     } else {
       obj = JSON.parse(str);
@@ -54,17 +54,18 @@ export class ControlsConfig extends LSConfig<ControlsObjType> {
   }
 }
 
+// TODO: expand this list with gamepad buttons only on "gamepadconnected" events
 export const defaultControlsObj: ControlsObjType = {
-  up: ["ArrowUp", "Space"],
-  right: ["ArrowRight", "KeyD"],
-  down: ["ArrowDown", "KeyS"],
-  left: ["ArrowLeft", "KeyA"],
-  fire: ["ShiftLeft"],
-  chat: ["KeyT"],
-  back: ["Escape"],
+  up: ["ArrowUp", "Space", "Cross"],
+  right: ["ArrowRight", "KeyD", "LStickRight", "DPadRight"],
+  down: ["ArrowDown", "KeyS", "LStickDown", "DPadDown"],
+  left: ["ArrowLeft", "KeyA", "LStickLeft", "DPadLeft"],
+  fire: ["ShiftLeft", "Square"],
+  chat: ["KeyT", "Share"],
+  back: ["Escape", "Options"],
   confirm: ["Enter"],
-  revive: ["KeyR"],
-  swap: ["KeyQ"],
+  revive: ["KeyR", "Circle"],
+  swap: ["KeyQ", "Triangle"],
 };
 
 export const controlsList = [
