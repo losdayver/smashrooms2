@@ -2,7 +2,6 @@ import { getRandomBetween } from "../../utils";
 import { Player } from "./player";
 
 export class WeaponPocket {
-  private lastShotOn = 0;
   private player: Player;
   private maxWeaponCount = 2;
 
@@ -21,7 +20,7 @@ export class WeaponPocket {
       this.pocket.delete(this.currentWeapon);
     this.currentWeapon = weapon;
     this.pocket.set(weapon, {
-      startedFiringOnTick: 0,
+      lastShotOnTick: 0,
     });
   };
 
@@ -32,14 +31,9 @@ export class WeaponPocket {
 
     if (
       isFiring &&
-      (weapon.startedFiringOnTick - this.lastShotOn >
-        weaponMap[this.currentWeapon].delay ||
-        tick - weapon.startedFiringOnTick > 0) &&
-      (tick - weapon.startedFiringOnTick) %
-        weaponMap[this.currentWeapon].delay ==
-        0
+      tick - weapon.lastShotOnTick > weaponMap[this.currentWeapon].delay
     ) {
-      this.lastShotOn = tick;
+      weapon.lastShotOnTick = tick;
       this.fireBullet();
     }
   };
@@ -58,7 +52,7 @@ export class WeaponPocket {
 }
 
 export interface IWeaponInPocket {
-  startedFiringOnTick: number;
+  lastShotOnTick: number;
 }
 
 export type WeaponType = keyof typeof weaponMap;
@@ -109,7 +103,7 @@ export const weaponMap: Record<
     },
   },
   pistol: {
-    delay: 5,
+    delay: 6,
     onFire: (player: Player) => {
       player.scene.spawnPropAction("bullet", {
         positioned: {
@@ -129,7 +123,7 @@ export const weaponMap: Record<
     },
   },
   bazooka: {
-    delay: 40,
+    delay: 30,
     onFire: (player: Player) => {
       player.scene.spawnPropAction("rocket", {
         positioned: {
@@ -144,6 +138,26 @@ export const weaponMap: Record<
         },
         moving: {
           speedV: getRandomBetween(-1, 1),
+        },
+      });
+    },
+  },
+  blaster: {
+    delay: 4,
+    onFire: (player: Player) => {
+      player.scene.spawnPropAction("plasma", {
+        positioned: {
+          posX: player.positioned.posX,
+          posY: player.positioned.posY + 40 + getRandomBetween(-6, 6),
+        },
+        drawable: {
+          facing: player.drawable.facing,
+        },
+        collidable: {
+          colGroup: player.ID,
+        },
+        moving: {
+          speedV: getRandomBetween(-6, 6),
         },
       });
     },

@@ -118,10 +118,10 @@
 }
 
 .easel__prop-sprite--heal {
-  animation: appear__heal 500ms linear;
+  animation: heal__keyframes 500ms linear;
 }
 
-@keyframes appear__heal {
+@keyframes heal__keyframes {
   0% {
     filter: drop-shadow(0 0 10px rgba(0, 255, 0, 0.8)) brightness(2);
   }
@@ -130,5 +130,22 @@
   }
   100% {
     filter: drop-shadow(0 0 30px rgba(0, 255, 0, 0)) brightness(1);
+  }
+}
+
+.easel__prop-sprite--plasma {
+  animation: plasma__keyframes 80ms linear infinite;
+  filter: drop-shadow(0 0 10px rgba(0, 238, 255, 0.8)) brightness(2);
+}
+
+@keyframes plasma__keyframes {
+  0% {
+    transform: scale(0.2);
+  }
+  50% {
+    transform: scale(2);
+  }
+  100% {
+    transform: scale(0.2);
   }
 }

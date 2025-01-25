@@ -36,6 +36,7 @@ export class EaselManager {
     fist: "punchAir",
     rocket: "bazookaShot",
     explosion: "bazookaExplosion",
+    plasma: "blaster",
   } as const;
 
   private loadProp = (prop: IBehaviouredPropExt) => {
@@ -145,7 +146,6 @@ export class EaselManager {
       const a = anim.pop();
       const prop = this.propList.find((prop) => prop.ID == a.ID);
       if (prop) {
-        console.log(a.name);
         const sound = this.animatePropSoundMap[a.name];
         if (sound) this.audioEventMgr.playSound(sound);
         const animClass = `easel__prop-sprite--${a.name}`;

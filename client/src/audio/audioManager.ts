@@ -33,7 +33,7 @@ export class AudioTrackManager
 
   protected storeSound = (name: keyof typeof soundTrackMap) => {
     this.currentSoundTrack = new Audio(soundTrackRoute + soundTrackMap[name]);
-    this.currentSoundTrack.volume = 0.5;
+    this.currentSoundTrack.volume = 0.3;
     this.currentSoundTrack.loop = true;
     this.currentSoundTrackName = name;
     return true;
@@ -173,7 +173,6 @@ const soundTrackMap = {
   mycelium: "mycelium.mp3",
 } as const;
 
-// TODO jump, itemPickup
 export const soundEventMap = {
   jump: "jump.mp3",
   punchAir: "punchAir.mp3",

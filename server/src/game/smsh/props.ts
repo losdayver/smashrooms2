@@ -4,9 +4,15 @@ import { RecursivePartial } from "../../utils";
 import { Prop } from "../scene/prop";
 import { StageExt } from "../../../../types/stage";
 import { Player } from "./player";
-import { Bullet, Explosion, Fist, Rocket } from "./projectiles";
+import { Bullet, Explosion, Fist, Plasma, Rocket } from "./projectiles";
 import { ItemSpawner, PlayerSpawner } from "./spawners";
-import { BazookaItem, MedikitItem, PistolItem, ShotgunItem } from "./items";
+import {
+  BazookaItem,
+  BlasterItem,
+  MedikitItem,
+  PistolItem,
+  ShotgunItem,
+} from "./items";
 
 export class Crate extends Prop implements IDamageable, IDrawable {
   damageable = { health: 10, maxHealth: 10 };
@@ -39,6 +45,8 @@ export const smshPropMap = {
   pistolItem: PistolItem,
   medikitItem: MedikitItem,
   explosion: Explosion,
+  plasma: Plasma,
+  blaster: BlasterItem,
 } as const;
 
 export const smshPropFactory: (scene: IScene, stage: StageExt) => void = (
