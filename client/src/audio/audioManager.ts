@@ -33,7 +33,7 @@ export class AudioTrackManager
 
   protected storeSound = (name: keyof typeof soundTrackMap) => {
     this.currentSoundTrack = new Audio(soundTrackRoute + soundTrackMap[name]);
-    this.currentSoundTrack.volume = 0.5;
+    this.currentSoundTrack.volume = 0.3;
     this.currentSoundTrack.loop = true;
     this.currentSoundTrackName = name;
     return true;

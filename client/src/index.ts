@@ -324,7 +324,7 @@ const initGameLayout = async () => {
       regModal.hide();
       client.getSceneMeta();
       focus.register(chat);
-      // soundTrackMgr.playSound("mycelium");
+      soundTrackMgr.playSound("mycelium");
     }
   });
   client.on("serverChat", "chat", (data: IServerChatMessageExt) => {
