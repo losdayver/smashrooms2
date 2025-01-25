@@ -32,7 +32,7 @@ export class EaselManager {
   private readonly loadPropSoundMap: Partial<
     Record<string, keyof typeof soundEventMap>
   > = {
-    bullet: "pistolShot",
+    bullet: "bullet",
     fist: "punchAir",
     rocket: "bazookaShot",
     explosion: "bazookaExplosion",
@@ -110,10 +110,21 @@ export class EaselManager {
     });
   };
 
+  private readonly deletePropSoundMap: Partial<
+    Record<string, keyof typeof soundEventMap>
+  > = {
+    medikit: "itemPickup",
+    bazooka: "itemPickup",
+    pistol: "itemPickup",
+    shotgun: "itemPickup",
+  } as const;
+
   private deleteProps = (del: ISceneUpdatesMessageData["delete"]) => {
     for (const propToDeleteID of del) {
       this.propList.forEach((prop, index) => {
         if (propToDeleteID == prop.ID) {
+          const sound = this.deletePropSoundMap[prop.drawable.sprite];
+          if (sound) this.audioEventMgr.playSound(sound);
           prop.container.remove();
           this.propList.splice(index, 1);
           return;
@@ -122,12 +133,21 @@ export class EaselManager {
     }
   };
 
+  private readonly animatePropSoundMap: Partial<
+    Record<string, keyof typeof soundEventMap>
+  > = {
+    hit: "hit",
+    heal: "heal",
+  } as const;
+
   private animateProps = (anim: ISceneUpdatesMessageData["anim"]) => {
     while (anim.length) {
       const a = anim.pop();
       const prop = this.propList.find((prop) => prop.ID == a.ID);
       if (prop) {
-        if (a.name == "hit") this.audioEventMgr.playSound("punch");
+        console.log(a.name);
+        const sound = this.animatePropSoundMap[a.name];
+        if (sound) this.audioEventMgr.playSound(sound);
         const animClass = `easel__prop-sprite--${a.name}`;
         prop.img.className = "";
         void prop.img.offsetWidth;

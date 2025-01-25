@@ -33,6 +33,7 @@ export class AudioTrackManager
 
   protected storeSound = (name: keyof typeof soundTrackMap) => {
     this.currentSoundTrack = new Audio(soundTrackRoute + soundTrackMap[name]);
+    this.currentSoundTrack.volume = 0.5;
     this.currentSoundTrack.loop = true;
     this.currentSoundTrackName = name;
     return true;
@@ -175,11 +176,15 @@ const soundTrackMap = {
 // TODO jump, itemPickup
 export const soundEventMap = {
   jump: "jump.mp3",
-  punchAir: "punch_air.mp3",
+  punchAir: "punchAir.mp3",
   punch: "punch.mp3",
-  itemPickup: "item_pickup.m4a",
+  itemPickup: "itemPickup.mp3",
   pistolShot: "pistol_shot.mp3",
   shotgunShot: "shotgun_shot.mp3",
   bazookaShot: "bazooka_rocket_launch.mp3",
   bazookaExplosion: "bazooka_rocket_explosion.mp3",
+  hit: "hit.mp3",
+  blaster: "blaster.mp3",
+  bullet: "bullet.mp3",
+  heal: "heal.mp3",
 } as const;
