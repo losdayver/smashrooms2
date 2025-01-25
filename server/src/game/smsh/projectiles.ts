@@ -74,8 +74,8 @@ export class Fist extends Prop implements IDrawable, IDamaging, IMoving {
     anim: "appear",
   };
   collidable: ICollidable["collidable"] = {
-    sizeX: 8,
-    sizeY: 8,
+    sizeX: 64,
+    sizeY: 64,
     offsetX: -32,
     offsetY: -32,
     onCollide: (prop: Prop & PropBehaviours) => {
