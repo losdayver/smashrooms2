@@ -123,7 +123,7 @@ export const weaponMap: Record<
     },
   },
   bazooka: {
-    delay: 20,
+    delay: 30,
     onFire: (player: Player) => {
       player.scene.spawnPropAction("rocket", {
         positioned: {
