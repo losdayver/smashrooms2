@@ -54,17 +54,18 @@ export class ControlsConfig extends LSConfig<ControlsObjType> {
   }
 }
 
+// TODO: expand this list with gamepad buttons only on "gamepadconnected" events
 export const defaultControlsObj: ControlsObjType = {
-  up: ["ArrowUp", "Space"],
-  right: ["ArrowRight", "KeyD"],
-  down: ["ArrowDown", "KeyS"],
-  left: ["ArrowLeft", "KeyA"],
-  fire: ["ShiftLeft"],
-  chat: ["KeyT"],
-  back: ["Escape"],
-  confirm: ["Enter"],
-  revive: ["KeyR"],
-  swap: ["KeyQ"],
+  up: ["ArrowUp", "Space", "LStickUp", "DPadUp"],
+  right: ["ArrowRight", "KeyD", "LStickRight", "DPadRight"],
+  down: ["ArrowDown", "KeyS", "LStickDown", "DPadDown"],
+  left: ["ArrowLeft", "KeyA", "LStickLeft", "DPadLeft"],
+  fire: ["ShiftLeft", "Cross"],
+  chat: ["KeyT", "Share"],
+  back: ["Escape", "Options"],
+  confirm: ["Enter", "Square"],
+  revive: ["KeyR", "Circle"],
+  swap: ["KeyQ", "Triangle"],
 };
 
 export const controlsList = [
