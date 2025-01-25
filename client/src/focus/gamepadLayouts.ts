@@ -69,7 +69,6 @@ export const getKeyAlias = async (
       alias = xBoxKeyAliases[key];
       break;
   }
-  console.log("Alias: ", alias);
   return alias ? alias : key;
 };
 
