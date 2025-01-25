@@ -42,7 +42,6 @@ export class FocusManager {
 
   private updateStatus = () => {
     if (navigator.userAgent.toLowerCase().includes("chrome")) {
-      console.log("ОБновляюсь!");
       this.gamepadsMap.clear();
       navigator.getGamepads().forEach((gamepad) => {
         this.gamepadsMap.set(gamepad?.index, gamepad);
