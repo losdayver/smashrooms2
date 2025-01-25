@@ -76,6 +76,25 @@ export class BazookaItem extends ItemProp {
   };
 }
 
+export class BlasterItem extends ItemProp {
+  drawable = {
+    sprite: "blaster",
+    facing: "right",
+    offsetX: 16,
+    offsetY: 16,
+    anim: "itemSpin",
+  };
+  collidable: ICollidable["collidable"] = {
+    sizeX: 32,
+    sizeY: 32,
+    offsetX: -16,
+    offsetY: -16,
+  };
+  modifyPlayer = (player: Player) => {
+    player.weaponPocket.pickWeapon("blaster");
+  };
+}
+
 export class MedikitItem extends ItemProp {
   drawable = {
     sprite: "medikit",
@@ -92,9 +111,14 @@ export class MedikitItem extends ItemProp {
   };
   modifyPlayer = (player: Player) => {
     this.scene.animatePropAction(player.ID, "heal");
-    player.damageable.health = Math.min(
-      player.damageable.health + 50,
-      player.damageable.maxHealth
-    );
+    this.scene.mutatePropBehaviourAction(player, {
+      name: "damageable",
+      newValue: {
+        health: Math.min(
+          (player.damageable.health += 50),
+          player.damageable.maxHealth
+        ),
+      },
+    });
   };
 }

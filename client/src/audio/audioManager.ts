@@ -173,7 +173,6 @@ const soundTrackMap = {
   mycelium: "mycelium.mp3",
 } as const;
 
-// TODO jump, itemPickup
 export const soundEventMap = {
   jump: "jump.mp3",
   punchAir: "punchAir.mp3",

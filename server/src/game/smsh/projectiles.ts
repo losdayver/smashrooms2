@@ -27,7 +27,7 @@ export class Bullet extends Prop implements IDrawable, IDamaging, IMoving {
         this.scene.destroyPropAction(this.ID);
     },
   };
-  damaging = { damage: 25 };
+  damaging = { damage: 15 };
   moving = {
     speedH: 32,
     speedV: 0,
@@ -43,6 +43,62 @@ export class Bullet extends Prop implements IDrawable, IDamaging, IMoving {
   onTick = (tickNum: number) => {
     if (
       tickNum - this.createdOn > 30 ||
+      this.scene.getLayoutAt(this.positioned.posX, this.positioned.posY)
+        .solidity == "solid"
+    ) {
+      this.scene.destroyPropAction(this.ID);
+      return;
+    }
+    this.scene.mutatePropBehaviourAction(this as Prop, {
+      name: "positioned",
+      newValue: {
+        ...this.positioned,
+        posX: (this.positioned.posX += this.moving.speedH),
+        posY: (this.positioned.posY += this.moving.speedV),
+      },
+    });
+  };
+
+  constructor(scene: IScene) {
+    super(scene);
+  }
+}
+
+export class Plasma extends Prop implements IDrawable, IDamaging, IMoving {
+  positioned;
+  drawable = {
+    sprite: "plasma",
+    facing: "right",
+    offsetX: 8,
+    offsetY: 8,
+    anim: "plasma",
+  };
+  collidable: ICollidable["collidable"] = {
+    sizeX: 8,
+    sizeY: 8,
+    offsetX: -8,
+    offsetY: -8,
+    onCollide: (prop: Prop & PropBehaviours) => {
+      if (prop.collidable.colGroup != this.collidable.colGroup)
+        this.scene.destroyPropAction(this.ID);
+    },
+  };
+  damaging = { damage: 10 };
+  moving = {
+    speedH: 32,
+    speedV: 0,
+  };
+
+  createdOn: number;
+
+  onCreated = (tickNum: number) => {
+    this.createdOn = tickNum;
+    if (this.drawable.facing == "left") this.moving.speedH *= -1;
+  };
+
+  onTick = (tickNum: number) => {
+    if (
+      tickNum - this.createdOn > 15 ||
       this.scene.getLayoutAt(this.positioned.posX, this.positioned.posY)
         .solidity == "solid"
     ) {
@@ -135,7 +191,7 @@ export class Rocket extends Prop implements IDrawable, IDamaging, IMoving {
         this.onExplode();
     },
   };
-  damaging = { damage: 40 };
+  damaging = { damage: 30 };
   moving = {
     speedH: 25,
     speedV: 0,

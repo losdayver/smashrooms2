@@ -17,7 +17,13 @@ export class PlayerSpawner extends Prop implements ItemSpawnerType {
 
 export class ItemSpawner extends Prop implements ItemSpawnerType {
   spawner: ItemSpawnerType["spawner"] = {
-    props: ["shotgunItem", "pistolItem", "medikitItem", "bazookaItem"],
+    props: [
+      "shotgunItem",
+      "pistolItem",
+      "medikitItem",
+      "bazookaItem",
+      "blaster",
+    ],
   };
   positioned;
 
