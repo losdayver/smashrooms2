@@ -65,7 +65,12 @@ export class Player
     onCollide: (prop: Prop & PropBehaviours) => {
       if (prop.damaging && prop.collidable.colGroup != this.ID) {
         if (prop.moving) this.$punchH = 2 * Math.sign(prop.moving.speedH);
-        this.damageable.health -= prop.damaging.damage;
+        this.scene.mutatePropBehaviourAction(this, {
+          name: "damageable",
+          newValue: {
+            health: (this.damageable.health -= prop.damaging.damage),
+          },
+        });
         this.scene.animatePropAction(this.ID, "hit");
       } else if (prop instanceof ItemProp && !prop.isPickedUp) {
         if (prop.hasMaster) {
@@ -106,8 +111,6 @@ export class Player
   private maxVSpeed = 20;
   private vAcc = 1.5;
   private jumpSpeed = 22;
-
-  private healing = 0.5;
 
   private isAlreadyDead = false;
 
@@ -232,11 +235,6 @@ export class Player
       this.isAlreadyDead = true;
       this.scene.destroyPropAction(this.ID);
       this.scene.sendNotification(`${this.nameTagged.tag} died`, "dead");
-    } else {
-      this.damageable.health = Math.min(
-        this.damageable.health + this.healing,
-        this.damageable.maxHealth
-      );
     }
   };
 
