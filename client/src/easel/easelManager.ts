@@ -75,11 +75,10 @@ export class EaselManager {
     const sound = this.loadPropSoundMap[prop.drawable?.sprite];
     if (sound) this.audioEventMgr.playSound(sound);
 
-    if (!this.clientPropID) {
-      if (prop.nameTagged && prop.nameTagged.tag == this.clientPropNameTag)
-        this.clientPropID = prop.ID;
+    if (prop.nameTagged?.tag == this.clientPropNameTag) {
+      this.clientPropID = prop.ID;
+      if (this.clientPropID == prop.ID) container.classList.add("you");
     }
-    if (this.clientPropID === prop.ID) container.classList.add("you");
   };
 
   private updateProps = (update: ISceneUpdatesMessageData["update"]) => {
