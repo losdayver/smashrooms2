@@ -98,8 +98,7 @@ export class RegModal extends Modal {
       reload,
       getP("Stage name", data.stageName),
       getP("Author", data.stageAuthor),
-      getP("Player count", data.currPlayerCount),
-      getP("Max players", data.maxPlayerCount)
+      getP("Players", `${data.currPlayerCount}/${data.maxPlayerCount}`)
     );
   };
 }
