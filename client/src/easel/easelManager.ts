@@ -164,14 +164,34 @@ export class EaselManager {
       easelProp.img.src = `${propSpriteRoute}${update.drawable.sprite}.gif`;
 
     if (update.drawable.facing) {
-      if (update.drawable.facing == "left")
+      if (update.drawable.facing == "left") {
         easelProp.img.style.transform = "scaleX(-1)";
-      else easelProp.img.style.transform = "";
+        if (easelProp.overlay) easelProp.overlay.style.transform = "scaleX(-1)";
+      } else {
+        easelProp.img.style.transform = "";
+        if (easelProp.overlay) easelProp.overlay.style.transform = "";
+      }
     }
 
     if (update.drawable.anim) {
       const animClass = `easel__prop-sprite--${update.drawable.anim}`;
       easelProp.img.className = animClass;
+    }
+
+    if (update.drawable.overlay) {
+      if (!easelProp.overlay) {
+        easelProp.overlay = document.createElement("img");
+        easelProp.overlay.className = "easel__prop-overlay";
+        easelProp.overlay.style.zIndex = "5";
+        easelProp.container.appendChild(easelProp.overlay);
+      }
+      easelProp.overlay.style.transform = easelProp.img.style.transform;
+      easelProp.overlay.style.top = `${update.drawable.overlay.y}px`;
+      easelProp.overlay.style.left = `${update.drawable.overlay.x}px`;
+      easelProp.overlay.src = `${propSpriteRoute}${update.drawable.overlay.sprite}.gif`;
+    } else if (update.drawable.overlay === null && easelProp.overlay) {
+      easelProp.overlay.remove();
+      easelProp.overlay = undefined;
     }
   };
 
@@ -267,6 +287,7 @@ export class EaselManager {
 interface IEaselProp extends IBehaviouredPropExt {
   container: HTMLSpanElement;
   img: HTMLImageElement;
+  overlay?: HTMLImageElement;
   lastMoved: Date;
 }
 

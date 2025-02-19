@@ -3,6 +3,7 @@ import {
   ICollidable,
   IControlled,
   IDamageable,
+  IDrawable,
   INameTagged,
   IProp,
   PropBehaviours,
@@ -86,7 +87,7 @@ export class Player
   };
   positioned;
   nameTagged = { tag: "player" };
-  drawable = {
+  drawable: IDrawable["drawable"] = {
     sprite: "playerIdle",
     facing: "right",
     offsetX: 16,

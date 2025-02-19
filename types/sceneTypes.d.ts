@@ -40,7 +40,14 @@ export interface IDrawableExt extends IPositionedExt {
     offsetX: number;
     offsetY: number;
     anim?: string;
+    /** passing null explicitly will result in overlay removal */
+    overlay?: ISpriteOverlay | null;
   };
+}
+export interface ISpriteOverlay {
+  sprite: string;
+  x: number;
+  y: number;
 }
 
 export interface ICollidableExt extends IPositionedExt {

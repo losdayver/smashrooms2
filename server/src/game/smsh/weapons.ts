@@ -6,32 +6,40 @@ export class WeaponPocket {
   private maxWeaponCount = 2;
 
   private fireBullet = () => {
-    if (!this.currentWeapon) return;
-    weaponMap[this.currentWeapon].onFire(this.player);
+    if (!this._currentWeapon) return;
+    weaponMap[this._currentWeapon].onFire(this.player);
   };
 
   private pocket: Map<WeaponType, IWeaponInPocket> = new Map();
 
-  currentWeapon: WeaponType;
+  _currentWeapon: WeaponType;
+  setCurrentWeapon = (weapon: WeaponType) => {
+    this._currentWeapon = weapon;
+    const overlay = weapon == "fist" ? null : { sprite: weapon, x: 0, y: 30 };
+    this.player.scene.mutatePropBehaviourAction(this.player, {
+      name: "drawable",
+      newValue: { overlay },
+    });
+  };
 
   pickWeapon = (weapon: keyof typeof weaponMap) => {
     if (this.pocket.has(weapon)) return;
+    if (this.pocket.has("fist") && this.pocket.size >= this.maxWeaponCount)
+      this.pocket.delete("fist");
     if (this.pocket.size >= this.maxWeaponCount)
-      this.pocket.delete(this.currentWeapon);
-    this.currentWeapon = weapon;
+      this.pocket.delete(this._currentWeapon);
+    this.setCurrentWeapon(weapon);
     this.pocket.set(weapon, {
       lastShotOnTick: 0,
     });
   };
 
   fireWeapon = (isFiring: boolean, tick: number) => {
-    const weapon = this.pocket.get(this.currentWeapon);
-
+    const weapon = this.pocket.get(this._currentWeapon);
     if (!weapon) return;
-
     if (
       isFiring &&
-      tick - weapon.lastShotOnTick > weaponMap[this.currentWeapon].delay
+      tick - weapon.lastShotOnTick > weaponMap[this._currentWeapon].delay
     ) {
       weapon.lastShotOnTick = tick;
       this.fireBullet();
@@ -40,9 +48,9 @@ export class WeaponPocket {
 
   changeWeapon = () => {
     const weapArr = Array.from(this.pocket, ([key, _]) => key).filter(
-      (weapon) => weapon != this.currentWeapon
+      (weapon) => weapon != this._currentWeapon
     );
-    if (weapArr.length) this.currentWeapon = weapArr[0];
+    if (weapArr.length) this.setCurrentWeapon(weapArr[0]);
   };
 
   constructor(player: Player, weapon: WeaponType) {

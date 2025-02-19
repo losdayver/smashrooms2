@@ -15,6 +15,10 @@
   /* transition: all 0.1s ease-in-out; */
 }
 
+.easel__prop-overlay {
+  position: absolute;
+}
+
 .easel__prop-sprite::after {
   content: attr(tag);
 
