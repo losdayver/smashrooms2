@@ -36,7 +36,7 @@ export const getWSTestingServer = (port: number) => {
   severityLog(`starting server on port ${port}`);
   const scene = new Scene(smshPropMap, getStageFS("testing"), smshPropFactory);
   const communicator = new Communicator(scene);
-  const wsServer = new WSSocketServer(communicator, port, 4);
+  const wsServer = new WSSocketServer(communicator, port, 50);
   return new Server(wsServer, communicator, scene);
 };
 
