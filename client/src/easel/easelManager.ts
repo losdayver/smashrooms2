@@ -23,6 +23,7 @@ export class EaselManager {
   private layoutPivot: HTMLDivElement;
   private propList: IEaselProp[] = [];
   private stage: StageExt;
+  private currentStageWidth: number;
   client: Client;
   private clientPropNameTag: string;
   private clientPropID: string;
@@ -209,13 +210,21 @@ export class EaselManager {
     if (data.anim) this.animateProps(data.anim);
   };
 
+  private updateEaselScale = () => {
+    if (!this.currentStageWidth) return;
+    const scaleFactor =
+      window.innerWidth / (this.currentStageWidth * this.stage.meta.gridSize);
+    this.easelDiv.style.transform = `scale(${scaleFactor})`;
+  };
+
   private constructStage = (stage: StageExt) => {
     const tileSize = stage.meta.gridSize;
     this.layoutPivot = document.createElement("div") as HTMLDivElement;
     this.layoutPivot.style.position = "relative";
-    this.stage = this.stage;
-
+    this.stage = stage;
+    let width: number;
     stage.layoutData.split(/\r\n|\r|\n/).forEach((line, y) => {
+      width ??= line.length;
       for (let x = 0; x < line.length; x++) {
         const char = line[x];
         if (char != " ") {
@@ -228,8 +237,11 @@ export class EaselManager {
         }
       }
     });
-
-    this.easelDiv.style.backgroundImage = `url(${backgroundRoute}forest.png)`;
+    this.currentStageWidth = width; // todo maybe put this in one nice object
+    this.updateEaselScale();
+    document.querySelector(
+      "body"
+    ).style.backgroundImage = `url(${backgroundRoute}forest.png)`;
     this.easelDiv.appendChild(this.layoutPivot);
   };
 
@@ -281,6 +293,7 @@ export class EaselManager {
       "--easel__prop-sprite--border-color",
       EaselManager.defaultNicknameHighlightColor
     );
+    window.addEventListener("resize", this.updateEaselScale);
   }
 }
 
