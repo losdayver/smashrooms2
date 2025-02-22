@@ -88,7 +88,7 @@ export class WSSocketServer implements ISocketServer {
       return;
 
     for (const [_, client] of this.clientMap.entries())
-      for (const req of ["nameExists"])
+      for (const req of ["nameExists", "nameNotOccupied"])
         if (
           !this.checkClientForConnectionRequirement(
             req,
