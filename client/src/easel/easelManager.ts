@@ -2,6 +2,7 @@ import {
   IConnectResponseMessageExt,
   ISceneUpdatesMessageExt,
   IServerSceneMetaMessageExt,
+  ISoundMessageExt,
 } from "../../../types/messages";
 import {
   IBehaviouredPropExt,
@@ -267,8 +268,9 @@ export class EaselManager {
     });
     this.currentStageWidth = width; // todo maybe put this in one nice object
     this.updateEaselScale();
-    document.querySelector("body").style.backgroundImage =
-      `url(${backgroundRoute}forest.png)`;
+    document.querySelector(
+      "body"
+    ).style.backgroundImage = `url(${backgroundRoute}forest.png)`;
     this.easelDiv.appendChild(this.layoutPivot);
   };
 
@@ -320,6 +322,9 @@ export class EaselManager {
       "--easel__prop-sprite--border-color",
       EaselManager.defaultNicknameHighlightColor
     );
+    client.on("sound", "self", (data: ISoundMessageExt) => {
+      this.audioEventMgr.playSound(data.sound as keyof typeof soundEventMap);
+    });
     window.addEventListener("resize", this.updateEaselScale);
   }
 }

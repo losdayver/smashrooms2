@@ -29,6 +29,7 @@ export interface IScene extends ISceneActions {
     type?: NotificationTypesExt,
     target?: ClientID | "all"
   ) => void;
+  produceSound: (sound: string) => void;
   readonly tickNum: number;
 }
 

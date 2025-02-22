@@ -135,8 +135,10 @@ export class Fist extends Prop implements IDrawable, IDamaging, IMoving {
     offsetX: -32,
     offsetY: -32,
     onCollide: (prop: Prop & PropBehaviours) => {
-      if (prop.collidable.colGroup != this.collidable.colGroup)
+      if (prop.collidable.colGroup != this.collidable.colGroup) {
         this.scene.destroyPropAction(this.ID);
+        this.scene.produceSound("punch");
+      }
     },
   };
   damaging = { damage: 10 };

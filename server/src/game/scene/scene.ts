@@ -21,6 +21,7 @@ import { ClientID } from "../commonTypes";
 import {
   ISceneUpdatesMessageExt,
   IServerNotificationExt,
+  ISoundMessageExt,
 } from "../../../../types/messages";
 
 type ChunkedUpdateMap = Record<`${number}_${number}`, ChunkUpdate>;
@@ -271,6 +272,13 @@ export class Scene implements IScene {
     this.$isProcessingTick = false;
   };
 
+  produceSound: IScene["produceSound"] = (sound) => {
+    this.sendMessageToSubscriber(
+      { name: "sound", sound } satisfies ISoundMessageExt,
+      "all"
+    );
+  };
+
   private spawnPropHandler = (data: ISpawnPropEvent["data"]) => {
     const propType = this.propMap[data.propName];
     if (propType) {
@@ -366,6 +374,7 @@ export class Scene implements IScene {
           propName: "player",
           type: "revived",
         });
+        this.produceSound("revive");
       }
     } else prop.controlled.onReceive(data.code, data.status);
   };
@@ -423,6 +432,7 @@ export class Scene implements IScene {
       } satisfies ISpawnControlledPropEvent;
       if (nameTag) event.data.nameTag = nameTag;
       this.internalEventQueueMutex.value.unshift(event);
+      this.produceSound("clientConnect");
     } finally {
       unlock();
       this.$generateExternalEventBatch(clientID, "currentState");
@@ -435,6 +445,7 @@ export class Scene implements IScene {
         name: "destroyControlledProp",
         data: { clientID },
       });
+      this.produceSound("clientConnect");
     } finally {
       unlock();
     }
