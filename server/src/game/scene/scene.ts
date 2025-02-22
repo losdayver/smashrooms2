@@ -119,6 +119,7 @@ export class Scene implements IScene {
               positioned: prop.positioned,
             };
             if (prop.nameTagged) partialProp.nameTagged = prop.nameTagged;
+            if (prop.damageable) partialProp.damageable = prop.damageable;
             batch.load.push(partialProp);
           });
         }

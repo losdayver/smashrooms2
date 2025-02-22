@@ -39,6 +39,24 @@
   border: 2.5px ridge var(--easel__prop-sprite--border-color) !important;
 }
 
+.easel__prop-sprite__health-bar {
+  position: absolute;
+  width: 60px;
+  height: 5px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: black;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0px 0px 3px 0px #000000e5;
+}
+
+.easel__prop-sprite__health-bar__value {
+  position: absolute;
+  height: 5px;
+  background: #00ff4ccc;
+}
+
 .easel__layout-tile {
   position: absolute;
   border: 1px solid #000000ba;
@@ -150,5 +168,21 @@
   }
   100% {
     transform: scale(0.2);
+  }
+}
+
+.easel__prop-sprite--appear-dissolve {
+  animation: appear-dissolve__keyframes 3s linear forwards;
+}
+
+@keyframes appear-dissolve__keyframes {
+  0% {
+    opacity: 100%;
+  }
+  50% {
+    opacity: 100%;
+  }
+  100% {
+    opacity: 0;
   }
 }
