@@ -14,7 +14,7 @@ The first version was created using Python and the `Pygame` library, but for the
 
 ## I wanna try it now!
 
-The testing stand is already deployed here http://olegzhmelev.ru:5890. Note that this is the TEST version. The stand can be redepolyed at any point.
+The testing environment is already deployed here http://olegzhmelev.ru:5890. Note that this is the TEST version. The stand can be redepolyed at any point.
 
 ## Deployment
 
