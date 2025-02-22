@@ -104,7 +104,7 @@ export class SniperBullet
       this.scene.getLayoutAt(this.positioned.posX, this.positioned.posY)
         .solidity == "solid" ||
       this.scene.getLayoutAt(
-        this.positioned.posX + this.moving.speedH,
+        this.positioned.posX + this.moving.speedH / 2,
         this.positioned.posY
       ).solidity == "solid"
     ) {
