@@ -5,6 +5,7 @@ import {
 } from "../../../types/messages";
 import {
   IBehaviouredPropExt,
+  IDamageableExt,
   ISceneUpdatesMessageData,
 } from "../../../types/sceneTypes";
 import { StageExt } from "../../../types/stage";
@@ -63,15 +64,14 @@ export class EaselManager {
       lastMoved: new Date(),
     } satisfies IEaselProp;
 
-    // load health here
-    if (prop.damageable) console.log("initial health stats: ", prop.damageable);
-
     this.processDrawable(easelProp, prop);
 
     this.propList.push(easelProp);
 
     container.appendChild(img);
     this.pivot.appendChild(container);
+
+    if (prop.damageable) this.updateHealth(easelProp, prop as IDamageableExt);
 
     const sound = this.loadPropSoundMap[prop.drawable?.sprite];
     if (sound) this.audioEventMgr.playSound(sound);
@@ -84,30 +84,26 @@ export class EaselManager {
 
   private updateProps = (update: ISceneUpdatesMessageData["update"]) => {
     Object.entries(update)?.forEach(([propID, changes]) => {
-      const prop = this.propList.find((prop) => prop.ID == propID);
-      if (!prop) return;
-
-      // update health here
+      const easelProp = this.propList.find(
+        (easelProp) => easelProp.ID == propID
+      );
+      if (!easelProp) return;
       if (changes.damageable)
-        console.log("loaded health stats: ", changes.damageable);
-
+        this.updateHealth(easelProp, changes as IDamageableExt);
       if (changes.positioned) {
         const dateMoved = new Date();
         const transitionTime =
-          dateMoved.getTime() - prop.lastMoved.getTime() || 0;
-        prop.container.style.transition = `all ${
+          dateMoved.getTime() - easelProp.lastMoved.getTime() || 0;
+        easelProp.container.style.transition = `all ${
           transitionTime > 100 ? 0 : transitionTime
         }ms linear`;
-
         if (changes.positioned.posY)
-          prop.container.style.top = changes.positioned.posY.toString();
-
+          easelProp.container.style.top = changes.positioned.posY.toString();
         if (changes.positioned.posX)
-          prop.container.style.left = changes.positioned.posX.toString();
-
-        prop.lastMoved = dateMoved;
+          easelProp.container.style.left = changes.positioned.posX.toString();
+        easelProp.lastMoved = dateMoved;
       }
-      this.processDrawable(prop, changes as any);
+      this.processDrawable(easelProp, changes as any);
     });
   };
 
@@ -194,6 +190,29 @@ export class EaselManager {
       easelProp.overlay.remove();
       easelProp.overlay = undefined;
     }
+  };
+
+  private updateHealth = (easelProp: IEaselProp, update: IDamageableExt) => {
+    if (!easelProp.healthBarDiv) {
+      easelProp.healthBarDiv = document.createElement("div");
+      easelProp.healthBarDiv.className = "easel__prop-sprite__health-bar";
+      const healthValue = document.createElement("div");
+      healthValue.className = "easel__prop-sprite__health-bar__value";
+      easelProp.healthBarDiv.appendChild(healthValue);
+      easelProp.container.appendChild(easelProp.healthBarDiv);
+    }
+    if (update.damageable.maxHealth)
+      easelProp.maxHealth = update.damageable.maxHealth;
+    easelProp.healthBarDiv.querySelector<HTMLDivElement>(
+      ".easel__prop-sprite__health-bar__value"
+    ).style.width = `${
+      (update.damageable.health * 100) / easelProp.maxHealth
+    }%`;
+    easelProp.healthBarDiv.classList.remove(
+      "easel__prop-sprite--appear-dissolve"
+    );
+    void easelProp.healthBarDiv.offsetWidth;
+    easelProp.healthBarDiv.classList.add("easel__prop-sprite--appear-dissolve");
   };
 
   private onConnectHandler = (data: IConnectResponseMessageExt) => {
@@ -300,8 +319,10 @@ export class EaselManager {
 interface IEaselProp extends IBehaviouredPropExt {
   container: HTMLSpanElement;
   img: HTMLImageElement;
-  overlay?: HTMLImageElement;
   lastMoved: Date;
+  overlay?: HTMLImageElement;
+  healthBarDiv?: HTMLDivElement;
+  maxHealth?: number;
 }
 
 interface ILayoutTile {
