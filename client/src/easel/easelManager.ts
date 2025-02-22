@@ -193,26 +193,35 @@ export class EaselManager {
   };
 
   private updateHealth = (easelProp: IEaselProp, update: IDamageableExt) => {
-    if (!easelProp.healthBarDiv) {
-      easelProp.healthBarDiv = document.createElement("div");
-      easelProp.healthBarDiv.className = "easel__prop-sprite__health-bar";
-      const healthValue = document.createElement("div");
-      healthValue.className = "easel__prop-sprite__health-bar__value";
-      easelProp.healthBarDiv.appendChild(healthValue);
-      easelProp.container.appendChild(easelProp.healthBarDiv);
+    if (!easelProp.healthBar) {
+      easelProp.healthBar = document.createElement("div");
+      easelProp.healthBar.className = "easel__prop-sprite__health-bar";
+      const healthValueBar = document.createElement("div");
+      healthValueBar.className = "easel__prop-sprite__health-bar__value";
+      easelProp.healthBar.appendChild(healthValueBar);
+      easelProp.container.appendChild(easelProp.healthBar);
     }
     if (update.damageable.maxHealth)
       easelProp.maxHealth = update.damageable.maxHealth;
-    easelProp.healthBarDiv.querySelector<HTMLDivElement>(
+    const healthValueBar = easelProp.healthBar.querySelector<HTMLDivElement>(
       ".easel__prop-sprite__health-bar__value"
-    ).style.width = `${
-      (update.damageable.health * 100) / easelProp.maxHealth
-    }%`;
-    easelProp.healthBarDiv.classList.remove(
-      "easel__prop-sprite--appear-dissolve"
     );
-    void easelProp.healthBarDiv.offsetWidth;
-    easelProp.healthBarDiv.classList.add("easel__prop-sprite--appear-dissolve");
+    const healthPercentage =
+      (update.damageable.health * 100) / easelProp.maxHealth;
+    healthValueBar.style.width = `${healthPercentage}%`;
+    healthValueBar.style.background =
+      EaselManager.calculateHealthColor(healthPercentage);
+    easelProp.healthBar.classList.remove("easel__prop-sprite--appear-dissolve");
+    void easelProp.healthBar.offsetWidth;
+    easelProp.healthBar.classList.add("easel__prop-sprite--appear-dissolve");
+  };
+
+  private static calculateHealthColor = (healthPercentage: number): string => {
+    return `rgb(
+      ${Math.floor(255 - healthPercentage * 2.05)},
+      ${Math.floor(255 - (100 - healthPercentage) * 2.55)},
+      ${Math.floor(50 - (100 - healthPercentage) / 2)}
+    `;
   };
 
   private onConnectHandler = (data: IConnectResponseMessageExt) => {
@@ -258,9 +267,8 @@ export class EaselManager {
     });
     this.currentStageWidth = width; // todo maybe put this in one nice object
     this.updateEaselScale();
-    document.querySelector(
-      "body"
-    ).style.backgroundImage = `url(${backgroundRoute}forest.png)`;
+    document.querySelector("body").style.backgroundImage =
+      `url(${backgroundRoute}forest.png)`;
     this.easelDiv.appendChild(this.layoutPivot);
   };
 
@@ -321,7 +329,7 @@ interface IEaselProp extends IBehaviouredPropExt {
   img: HTMLImageElement;
   lastMoved: Date;
   overlay?: HTMLImageElement;
-  healthBarDiv?: HTMLDivElement;
+  healthBar?: HTMLDivElement;
   maxHealth?: number;
 }
 
