@@ -16,6 +16,12 @@
 
 .easel__prop-overlay {
   position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.easel__prop-overlay__img {
+  margin: auto;
 }
 
 .easel__prop-sprite::after {

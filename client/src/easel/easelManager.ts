@@ -117,6 +117,7 @@ export class EaselManager {
     pistol: "itemPickup",
     shotgun: "itemPickup",
     blaster: "itemPickup",
+    sniper: "itemPickup",
   } as const;
 
   private deleteProps = (del: ISceneUpdatesMessageData["delete"]) => {
@@ -166,10 +167,16 @@ export class EaselManager {
     if (update.drawable.facing) {
       if (update.drawable.facing == "left") {
         easelProp.img.style.transform = "scaleX(-1)";
-        if (easelProp.overlay) easelProp.overlay.style.transform = "scaleX(-1)";
+        if (easelProp.overlay)
+          easelProp.overlay.querySelector<HTMLImageElement>(
+            ".easel__prop-overlay__img"
+          ).style.transform = "scaleX(-1)";
       } else {
         easelProp.img.style.transform = "";
-        if (easelProp.overlay) easelProp.overlay.style.transform = "";
+        if (easelProp.overlay)
+          easelProp.overlay.querySelector<HTMLImageElement>(
+            ".easel__prop-overlay__img"
+          ).style.transform = "";
       }
     }
 
@@ -180,15 +187,21 @@ export class EaselManager {
 
     if (update.drawable.overlay) {
       if (!easelProp.overlay) {
-        easelProp.overlay = document.createElement("img");
-        easelProp.overlay.className = "easel__prop-overlay";
-        easelProp.overlay.style.zIndex = "5";
-        easelProp.container.appendChild(easelProp.overlay);
+        const overlay = document.createElement("div");
+        overlay.className = "easel__prop-overlay";
+        overlay.style.zIndex = "5";
+        const overlayImg = document.createElement("img");
+        overlayImg.className = "easel__prop-overlay__img";
+        overlay.appendChild(overlayImg);
+        easelProp.container.appendChild(overlay);
+        easelProp.overlay = overlay;
       }
-      easelProp.overlay.style.transform = easelProp.img.style.transform;
+      const overlayImg = easelProp.overlay.querySelector<HTMLImageElement>(
+        ".easel__prop-overlay__img"
+      );
+      overlayImg.style.transform = easelProp.img.style.transform;
       easelProp.overlay.style.top = `${update.drawable.overlay.y}px`;
-      easelProp.overlay.style.left = `${update.drawable.overlay.x}px`;
-      easelProp.overlay.src = `${propSpriteRoute}${update.drawable.overlay.sprite}.gif`;
+      overlayImg.src = `${propSpriteRoute}${update.drawable.overlay.sprite}.gif`;
     } else if (update.drawable.overlay === null && easelProp.overlay) {
       easelProp.overlay.remove();
       easelProp.overlay = undefined;
@@ -335,7 +348,7 @@ interface IEaselProp extends IBehaviouredPropExt {
   container: HTMLSpanElement;
   img: HTMLImageElement;
   lastMoved: Date;
-  overlay?: HTMLImageElement;
+  overlay?: HTMLDivElement;
   healthBar?: HTMLDivElement;
   maxHealth?: number;
 }

@@ -72,14 +72,14 @@ export class SniperBullet
   drawable = {
     sprite: "sniperBullet",
     facing: "right",
-    offsetX: 8,
+    offsetX: 16,
     offsetY: 8,
     anim: "appear",
   };
   collidable: ICollidable["collidable"] = {
-    sizeX: 4,
+    sizeX: 64,
     sizeY: 4,
-    offsetX: -8,
+    offsetX: -32,
     offsetY: -8,
     onCollide: (prop: Prop & PropBehaviours) => {
       if (prop.collidable.colGroup != this.collidable.colGroup)
