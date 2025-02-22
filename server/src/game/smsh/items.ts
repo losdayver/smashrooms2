@@ -95,6 +95,25 @@ export class BlasterItem extends ItemProp {
   };
 }
 
+export class SniperItem extends ItemProp {
+  drawable = {
+    sprite: "sniper",
+    facing: "right",
+    offsetX: 16,
+    offsetY: 16,
+    anim: "itemSpin",
+  };
+  collidable: ICollidable["collidable"] = {
+    sizeX: 32,
+    sizeY: 32,
+    offsetX: -16,
+    offsetY: -16,
+  };
+  modifyPlayer = (player: Player) => {
+    player.weaponPocket.pickWeapon("sniper");
+  };
+}
+
 export class MedikitItem extends ItemProp {
   drawable = {
     sprite: "medikit",

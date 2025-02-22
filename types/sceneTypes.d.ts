@@ -46,7 +46,6 @@ export interface IDrawableExt extends IPositionedExt {
 }
 export interface ISpriteOverlay {
   sprite: string;
-  x: number;
   y: number;
 }
 

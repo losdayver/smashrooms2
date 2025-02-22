@@ -64,6 +64,68 @@ export class Bullet extends Prop implements IDrawable, IDamaging, IMoving {
   }
 }
 
+export class SniperBullet
+  extends Prop
+  implements IDrawable, IDamaging, IMoving
+{
+  positioned;
+  drawable = {
+    sprite: "sniperBullet",
+    facing: "right",
+    offsetX: 16,
+    offsetY: 8,
+    anim: "appear",
+  };
+  collidable: ICollidable["collidable"] = {
+    sizeX: 64,
+    sizeY: 4,
+    offsetX: -32,
+    offsetY: -8,
+    onCollide: (prop: Prop & PropBehaviours) => {
+      if (prop.collidable.colGroup != this.collidable.colGroup)
+        this.scene.destroyPropAction(this.ID);
+    },
+  };
+  damaging = { damage: 80 };
+  moving = {
+    speedH: 64,
+    speedV: 0,
+  };
+
+  createdOn: number;
+
+  onCreated = (tickNum: number) => {
+    this.createdOn = tickNum;
+    if (this.drawable.facing == "left") this.moving.speedH *= -1;
+  };
+
+  onTick = (tickNum: number) => {
+    if (
+      this.scene.getLayoutAt(this.positioned.posX, this.positioned.posY)
+        .solidity == "solid" ||
+      this.scene.getLayoutAt(
+        this.positioned.posX + this.moving.speedH / 2,
+        this.positioned.posY
+      ).solidity == "solid"
+    ) {
+      this.scene.destroyPropAction(this.ID);
+      return;
+    }
+    this.scene.mutatePropBehaviourAction(this as Prop, {
+      name: "positioned",
+      newValue: {
+        ...this.positioned,
+        posX: (this.positioned.posX += this.moving.speedH),
+        posY: (this.positioned.posY += this.moving.speedV),
+      },
+    });
+  };
+
+  constructor(scene: IScene) {
+    super(scene);
+  }
+}
+
 export class Plasma extends Prop implements IDrawable, IDamaging, IMoving {
   positioned;
   drawable = {
@@ -193,7 +255,7 @@ export class Rocket extends Prop implements IDrawable, IDamaging, IMoving {
         this.onExplode();
     },
   };
-  damaging = { damage: 30 };
+  damaging = { damage: 15 };
   moving = {
     speedH: 25,
     speedV: 0,

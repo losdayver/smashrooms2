@@ -189,4 +189,5 @@ export const soundEventMap = {
   clientConnect: "clientConnect.mp3",
   revive: "revive.mp3",
   death: "death.mp3",
+  sniperBullet: "sniperBullet.mp3",
 } as const;
