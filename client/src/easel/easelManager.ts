@@ -40,6 +40,7 @@ export class EaselManager {
     rocket: "bazookaShot",
     explosion: "bazookaExplosion",
     plasma: "blaster",
+    sniperBullet: "sniperBullet",
   } as const;
 
   private loadProp = (prop: IBehaviouredPropExt) => {

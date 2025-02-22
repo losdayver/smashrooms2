@@ -22,7 +22,8 @@ export class ItemSpawner extends Prop implements ItemSpawnerType {
       "pistolItem",
       "medikitItem",
       "bazookaItem",
-      "blaster",
+      "blasterItem",
+      "sniperItem",
     ],
   };
   positioned;

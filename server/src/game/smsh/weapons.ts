@@ -90,7 +90,7 @@ export const weaponMap: Record<
     },
   },
   shotgun: {
-    delay: 10,
+    delay: 15,
     onFire: (player: Player) => {
       for (let i = -1; i < 2; i++)
         player.scene.spawnPropAction("bullet", {
@@ -105,7 +105,7 @@ export const weaponMap: Record<
             colGroup: player.ID,
           },
           moving: {
-            speedV: i * 4,
+            speedV: i * 4 + getRandomBetween(-4, 4),
           },
         });
     },
@@ -166,6 +166,23 @@ export const weaponMap: Record<
         },
         moving: {
           speedV: getRandomBetween(-6, 6),
+        },
+      });
+    },
+  },
+  sniper: {
+    delay: 40,
+    onFire: (player: Player) => {
+      player.scene.spawnPropAction("sniperBullet", {
+        positioned: {
+          posX: player.positioned.posX,
+          posY: player.positioned.posY + 40,
+        },
+        drawable: {
+          facing: player.drawable.facing,
+        },
+        collidable: {
+          colGroup: player.ID,
         },
       });
     },
