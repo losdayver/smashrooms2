@@ -115,6 +115,7 @@ export class EaselManager {
     bazooka: "itemPickup",
     pistol: "itemPickup",
     shotgun: "itemPickup",
+    blaster: "itemPickup",
   } as const;
 
   private deleteProps = (del: ISceneUpdatesMessageData["delete"]) => {
