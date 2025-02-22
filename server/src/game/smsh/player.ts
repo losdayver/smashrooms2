@@ -43,6 +43,7 @@ export class Player
           this.firing = true;
         } else if (code == "jump" && !this.$isInAir) {
           this.$vSpeed = -this.jumpSpeed;
+          this.scene.produceSound("jump");
         } else if (code == "duck") {
           if (!this.$isInAir) {
             this.$passSemi = true;
@@ -235,6 +236,7 @@ export class Player
     if (this.damageable.health <= 0 && !this.isAlreadyDead) {
       this.isAlreadyDead = true;
       this.scene.destroyPropAction(this.ID);
+      this.scene.produceSound("death");
       this.scene.sendNotification(`${this.nameTagged.tag} died`, "dead");
     }
   };

@@ -1,3 +1,7 @@
+/**
+ * @file contains types for messages that are exchanged between server and client
+ * @author Zhmelev Oleg
+ */
 import { LayoutMetaExt } from "./stage";
 import { ISceneUpdatesMessageData } from "./sceneTypes";
 
@@ -66,11 +70,18 @@ export type NotificationTypesExt =
   | "dead"
   | "revived";
 
-export interface IGenericMessageExt {
-  name: string;
-  data: any;
+export interface ISoundMessageExt {
+  name: "sound";
+  sound: string;
 }
 
+/** This interface represents an abstract message */
+export interface IGenericMessageExt {
+  name: string;
+  [key: string]: any;
+}
+
+/** This interface represents all the possible messages */
 export type IMessageExt =
   | IConnectMessageExt
   | IConnectResponseMessageExt
@@ -81,7 +92,8 @@ export type IMessageExt =
   | IServerChatMessageExt
   | IServerSceneMetaMessageExt
   | IClientSceneMetaMessageExt
-  | IServerNotificationExt;
+  | IServerNotificationExt
+  | ISoundMessageExt;
 
 export interface IClientActionMessageExt extends IGenericMessageExt {
   name: "clientAct";
