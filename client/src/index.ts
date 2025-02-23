@@ -16,6 +16,7 @@ import {
 import { EaselManager } from "./easel/easelManager.js";
 import { FocusManager, IFocusable } from "./focus/focusManager.js";
 import { Modal } from "./modal/modal.js";
+import { ScoreBoardModal } from "./modal/scoreboard.js";
 import { repoRoute } from "./routes.js";
 import { Chat } from "./ui/chat.js";
 import { Toast } from "./ui/toast.js";
@@ -330,9 +331,8 @@ const initGameLayout = async () => {
   client.on("serverChat", "chat", (data: IServerChatMessageExt) => {
     chat.receiveMessage(data.sender, data.message);
   });
-  // todo add modal
   client.on("score", "self", (data: IScoreUpdateExt) => {
-    console.log(data);
+    scoreBoardModal.updateScore(data);
   });
 
   const soundTrackMgr = new AudioTrackManager();
@@ -367,7 +367,10 @@ const initGameLayout = async () => {
     document.querySelector<HTMLDivElement>(".modal-container")
   );
   focus.register(menuModal);
-
+  const scoreBoardModal = new ScoreBoardModal(
+    document.querySelector<HTMLDivElement>(".modal-container")
+  );
+  focus.register(scoreBoardModal);
   const regModal = new RegModal(
     document.querySelector<HTMLDivElement>(".modal-container"),
     (clientName: string) => {

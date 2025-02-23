@@ -46,6 +46,7 @@ export class Client
       this.controlsHandler(key, true);
       if (key == "chat") this.focusManager.setFocus("chat");
       else if (key == "back") this.focusManager.setFocus("menu");
+      else if (key == "select") this.focusManager.setFocus("scoreboard");
     } else {
       this.controlsHandler(key, false);
     }

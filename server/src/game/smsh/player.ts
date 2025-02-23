@@ -277,6 +277,17 @@ class Score {
   };
   register = (player: Player) => {
     this.scoreObj[player.nameTagged.tag] = { K: 0, D: 0 };
+    Object.entries(this.scoreObj).forEach(([tag, obj]) => {
+      this.scene.sendArbitraryMessage(
+        {
+          name: "score",
+          tag: tag,
+          K: obj.K,
+          D: obj.D,
+        } satisfies IScoreUpdateExt,
+        player.controlled.clientID
+      );
+    });
     this.scene.sendArbitraryMessage(
       {
         name: "score",
