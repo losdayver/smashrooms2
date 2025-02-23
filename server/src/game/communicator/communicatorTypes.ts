@@ -7,7 +7,6 @@ import {
   IGenericMessageExt,
   ClientActionCodesExt,
   IClientSceneMetaMessageExt,
-  IMessageExt,
 } from "../../../../types/messages";
 
 export interface ICommunicator extends ISceneSubscriber {
@@ -54,7 +53,7 @@ export interface IClientSceneMessageRequest {
 
 export interface ICommunicatorSubscriber {
   onReceiveMessageFromCommunicator: (
-    message: IMessageExt,
+    message: IGenericMessageExt,
     clientID?: ClientID | "all"
   ) => void;
 }

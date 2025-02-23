@@ -1,3 +1,7 @@
+/**
+ * @file contains types for game props that are shared between client and server
+ * @author Zhmelev Oleg
+ */
 export type PropIDExt = string;
 
 export interface IPropExt {

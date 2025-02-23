@@ -1,14 +1,14 @@
-import { ICollidable, IDrawable, PropBehaviours } from "../scene/propTypes";
+import { ICollidable, PropBehaviours } from "../scene/propTypes";
 import { IScene } from "../scene/sceneTypes";
 import { Prop } from "../scene/prop";
 import { Player } from "./player";
-import { IHasMasterExt } from "../../../../types/sceneTypes";
+import { IDrawableExt, IHasMasterExt } from "../../../../types/sceneTypes";
 
 export abstract class ItemProp
   extends Prop
-  implements IDrawable, ICollidable, IHasMasterExt
+  implements IDrawableExt, ICollidable, IHasMasterExt
 {
-  abstract drawable: IDrawable["drawable"];
+  abstract drawable: IDrawableExt["drawable"];
   abstract collidable: ICollidable["collidable"];
   positioned;
   hasMaster: IHasMasterExt["hasMaster"];

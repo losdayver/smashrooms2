@@ -1,14 +1,14 @@
+import { IDrawableExt } from "../../../../types/sceneTypes";
 import { Prop } from "../scene/prop";
 import {
   ICollidable,
   IDamaging,
-  IDrawable,
   IMoving,
   PropBehaviours,
 } from "../scene/propTypes";
 import { IScene } from "../scene/sceneTypes";
 
-export class Bullet extends Prop implements IDrawable, IDamaging, IMoving {
+export class Bullet extends Prop implements IDrawableExt, IDamaging, IMoving {
   positioned;
   drawable = {
     sprite: "bullet",
@@ -66,7 +66,7 @@ export class Bullet extends Prop implements IDrawable, IDamaging, IMoving {
 
 export class SniperBullet
   extends Prop
-  implements IDrawable, IDamaging, IMoving
+  implements IDrawableExt, IDamaging, IMoving
 {
   positioned;
   drawable = {
@@ -126,7 +126,7 @@ export class SniperBullet
   }
 }
 
-export class Plasma extends Prop implements IDrawable, IDamaging, IMoving {
+export class Plasma extends Prop implements IDrawableExt, IDamaging, IMoving {
   positioned;
   drawable = {
     sprite: "plasma",
@@ -182,7 +182,7 @@ export class Plasma extends Prop implements IDrawable, IDamaging, IMoving {
   }
 }
 
-export class Fist extends Prop implements IDrawable, IDamaging, IMoving {
+export class Fist extends Prop implements IDrawableExt, IDamaging, IMoving {
   positioned;
   drawable = {
     sprite: "fist",
@@ -236,7 +236,7 @@ export class Fist extends Prop implements IDrawable, IDamaging, IMoving {
   }
 }
 
-export class Rocket extends Prop implements IDrawable, IDamaging, IMoving {
+export class Rocket extends Prop implements IDrawableExt, IDamaging, IMoving {
   positioned;
   drawable = {
     sprite: "rocket",
@@ -304,7 +304,7 @@ export class Rocket extends Prop implements IDrawable, IDamaging, IMoving {
   }
 }
 
-export class Explosion extends Prop implements IDrawable, IDamaging {
+export class Explosion extends Prop implements IDrawableExt, IDamaging {
   positioned;
   drawable = {
     sprite: "explosion",

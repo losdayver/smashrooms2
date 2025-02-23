@@ -14,21 +14,25 @@ import {
 } from "./sceneTypes";
 import { doBenchmark, Mutex, pickRandom } from "./../../utils";
 import { Prop } from "./prop";
-import { IControlled, IPositioned, IProp, PropBehaviours } from "./propTypes";
-import { IAnimationExt, PropIDExt } from "../../../../types/sceneTypes";
+import { IControlled, PropBehaviours } from "./propTypes";
+import {
+  IAnimationExt,
+  INameTaggedExt,
+  IPositionedExt,
+  PropIDExt,
+} from "../../../../types/sceneTypes";
 import { StageExt } from "../../../../types/stage";
 import { ClientID } from "../commonTypes";
 import {
-  ISceneUpdatesMessageExt,
   IServerNotificationExt,
   ISoundMessageExt,
 } from "../../../../types/messages";
 
 type ChunkedUpdateMap = Record<`${number}_${number}`, ChunkUpdate>;
 type ChunkUpdate = {
-  props: (IProp & PropBehaviours)[];
+  props: (Prop & PropBehaviours)[];
   update: Record<PropIDExt, PropBehaviours>;
-  load: (IProp & PropBehaviours)[];
+  load: (Prop & PropBehaviours)[];
   delete: string[];
   anim: IAnimationExt[];
 };
@@ -37,7 +41,7 @@ export class Scene implements IScene {
   sendMessageToSubscriber: ISceneSubscriber["onReceiveMessageFromScene"];
 
   private chunkSize = 256;
-  private propList: (IProp & PropBehaviours)[] = [];
+  private propList: (Prop & PropBehaviours)[] = [];
   private internalEventQueueMutex = new Mutex<IInternalEvent[]>([]);
   private internalEventHandlerMap: Record<
     IInternalEvent["name"],
@@ -56,7 +60,7 @@ export class Scene implements IScene {
    */
   private $mutateChunkedUpdates = (
     partialChunkUpdate: Partial<ChunkUpdate>,
-    positionedProp: IProp & IPositioned
+    positionedProp: Prop & IPositionedExt
   ) => {
     if (!positionedProp) return;
 
@@ -114,7 +118,7 @@ export class Scene implements IScene {
           if (!batch.load) batch.load = [];
           chunkedUpdate.props.forEach((prop) => {
             if (!prop.drawable) return;
-            const partialProp: Omit<IProp, "scene"> & PropBehaviours = {
+            const partialProp: Omit<Prop, "scene"> & PropBehaviours = {
               ID: prop.ID,
               drawable: prop.drawable,
               positioned: prop.positioned,
@@ -155,7 +159,7 @@ export class Scene implements IScene {
               ID: prop.ID,
               drawable: prop.drawable,
               positioned: prop.positioned,
-            } as IProp & PropBehaviours;
+            } as Prop & PropBehaviours;
             if (prop.nameTagged) tempProp.nameTagged = prop.nameTagged;
             if (prop.nameTagged) tempProp.damageable = prop.damageable;
             tempLoad.push(tempProp);
@@ -174,10 +178,7 @@ export class Scene implements IScene {
       if (tempAnim.length) batch.anim = tempAnim;
     } else if (type == "localUpdates") throw new Error("not implemented");
     if (Object.keys(batch).length)
-      this.sendMessageToSubscriber(
-        { name: "scene", data: batch } satisfies ISceneUpdatesMessageExt,
-        clientID
-      );
+      this.sendMessageToSubscriber({ name: "scene", data: batch }, clientID);
   };
 
   $isProcessingTick = false;
@@ -190,7 +191,7 @@ export class Scene implements IScene {
       if (prop.positioned)
         this.$mutateChunkedUpdates(
           { props: [prop] },
-          prop as IProp & IPositioned
+          prop as Prop & IPositionedExt
         );
     });
 
@@ -279,6 +280,13 @@ export class Scene implements IScene {
     );
   };
 
+  sendArbitraryMessage: IScene["sendArbitraryMessage"] = (message, target) => {
+    this.sendMessageToSubscriber(message, target);
+  };
+
+  getPropByID: IScene["getPropByID"] = (ID) =>
+    this.propList.find((prop) => prop.ID == ID);
+
   private spawnPropHandler = (data: ISpawnPropEvent["data"]) => {
     const propType = this.propMap[data.propName];
     if (propType) {
@@ -294,7 +302,7 @@ export class Scene implements IScene {
       if (prop.positioned)
         this.$mutateChunkedUpdates(
           { props: [prop], load: [prop] },
-          prop as IProp & IPositioned
+          prop as Prop & IPositionedExt
         );
     }
   };
@@ -303,7 +311,10 @@ export class Scene implements IScene {
   ) => {
     const propType = this.propMap[data.propName];
     if (propType) {
-      const prop = new propType(data.clientID, this);
+      const prop = new propType(data.clientID, this) as Prop &
+        IControlled &
+        IPositionedExt &
+        INameTaggedExt;
       const spawners =
         this.propList.filter((prop) =>
           prop.spawner?.props.includes("player")
@@ -313,10 +324,10 @@ export class Scene implements IScene {
       if (data.nameTag) prop.nameTagged = { tag: data.nameTag };
       if (prop.controlled) {
         this.propList.unshift(prop);
-        prop.onCreated?.(this.tickNum);
+        prop.onCreated?.(this.tickNum, "connect");
         this.$mutateChunkedUpdates(
           { props: [prop], load: [prop] },
-          prop as IProp & IPositioned
+          prop as Prop & IPositionedExt
         );
         this.sendNotification(
           `${data.nameTag} ${
@@ -332,7 +343,7 @@ export class Scene implements IScene {
       if (this.propList[i].ID == data.ID) {
         this.$mutateChunkedUpdates(
           { delete: [data.ID] },
-          this.propList[i] as IProp & IPositioned
+          this.propList[i] as Prop & IPositionedExt
         );
         this.propList.splice(i, 1);
         return;
@@ -347,13 +358,10 @@ export class Scene implements IScene {
         (this.propList[i] as unknown as IControlled).controlled?.clientID ==
         data.clientID
       ) {
+        this.propList[i].onDestroyed("disconnect");
         this.$mutateChunkedUpdates(
           { delete: [this.propList[i].ID] },
-          this.propList[i] as IProp & IPositioned
-        );
-        this.sendNotification(
-          `${this.propList[i]?.nameTagged?.tag || "player"} disconnected.`,
-          "disconnected"
+          this.propList[i] as Prop & IPositionedExt
         );
         this.propList.splice(i, 1);
         return;
@@ -363,7 +371,7 @@ export class Scene implements IScene {
   private clientActionHandler = (data: IClientActionEvent["data"]) => {
     const prop = this.propList.find(
       (prop) => prop.controlled?.clientID == data.clientID
-    ) as IProp & IControlled;
+    ) as Prop & IControlled;
     if (!prop) {
       if (data.code == "revive") {
         this.spawnControlledPropHandler({
@@ -379,8 +387,8 @@ export class Scene implements IScene {
     } else prop.controlled.onReceive(data.code, data.status);
   };
   private animatePropHandler = (data: IAnimatePropEvent["data"]) => {
-    const prop = this.propList.find((prop) => prop.ID == data.ID) as IProp &
-      IPositioned;
+    const prop = this.propList.find((prop) => prop.ID == data.ID) as Prop &
+      IPositionedExt;
     this.$mutateChunkedUpdates({ anim: [data] }, prop);
   };
 
@@ -441,6 +449,13 @@ export class Scene implements IScene {
   disconnectAction: IScene["disconnectAction"] = async (clientID) => {
     const unlock = await this.internalEventQueueMutex.acquire();
     try {
+      this.sendNotification(
+        `${
+          this.propList.find((prop) => prop?.controlled?.clientID == clientID)
+            ?.nameTagged?.tag || "player"
+        } disconnected.`,
+        "disconnected"
+      );
       this.internalEventQueueMutex.value.unshift({
         name: "destroyControlledProp",
         data: { clientID },
@@ -462,7 +477,7 @@ export class Scene implements IScene {
     if (prop.positioned)
       this.$mutateChunkedUpdates(
         { update: { [prop.ID]: { [behaviour.name]: behaviour.newValue } } },
-        prop as IProp & IPositioned
+        prop as Prop & IPositionedExt
       );
   };
   spawnPropAction: IScene["spawnPropAction"] = async (

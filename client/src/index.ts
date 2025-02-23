@@ -1,3 +1,4 @@
+import { IScoreUpdateExt } from "../../smshTypes/messages";
 import {
   IConnectResponseMessageExt,
   IServerChatMessageExt,
@@ -328,6 +329,10 @@ const initGameLayout = async () => {
   });
   client.on("serverChat", "chat", (data: IServerChatMessageExt) => {
     chat.receiveMessage(data.sender, data.message);
+  });
+  // todo add modal
+  client.on("score", "self", (data: IScoreUpdateExt) => {
+    console.log(data);
   });
 
   const soundTrackMgr = new AudioTrackManager();

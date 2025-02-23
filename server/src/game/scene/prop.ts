@@ -1,12 +1,13 @@
-import { IProp, PropBehaviours } from "./propTypes";
+import { PropBehaviours } from "./propTypes";
 import { randomUUID } from "crypto";
 import { IScene } from "./sceneTypes";
 
-export abstract class Prop implements IProp {
+export abstract class Prop implements Prop {
   ID: string;
   scene: IScene;
-  onCreated?: IProp["onCreated"];
-  onTick?: IProp["onTick"];
+  onCreated?: (tickNum: number, reason?: "connect") => void;
+  onDestroyed?: (reason?: "disconnect") => void;
+  onTick?: (tickNum: number) => void;
   constructor(scene: IScene, behaviourPresets?: PropBehaviours) {
     this.ID = randomUUID();
     this.scene = scene;

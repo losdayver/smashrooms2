@@ -1,4 +1,4 @@
-import { IDamageable, IDrawable, PropBehaviours } from "../scene/propTypes";
+import { IDamageable, PropBehaviours } from "../scene/propTypes";
 import { IScene } from "../scene/sceneTypes";
 import { RecursivePartial } from "../../utils";
 import { Prop } from "../scene/prop";
@@ -21,8 +21,9 @@ import {
   ShotgunItem,
   SniperItem,
 } from "./items";
+import { IDrawableExt } from "../../../../types/sceneTypes";
 
-export class Crate extends Prop implements IDamageable, IDrawable {
+export class Crate extends Prop implements IDamageable, IDrawableExt {
   damageable = { health: 10, maxHealth: 10 };
   collidable = { sizeX: 64, sizeY: 64, offsetX: 0, offsetY: 0 };
   positioned;
