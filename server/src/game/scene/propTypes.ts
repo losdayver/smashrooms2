@@ -1,39 +1,28 @@
-import {
-  ClientActionCodesExt,
-  ClientActionStatusExt,
-} from "../../../../types/messages";
+import { ClientActionStatusExt } from "../../../../types/messages";
 import { Prop } from "./prop";
-import { IScene } from "./sceneTypes";
 import {
   ICollidableExt,
   IControlledExt,
   IDamageableExt,
   IDamagingExt,
   IDrawableExt,
-  IPropExt,
   INameTaggedExt,
   IPositionedExt,
   IHasMasterExt,
 } from "../../../../types/sceneTypes";
 
 export type PropBehaviours = Partial<
-  IPositioned &
+  IPositionedExt &
     IControlled &
-    IDrawable &
+    IDrawableExt &
     ICollidable &
     IDamageable &
     IDamaging &
-    INameTagged &
+    INameTaggedExt &
     IMoving &
     ISpawner &
     IHasMasterExt
 >;
-
-export interface IProp extends IPropExt {
-  scene: IScene;
-  onTick?: (tickNum: number) => void;
-  onCreated?: (tickNum: number) => void;
-}
 
 export interface IMoving {
   moving: {
@@ -42,26 +31,19 @@ export interface IMoving {
   };
 }
 
-export interface ISpawner<T extends string = string> extends IPositioned {
+export interface ISpawner<T extends string = string> extends IPositionedExt {
   spawner: {
     props: T[];
   };
 }
 
-export type IPositioned = IPositionedExt;
-
 export type IControlled = {
   controlled: {
-    onReceive?: (
-      code: ClientActionCodesExt,
-      status: ClientActionStatusExt
-    ) => void;
+    onReceive?: (code: string, status: ClientActionStatusExt) => void;
   };
 } & IControlledExt;
 
-export type IDrawable = IDrawableExt;
-
-export type ICollidable = IPositioned & {
+export type ICollidable = IPositionedExt & {
   collidable: {
     onCollide?: (prop: Prop & PropBehaviours) => void;
   };
@@ -70,5 +52,3 @@ export type ICollidable = IPositioned & {
 export type IDamageable = ICollidable & IDamageableExt;
 
 export type IDamaging = ICollidable & IDamagingExt;
-
-export type INameTagged = INameTaggedExt;

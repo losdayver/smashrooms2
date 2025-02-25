@@ -1,18 +1,18 @@
 import { ClientID } from "../commonTypes";
 import {
-  ClientActionCodesExt,
   ClientActionStatusExt,
-  IMessageExt,
+  IGenericMessageExt,
   IServerSceneMetaMessageExt,
   NotificationTypesExt,
 } from "../../../../types/messages";
-import { IProp, PropBehaviours } from "./propTypes";
+import { PropBehaviours } from "./propTypes";
 import { RecursivePartial } from "../../utils";
 import {
   IAnimationExt,
   ICollidableExt,
   PropIDExt,
 } from "../../../../types/sceneTypes";
+import { Prop } from "./prop";
 
 export interface IScene extends ISceneActions {
   subscribe: (sceneSubscriber: ISceneSubscriber) => void;
@@ -30,20 +30,25 @@ export interface IScene extends ISceneActions {
     target?: ClientID | "all"
   ) => void;
   produceSound: (sound: string) => void;
+  sendArbitraryMessage: (
+    message: IGenericMessageExt,
+    target: ClientID | "all"
+  ) => void;
+  getPropByID: (ID: Prop["ID"]) => Prop;
   readonly tickNum: number;
 }
-
+/** This interface represents actions that are turned into scene events in event loop */
 export interface ISceneActions {
   clientAction: (
     clientID: string,
-    code: ClientActionCodesExt,
+    code: string,
     nameTag: string,
     status?: ClientActionStatusExt
   ) => void | Promise<void>;
   connectAction: (clientID: string, nameTag?: string) => void | Promise<void>;
   disconnectAction: (clientID: string) => void | Promise<void>;
   mutatePropBehaviourAction: (
-    propOrID: (IProp & PropBehaviours) | PropIDExt,
+    propOrID: (Prop & PropBehaviours) | PropIDExt,
     behaviour: { name: string; newValue: any }
   ) => void;
   spawnPropAction: (
@@ -101,7 +106,7 @@ export interface IClientActionEvent {
   name: "clientAction";
   data: {
     clientID: ClientID;
-    code: ClientActionCodesExt;
+    code: string;
     status?: ClientActionStatusExt;
     nameTag?: string;
   };
@@ -109,7 +114,7 @@ export interface IClientActionEvent {
 
 export interface ISceneSubscriber {
   onReceiveMessageFromScene: (
-    message: IMessageExt,
+    message: IGenericMessageExt,
     clientID?: ClientID | "all"
   ) => void;
 }
@@ -126,10 +131,10 @@ export type ExternalUpdateBehaviours = Record<
   Record<string, PropBehaviours>
 >;
 
-export type ExternalLoadChunk = Omit<IProp, "scene"> & PropBehaviours;
+export type ExternalLoadChunk = Omit<Prop, "scene"> & PropBehaviours;
 
 export interface ISceneTemplate {
-  props?: IProp[];
+  props?: Prop[];
   layout?: any;
 }
 
