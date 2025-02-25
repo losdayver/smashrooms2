@@ -8,7 +8,7 @@
     "strictNullChecks": false,
     "noImplicitAny": false,
     "noEmitOnError": true,
-    "typeRoots": ["../types"]
+    "typeRoots": ["../types", "../smshTypes"]
   },
   "include": ["src"]
 }

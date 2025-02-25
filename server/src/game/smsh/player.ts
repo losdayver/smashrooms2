@@ -1,21 +1,20 @@
+import { IDrawableExt, INameTaggedExt } from "../../../../types/sceneTypes";
 import { Prop } from "../scene/prop";
 import {
   ICollidable,
   IControlled,
   IDamageable,
-  IDrawable,
-  INameTagged,
-  IProp,
   PropBehaviours,
 } from "../scene/propTypes";
 import { IScene } from "../scene/sceneTypes";
 import { ItemProp } from "./items";
 import { ItemSpawner } from "./spawners";
 import { WeaponPocket } from "./weapons";
+import { IScoreUpdateExt } from "../../../../smshTypes/messages";
 
 export class Player
   extends Prop
-  implements IDamageable, IControlled, INameTagged
+  implements IDamageable, IControlled, INameTaggedExt
 {
   controlled: IControlled["controlled"] = {
     clientID: null,
@@ -25,7 +24,7 @@ export class Player
       if (status == "pressed") {
         if (code == "right") {
           this.$hSpeed = this.controlled.speed;
-          this.scene.mutatePropBehaviourAction(this as IProp, {
+          this.scene.mutatePropBehaviourAction(this as Prop, {
             name: "drawable",
             newValue: {
               facing: "right",
@@ -33,14 +32,14 @@ export class Player
           });
         } else if (code == "left") {
           this.$hSpeed = -this.controlled.speed;
-          this.scene.mutatePropBehaviourAction(this as IProp, {
+          this.scene.mutatePropBehaviourAction(this as Prop, {
             name: "drawable",
             newValue: {
               facing: "left",
             },
           });
         } else if (code == "fire") {
-          this.firing = true;
+          this.$firing = true;
         } else if (code == "jump" && !this.$isInAir) {
           this.$vSpeed = -this.jumpSpeed;
           this.scene.produceSound("jump");
@@ -54,7 +53,7 @@ export class Player
       } else {
         if (code == "right" && this.$hSpeed > 0) this.$hSpeed = 0;
         else if (code == "left" && this.$hSpeed < 0) this.$hSpeed = 0;
-        else if (code == "fire") this.firing = false;
+        else if (code == "fire") this.$firing = false;
       }
     },
   };
@@ -66,6 +65,7 @@ export class Player
     offsetY: 0,
     onCollide: (prop: Prop & PropBehaviours) => {
       if (prop.damaging && prop.collidable.colGroup != this.ID) {
+        this.$lastHitBy = prop.collidable.colGroup;
         if (prop.moving) this.$punchH = 2 * Math.sign(prop.moving.speedH);
         this.scene.mutatePropBehaviourAction(this, {
           name: "damageable",
@@ -88,7 +88,7 @@ export class Player
   };
   positioned;
   nameTagged = { tag: "player" };
-  drawable: IDrawable["drawable"] = {
+  drawable: IDrawableExt["drawable"] = {
     sprite: "playerIdle",
     facing: "right",
     offsetX: 16,
@@ -96,8 +96,9 @@ export class Player
   };
 
   weaponPocket = new WeaponPocket(this, "fist");
+  static score: Score;
 
-  private firing = false;
+  private $firing = false;
   private $hSpeed = 0;
   private $vSpeed = 0;
   private $lastVSpeed = 0;
@@ -105,7 +106,6 @@ export class Player
   private $state: "playerIdle" | "playerWalk" | "playerJump" = "playerWalk";
   private $passSemi = false;
   private $punchH = 0;
-
   /** how being in air affect horizontal speed */
   private hSpeedAirTimeCoeff = 0.8;
   /** how high above ground the prop needs to be for the jump to register */
@@ -113,8 +113,8 @@ export class Player
   private maxVSpeed = 20;
   private vAcc = 1.5;
   private jumpSpeed = 22;
-
-  private isAlreadyDead = false;
+  private $isAlreadyDead = false;
+  private $lastHitBy: Prop["ID"];
 
   doLayoutPhysics = () => {
     this.$lastVSpeed = this.$vSpeed;
@@ -202,7 +202,7 @@ export class Player
       newPosX != this.positioned.posX ||
       newPosY != Math.floor(this.positioned.posY)
     )
-      this.scene.mutatePropBehaviourAction(this as IProp, {
+      this.scene.mutatePropBehaviourAction(this as Prop, {
         name: "positioned",
         newValue: {
           posX: newPosX,
@@ -210,7 +210,6 @@ export class Player
         },
       });
   };
-
   doSpriteChange = () => {
     let newState = this.$state;
 
@@ -220,7 +219,7 @@ export class Player
 
     if (newState != this.$state) {
       this.$state = newState;
-      this.scene.mutatePropBehaviourAction(this as IProp, {
+      this.scene.mutatePropBehaviourAction(this as Prop, {
         name: "drawable",
         newValue: {
           sprite: newState,
@@ -232,25 +231,87 @@ export class Player
   onTick: Prop["onTick"] = (tick) => {
     this.doSpriteChange();
     this.doLayoutPhysics();
-    this.weaponPocket.fireWeapon(this.firing, tick);
-    if (this.damageable.health <= 0 && !this.isAlreadyDead) {
-      this.isAlreadyDead = true;
+    this.weaponPocket.fireWeapon(this.$firing, tick);
+    if (this.damageable.health <= 0 && !this.$isAlreadyDead) {
+      this.$isAlreadyDead = true;
+      Player.score.increment(this, "D");
+      const killer = this.scene.getPropByID(this.$lastHitBy);
+      if (killer) Player.score.increment(killer as Player, "K");
       this.scene.destroyPropAction(this.ID);
       this.scene.produceSound("death");
       this.scene.sendNotification(`${this.nameTagged.tag} died`, "dead");
     }
   };
-
-  onCreated = () => {
+  onCreated: Prop["onCreated"] = (_, reason) => {
+    if (reason == "connect") Player.score.register(this);
     this.collidable.colGroup = this.ID;
   };
-
+  onDestroyed: Prop["onDestroyed"] = (reason) => {
+    if (reason == "disconnect") Player.score.unlist(this);
+  };
   constructor(
     clientID: string,
     scene: IScene,
     behaviourPresets?: PropBehaviours
   ) {
     super(scene, behaviourPresets);
+    Player.score ??= new Score(this.scene);
     this.controlled.clientID = clientID;
+  }
+}
+
+class Score {
+  private scene: IScene;
+  private scoreObj: Record<string, { K: number; D: number }> = {};
+
+  unlist = (player: Player) => {
+    this.scene.sendArbitraryMessage(
+      {
+        name: "score",
+        tag: player.nameTagged.tag,
+        unlist: true,
+      } satisfies IScoreUpdateExt,
+      "all"
+    );
+    delete this.scoreObj[player.nameTagged.tag];
+  };
+  register = (player: Player) => {
+    this.scoreObj[player.nameTagged.tag] = { K: 0, D: 0 };
+    Object.entries(this.scoreObj).forEach(([tag, obj]) => {
+      this.scene.sendArbitraryMessage(
+        {
+          name: "score",
+          tag: tag,
+          K: obj.K,
+          D: obj.D,
+        } satisfies IScoreUpdateExt,
+        player.controlled.clientID
+      );
+    });
+    this.scene.sendArbitraryMessage(
+      {
+        name: "score",
+        tag: player.nameTagged.tag,
+        K: 0,
+        D: 0,
+      } satisfies IScoreUpdateExt,
+      "all"
+    );
+  };
+  increment = (player: Player, what: "K" | "D") => {
+    this.scoreObj[player.nameTagged.tag][what]++;
+    this.scene.sendArbitraryMessage(
+      {
+        name: "score",
+        tag: player.nameTagged.tag,
+        K: this.scoreObj[player.nameTagged.tag].K,
+        D: this.scoreObj[player.nameTagged.tag].D,
+      } satisfies IScoreUpdateExt,
+      "all"
+    );
+  };
+
+  constructor(scene: IScene) {
+    this.scene = scene;
   }
 }

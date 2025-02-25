@@ -1,10 +1,8 @@
 import {
-  ClientActionCodesExt,
   ClientActionStatusExt,
   IClientChatMessageExt,
   IClientActionMessageExt,
   IConnectMessageExt,
-  IMessageExt,
   IClientSceneMetaMessageExt,
   IConnectResponseMessageExt,
 } from "../../../types/messages";
@@ -12,9 +10,14 @@ import { PropIDExt } from "../../../types/sceneTypes";
 import { ControlsObjType } from "../config/config.js";
 import { FocusManager, IFocusable } from "../focus/focusManager.js";
 import { EventEmitter, IEventEmitterPublicInterface } from "../utils.js";
+import { ClientActionCodesExt } from "../../../types/messages";
+import {
+  IScoreUpdateExt,
+  SmshMessageTypeExt,
+} from "../../../smshTypes/messages";
 
 type ClientEventEmitterType =
-  | IMessageExt["name"]
+  | SmshMessageTypeExt["name"]
   | "socketOpen"
   | "socketClose";
 
@@ -43,6 +46,7 @@ export class Client
       this.controlsHandler(key, true);
       if (key == "chat") this.focusManager.setFocus("chat");
       else if (key == "back") this.focusManager.setFocus("menu");
+      else if (key == "select") this.focusManager.setFocus("scoreboard");
     } else {
       this.controlsHandler(key, false);
     }
@@ -109,7 +113,7 @@ export class Client
     } satisfies IClientChatMessageExt);
 
   private onmessage = async (message: MessageEvent<string>) => {
-    let parsedMsg: IMessageExt;
+    let parsedMsg: SmshMessageTypeExt;
     try {
       parsedMsg = JSON.parse(message.data);
     } catch {
