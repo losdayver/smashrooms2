@@ -287,6 +287,8 @@ export class Scene implements IScene {
   getPropByID: IScene["getPropByID"] = (ID) =>
     this.propList.find((prop) => prop.ID == ID);
 
+  queryProp: IScene["queryProp"] = (queryFunc) => this.propList.find(queryFunc);
+
   private spawnPropHandler = (data: ISpawnPropEvent["data"]) => {
     const propType = this.propMap[data.propName];
     if (propType) {

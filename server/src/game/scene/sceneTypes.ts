@@ -35,6 +35,7 @@ export interface IScene extends ISceneActions {
     target: ClientID | "all"
   ) => void;
   getPropByID: (ID: Prop["ID"]) => Prop;
+  queryProp: (queryFunc: (prop: Prop) => boolean) => Prop;
   readonly tickNum: number;
 }
 /** This interface represents actions that are turned into scene events in event loop */

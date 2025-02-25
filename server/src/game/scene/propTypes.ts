@@ -10,6 +10,7 @@ import {
   IPositionedExt,
   IHasMasterExt,
 } from "../../../../types/sceneTypes";
+import { Portal } from "../smsh/portals";
 
 export type PropBehaviours = Partial<
   IPositionedExt &
@@ -52,3 +53,10 @@ export type ICollidable = IPositionedExt & {
 export type IDamageable = ICollidable & IDamageableExt;
 
 export type IDamaging = ICollidable & IDamagingExt;
+
+export type IPortal = {
+  portal: {
+    portalID?: string;
+    linkedPortal?: Portal;
+  };
+};

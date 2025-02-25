@@ -7,6 +7,9 @@ import {
   PropBehaviours,
 } from "../scene/propTypes";
 import { IScene } from "../scene/sceneTypes";
+import { Portal } from "./portals";
+
+const projectileIgnore = [Portal];
 
 export class Bullet extends Prop implements IDrawableExt, IDamaging, IMoving {
   positioned;
@@ -23,6 +26,7 @@ export class Bullet extends Prop implements IDrawableExt, IDamaging, IMoving {
     offsetX: -8,
     offsetY: -8,
     onCollide: (prop: Prop & PropBehaviours) => {
+      if (projectileIgnore.some((cls) => prop instanceof cls)) return;
       if (prop.collidable.colGroup != this.collidable.colGroup)
         this.scene.destroyPropAction(this.ID);
     },
@@ -82,6 +86,7 @@ export class SniperBullet
     offsetX: -32,
     offsetY: -8,
     onCollide: (prop: Prop & PropBehaviours) => {
+      if (projectileIgnore.some((cls) => prop instanceof cls)) return;
       if (prop.collidable.colGroup != this.collidable.colGroup)
         this.scene.destroyPropAction(this.ID);
     },
@@ -141,6 +146,7 @@ export class Plasma extends Prop implements IDrawableExt, IDamaging, IMoving {
     offsetX: -8,
     offsetY: -8,
     onCollide: (prop: Prop & PropBehaviours) => {
+      if (projectileIgnore.some((cls) => prop instanceof cls)) return;
       if (prop.collidable.colGroup != this.collidable.colGroup)
         this.scene.destroyPropAction(this.ID);
     },
@@ -197,6 +203,7 @@ export class Fist extends Prop implements IDrawableExt, IDamaging, IMoving {
     offsetX: -32,
     offsetY: -32,
     onCollide: (prop: Prop & PropBehaviours) => {
+      if (projectileIgnore.some((cls) => prop instanceof cls)) return;
       if (prop.collidable.colGroup != this.collidable.colGroup) {
         this.scene.destroyPropAction(this.ID);
         this.scene.produceSound("punch");
@@ -251,6 +258,7 @@ export class Rocket extends Prop implements IDrawableExt, IDamaging, IMoving {
     offsetX: -16,
     offsetY: -16,
     onCollide: (prop: Prop & PropBehaviours) => {
+      if (projectileIgnore.some((cls) => prop instanceof cls)) return;
       if (prop.collidable.colGroup != this.collidable.colGroup)
         this.onExplode();
     },
