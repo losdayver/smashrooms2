@@ -94,7 +94,7 @@ export class Player
     facing: "right",
     offsetX: 16,
     offsetY: 0,
-    overlay1: {
+    overlay0: {
       sprite: "hat1",
       y: 0,
     },
@@ -248,7 +248,7 @@ export class Player
     }
   };
   onCreated: Prop["onCreated"] = (_, reason) => {
-    this.drawable.overlay1.sprite = `hat${Math.floor(getRandomBetween(1, 4))}`;
+    this.drawable.overlay0.sprite = `hat${Math.floor(getRandomBetween(1, 6))}`;
     if (reason == "connect") Player.score.register(this);
     this.collidable.colGroup = this.ID;
   };

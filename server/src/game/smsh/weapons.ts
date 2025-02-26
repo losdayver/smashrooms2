@@ -15,10 +15,10 @@ export class WeaponPocket {
   _currentWeapon: WeaponType;
   setCurrentWeapon = (weapon: WeaponType) => {
     this._currentWeapon = weapon;
-    const overlay0 = weapon == "fist" ? null : { sprite: weapon, x: 0, y: 30 };
+    const overlay1 = weapon == "fist" ? null : { sprite: weapon, x: 0, y: 30 };
     this.player.scene.mutatePropBehaviourAction(this.player, {
       name: "drawable",
-      newValue: { overlay0 },
+      newValue: { overlay1 },
     });
   };
 
