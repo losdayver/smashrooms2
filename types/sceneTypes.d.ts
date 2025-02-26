@@ -45,7 +45,8 @@ export interface IDrawableExt extends IPositionedExt {
     offsetY: number;
     anim?: string;
     /** passing null explicitly will result in overlay removal */
-    overlay?: ISpriteOverlay | null;
+    overlay0?: ISpriteOverlay | null;
+    overlay1?: ISpriteOverlay | null;
   };
 }
 export interface ISpriteOverlay {

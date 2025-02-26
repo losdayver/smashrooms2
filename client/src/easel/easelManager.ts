@@ -164,19 +164,25 @@ export class EaselManager {
     if (update.drawable.sprite)
       easelProp.img.src = `${propSpriteRoute}${update.drawable.sprite}.gif`;
 
+    const overlayPostfixes = [0, 1];
+
     if (update.drawable.facing) {
       if (update.drawable.facing == "left") {
         easelProp.img.style.transform = "scaleX(-1)";
-        if (easelProp.overlay)
-          easelProp.overlay.querySelector<HTMLImageElement>(
-            ".easel__prop-overlay__img"
-          ).style.transform = "scaleX(-1)";
+        overlayPostfixes.forEach((num) => {
+          if (easelProp[`overlay${num}`])
+            easelProp[`overlay${num}`].querySelector<HTMLImageElement>(
+              ".easel__prop-overlay__img"
+            ).style.transform = "scaleX(-1)";
+        });
       } else {
         easelProp.img.style.transform = "";
-        if (easelProp.overlay)
-          easelProp.overlay.querySelector<HTMLImageElement>(
-            ".easel__prop-overlay__img"
-          ).style.transform = "";
+        overlayPostfixes.forEach((num) => {
+          if (easelProp[`overlay${num}`])
+            easelProp[`overlay${num}`].querySelector<HTMLImageElement>(
+              ".easel__prop-overlay__img"
+            ).style.transform = "";
+        });
       }
     }
 
@@ -185,27 +191,38 @@ export class EaselManager {
       easelProp.img.className = animClass;
     }
 
-    if (update.drawable.overlay) {
-      if (!easelProp.overlay) {
-        const overlay = document.createElement("div");
-        overlay.className = "easel__prop-overlay";
-        overlay.style.zIndex = "5";
-        const overlayImg = document.createElement("img");
-        overlayImg.className = "easel__prop-overlay__img";
-        overlay.appendChild(overlayImg);
-        easelProp.container.appendChild(overlay);
-        easelProp.overlay = overlay;
+    const updateOverlay = (overlayNum: number) => {
+      if (update.drawable[`overlay${overlayNum}`]) {
+        if (!easelProp[`overlay${overlayNum}`]) {
+          const overlay = document.createElement("div");
+          overlay.className = "easel__prop-overlay";
+          overlay.style.zIndex = (overlayNum + 1).toString();
+          const overlayImg = document.createElement("img");
+          overlayImg.className = "easel__prop-overlay__img";
+          overlay.appendChild(overlayImg);
+          easelProp.container.appendChild(overlay);
+          easelProp[`overlay${overlayNum}`] = overlay;
+        }
+        const overlayImg = easelProp[
+          `overlay${overlayNum}`
+        ].querySelector<HTMLImageElement>(".easel__prop-overlay__img");
+        overlayImg.style.transform = easelProp.img.style.transform;
+        easelProp[`overlay${overlayNum}`].style.top = `${
+          update.drawable[`overlay${overlayNum}`].y
+        }px`;
+        overlayImg.src = `${propSpriteRoute}${
+          update.drawable[`overlay${overlayNum}`].sprite
+        }.gif`;
+      } else if (
+        update.drawable[`overlay${overlayNum}`] === null &&
+        easelProp[`overlay${overlayNum}`]
+      ) {
+        easelProp[`overlay${overlayNum}`].remove();
+        easelProp[`overlay${overlayNum}`] = undefined;
       }
-      const overlayImg = easelProp.overlay.querySelector<HTMLImageElement>(
-        ".easel__prop-overlay__img"
-      );
-      overlayImg.style.transform = easelProp.img.style.transform;
-      easelProp.overlay.style.top = `${update.drawable.overlay.y}px`;
-      overlayImg.src = `${propSpriteRoute}${update.drawable.overlay.sprite}.gif`;
-    } else if (update.drawable.overlay === null && easelProp.overlay) {
-      easelProp.overlay.remove();
-      easelProp.overlay = undefined;
-    }
+    };
+
+    overlayPostfixes.forEach(updateOverlay);
   };
 
   private updateHealth = (easelProp: IEaselProp, update: IDamageableExt) => {
@@ -245,6 +262,7 @@ export class EaselManager {
       this.clientPropNameTag = data.nameTag;
     }
   };
+
   private onSceneEventHandler = (data: ISceneUpdatesMessageData) => {
     data.load?.forEach((prop) => {
       if (prop.drawable) this.loadProp(prop);
@@ -348,9 +366,10 @@ interface IEaselProp extends IBehaviouredPropExt {
   container: HTMLSpanElement;
   img: HTMLImageElement;
   lastMoved: Date;
-  overlay?: HTMLDivElement;
   healthBar?: HTMLDivElement;
   maxHealth?: number;
+  overlay0?: HTMLDivElement;
+  overlay1?: HTMLDivElement;
 }
 
 interface ILayoutTile {
