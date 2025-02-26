@@ -11,6 +11,7 @@ import { ItemProp } from "./items";
 import { ItemSpawner } from "./spawners";
 import { WeaponPocket } from "./weapons";
 import { IScoreUpdateExt } from "../../../../smshTypes/messages";
+import { getRandomBetween } from "../../utils";
 
 export class Player
   extends Prop
@@ -93,6 +94,10 @@ export class Player
     facing: "right",
     offsetX: 16,
     offsetY: 0,
+    overlay1: {
+      sprite: "hat1",
+      y: 0,
+    },
   };
 
   weaponPocket = new WeaponPocket(this, "fist");
@@ -243,6 +248,7 @@ export class Player
     }
   };
   onCreated: Prop["onCreated"] = (_, reason) => {
+    this.drawable.overlay1.sprite = `hat${Math.floor(getRandomBetween(1, 4))}`;
     if (reason == "connect") Player.score.register(this);
     this.collidable.colGroup = this.ID;
   };
