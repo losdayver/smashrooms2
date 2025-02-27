@@ -1,0 +1,55 @@
+{
+  "stageName": "ascend",
+  "stageSystemName": "ascend",
+  "gridSize": 32,
+  "author": "losdayver",
+  "extra": {
+    "preload": [
+      {
+        "name": "playerSpawner",
+        "behaviours": {
+          "positioned": {
+            "posX": 96,
+            "posY": 640
+          }
+        }
+      },
+      {
+        "name": "playerSpawner",
+        "behaviours": {
+          "positioned": {
+            "posX": 1664,
+            "posY": 608
+          }
+        }
+      },
+      {
+        "name": "playerSpawner",
+        "behaviours": {
+          "positioned": {
+            "posX": 1920,
+            "posY": 224
+          }
+        }
+      },
+      {
+        "name": "playerSpawner",
+        "behaviours": {
+          "positioned": {
+            "posX": 864,
+            "posY": 128
+          }
+        }
+      },
+      {
+        "name": "playerSpawner",
+        "behaviours": {
+          "positioned": {
+            "posX": 1856,
+            "posY": 736
+          }
+        }
+      }
+    ]
+  }
+}
