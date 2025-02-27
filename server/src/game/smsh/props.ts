@@ -22,6 +22,7 @@ import {
   SniperItem,
 } from "./items";
 import { IDrawableExt } from "../../../../types/sceneTypes";
+import { Portal } from "./portals";
 
 export class Crate extends Prop implements IDamageable, IDrawableExt {
   damageable = { health: 10, maxHealth: 10 };
@@ -58,6 +59,7 @@ export const smshPropMap = {
   blasterItem: BlasterItem,
   sniperBullet: SniperBullet,
   sniperItem: SniperItem,
+  portal: Portal,
 } as const;
 
 export const smshPropFactory: (scene: IScene, stage: StageExt) => void = (

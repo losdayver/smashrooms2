@@ -96,13 +96,30 @@ export class EaselManager {
         const dateMoved = new Date();
         const transitionTime =
           dateMoved.getTime() - easelProp.lastMoved.getTime() || 0;
-        easelProp.container.style.transition = `all ${
-          transitionTime > 100 ? 0 : transitionTime
-        }ms linear`;
-        if (changes.positioned.posY)
+        let teleport = false;
+        if (changes.positioned.posY) {
+          if (
+            Math.abs(
+              +easelProp.container.style.top.split("px")[0] -
+                changes.positioned.posY
+            ) > 100
+          )
+            teleport = true;
           easelProp.container.style.top = changes.positioned.posY.toString();
-        if (changes.positioned.posX)
+        }
+        if (changes.positioned.posX) {
+          if (
+            Math.abs(
+              +easelProp.container.style.left.split("px")[0] -
+                changes.positioned.posX
+            ) > 100
+          )
+            teleport = true;
           easelProp.container.style.left = changes.positioned.posX.toString();
+        }
+        easelProp.container.style.transition = `all ${
+          transitionTime > 100 || teleport ? 0 : transitionTime
+        }ms linear`;
         easelProp.lastMoved = dateMoved;
       }
       this.processDrawable(easelProp, changes as any);
