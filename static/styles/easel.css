@@ -116,7 +116,7 @@
 }
 
 .easel__prop-sprite--itemSpin {
-  animation: itemSpin__keyframes 2s linear infinite;
+  animation: itemSpin__keyframes 3s linear infinite;
 }
 
 @keyframes itemSpin__keyframes {
@@ -190,5 +190,36 @@
   }
   100% {
     opacity: 0;
+  }
+}
+
+.easel__prop-sprite--portal {
+  animation: portal__keyframes 0.4s cubic-bezier(0.86, 0, 0.07, 1);
+}
+
+@keyframes portal__keyframes {
+  0% {
+    transform: scale(1.5);
+    filter: drop-shadow(0 0 50px rgba(0, 238, 255, 0.8)) brightness(2);
+  }
+  100% {
+    transform: scale(1);
+    filter: drop-shadow(0 0 0px rgba(0, 238, 255, 0)) brightness(1);
+  }
+}
+
+.easel__prop-sprite--teleported {
+  animation: teleported__keyframes 0.3s linear;
+}
+
+@keyframes teleported__keyframes {
+  0% {
+    filter: drop-shadow(0 0 0px rgba(0, 238, 255, 0)) brightness(1);
+  }
+  50% {
+    filter: drop-shadow(0 0 20px rgba(0, 238, 255, 0.8)) brightness(2);
+  }
+  100% {
+    filter: drop-shadow(0 0 0px rgba(0, 238, 255, 0)) brightness(1);
   }
 }

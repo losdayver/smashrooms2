@@ -1,0 +1,172 @@
+{
+  "stageName": "ascend",
+  "stageSystemName": "ascend",
+  "gridSize": 32,
+  "author": "losdayver",
+  "extra": {
+    "preload": [
+      {
+        "name": "playerSpawner",
+        "behaviours": {
+          "positioned": {
+            "posX": 96,
+            "posY": 672
+          }
+        }
+      },
+      {
+        "name": "playerSpawner",
+        "behaviours": {
+          "positioned": {
+            "posX": 1664,
+            "posY": 640
+          }
+        }
+      },
+      {
+        "name": "playerSpawner",
+        "behaviours": {
+          "positioned": {
+            "posX": 1920,
+            "posY": 256
+          }
+        }
+      },
+      {
+        "name": "playerSpawner",
+        "behaviours": {
+          "positioned": {
+            "posX": 864,
+            "posY": 140
+          }
+        }
+      },
+      {
+        "name": "playerSpawner",
+        "behaviours": {
+          "positioned": {
+            "posX": 1856,
+            "posY": 768
+          }
+        }
+      },
+      {
+        "name": "portal",
+        "behaviours": {
+          "positioned": {
+            "posX": 160,
+            "posY": 128
+          },
+          "portal": {
+            "portalID": "1"
+          }
+        }
+      },
+      {
+        "name": "portal",
+        "behaviours": {
+          "positioned": {
+            "posX": 864,
+            "posY": 672
+          },
+          "portal": {
+            "portalID": "2"
+          }
+        }
+      },
+      {
+        "name": "portal",
+        "behaviours": {
+          "positioned": {
+            "posX": 1952,
+            "posY": 672
+          },
+          "portal": {
+            "portalID": "1"
+          }
+        }
+      },
+      {
+        "name": "portal",
+        "behaviours": {
+          "positioned": {
+            "posX": 1824,
+            "posY": 160
+          },
+          "portal": {
+            "portalID": "2"
+          }
+        }
+      },
+      {
+        "name": "itemSpawner",
+        "behaviours": {
+          "positioned": {
+            "posX": 1504,
+            "posY": 448
+          }
+        }
+      },
+      {
+        "name": "itemSpawner",
+        "behaviours": {
+          "positioned": {
+            "posX": 672,
+            "posY": 128
+          }
+        }
+      },
+      {
+        "name": "itemSpawner",
+        "behaviours": {
+          "positioned": {
+            "posX": 1568,
+            "posY": 192
+          }
+        }
+      },
+      {
+        "name": "itemSpawner",
+        "behaviours": {
+          "positioned": {
+            "posX": 1024,
+            "posY": 567
+          }
+        }
+      },
+      {
+        "name": "itemSpawner",
+        "behaviours": {
+          "positioned": {
+            "posX": 512,
+            "posY": 448
+          }
+        }
+      },
+      {
+        "name": "itemSpawner",
+        "behaviours": {
+          "positioned": {
+            "posX": 128,
+            "posY": 832
+          },
+          "spawner": {
+            "props": ["medikitItem"]
+          }
+        }
+      },
+      {
+        "name": "itemSpawner",
+        "behaviours": {
+          "positioned": {
+            "posX": 1952,
+            "posY": 832
+          },
+          "spawner": {
+            "props": ["medikitItem"]
+          }
+        }
+      }
+    ]
+  }
+}

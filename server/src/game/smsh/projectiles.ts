@@ -4,6 +4,7 @@ import {
   ICollidable,
   IDamaging,
   IMoving,
+  ITeleportProhibit,
   PropBehaviours,
 } from "../scene/propTypes";
 import { IScene } from "../scene/sceneTypes";
@@ -124,6 +125,9 @@ export class SniperBullet
         posY: (this.positioned.posY += this.moving.speedV),
       },
     });
+    if (tickNum - this.createdOn > 500) {
+      this.scene.destroyPropAction(this.ID);
+    }
   };
 
   constructor(scene: IScene) {
@@ -289,7 +293,7 @@ export class Rocket extends Prop implements IDrawableExt, IDamaging, IMoving {
     if (this.drawable.facing == "left") this.moving.speedH *= -1;
   };
 
-  onTick = () => {
+  onTick: Prop["onTick"] = (tickNum) => {
     if (
       this.scene.getLayoutAt(this.positioned.posX, this.positioned.posY)
         .solidity == "solid"
@@ -305,6 +309,9 @@ export class Rocket extends Prop implements IDrawableExt, IDamaging, IMoving {
         posY: (this.positioned.posY += this.moving.speedV),
       },
     });
+    if (tickNum - this.createdOn > 500) {
+      this.scene.destroyPropAction(this.ID);
+    }
   };
 
   constructor(scene: IScene) {
@@ -312,7 +319,11 @@ export class Rocket extends Prop implements IDrawableExt, IDamaging, IMoving {
   }
 }
 
-export class Explosion extends Prop implements IDrawableExt, IDamaging {
+export class Explosion
+  extends Prop
+  implements IDrawableExt, IDamaging, ITeleportProhibit
+{
+  prohibitTeleport = { prohibit: true };
   positioned;
   drawable = {
     sprite: "explosion",
