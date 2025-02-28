@@ -22,7 +22,8 @@ export type PropBehaviours = Partial<
     INameTaggedExt &
     IMoving &
     ISpawner &
-    IHasMasterExt
+    IHasMasterExt &
+    ITeleportProhibit
 >;
 
 export interface IMoving {
@@ -58,5 +59,11 @@ export type IPortal = {
   portal: {
     portalID?: string;
     linkedPortal?: Portal;
+  };
+};
+
+export type ITeleportProhibit = {
+  prohibitTeleport: {
+    prohibit: boolean;
   };
 };

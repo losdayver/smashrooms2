@@ -10,7 +10,7 @@
         "behaviours": {
           "positioned": {
             "posX": 96,
-            "posY": 640
+            "posY": 672
           }
         }
       },
@@ -19,7 +19,7 @@
         "behaviours": {
           "positioned": {
             "posX": 1664,
-            "posY": 608
+            "posY": 640
           }
         }
       },
@@ -28,7 +28,7 @@
         "behaviours": {
           "positioned": {
             "posX": 1920,
-            "posY": 224
+            "posY": 256
           }
         }
       },
@@ -37,7 +37,7 @@
         "behaviours": {
           "positioned": {
             "posX": 864,
-            "posY": 128
+            "posY": 140
           }
         }
       },
@@ -46,7 +46,7 @@
         "behaviours": {
           "positioned": {
             "posX": 1856,
-            "posY": 736
+            "posY": 768
           }
         }
       },
@@ -54,11 +54,11 @@
         "name": "portal",
         "behaviours": {
           "positioned": {
-            "posX": 100,
-            "posY": 100
+            "posX": 160,
+            "posY": 128
           },
           "portal": {
-            "portalID": "testPortal"
+            "portalID": "1"
           }
         }
       },
@@ -66,11 +66,104 @@
         "name": "portal",
         "behaviours": {
           "positioned": {
-            "posX": 1000,
-            "posY": 200
+            "posX": 864,
+            "posY": 672
           },
           "portal": {
-            "portalID": "testPortal"
+            "portalID": "2"
+          }
+        }
+      },
+      {
+        "name": "portal",
+        "behaviours": {
+          "positioned": {
+            "posX": 1952,
+            "posY": 672
+          },
+          "portal": {
+            "portalID": "1"
+          }
+        }
+      },
+      {
+        "name": "portal",
+        "behaviours": {
+          "positioned": {
+            "posX": 1824,
+            "posY": 160
+          },
+          "portal": {
+            "portalID": "2"
+          }
+        }
+      },
+      {
+        "name": "itemSpawner",
+        "behaviours": {
+          "positioned": {
+            "posX": 1504,
+            "posY": 448
+          }
+        }
+      },
+      {
+        "name": "itemSpawner",
+        "behaviours": {
+          "positioned": {
+            "posX": 672,
+            "posY": 128
+          }
+        }
+      },
+      {
+        "name": "itemSpawner",
+        "behaviours": {
+          "positioned": {
+            "posX": 1568,
+            "posY": 192
+          }
+        }
+      },
+      {
+        "name": "itemSpawner",
+        "behaviours": {
+          "positioned": {
+            "posX": 1024,
+            "posY": 567
+          }
+        }
+      },
+      {
+        "name": "itemSpawner",
+        "behaviours": {
+          "positioned": {
+            "posX": 512,
+            "posY": 448
+          }
+        }
+      },
+      {
+        "name": "itemSpawner",
+        "behaviours": {
+          "positioned": {
+            "posX": 128,
+            "posY": 832
+          },
+          "spawner": {
+            "props": ["medikitItem"]
+          }
+        }
+      },
+      {
+        "name": "itemSpawner",
+        "behaviours": {
+          "positioned": {
+            "posX": 1952,
+            "posY": 832
+          },
+          "spawner": {
+            "props": ["medikitItem"]
           }
         }
       }

@@ -21,11 +21,16 @@ export class Portal extends Prop implements ICollidable, IDrawableExt, IPortal {
     offsetX: -16,
     offsetY: 0,
     onCollide: (prop) => {
+      if (prop.prohibitTeleport?.prohibit) return;
       if (this.portal.linkedPortal.interactedWithLastTick.has(prop.ID)) {
         this.portal.linkedPortal.interactedWith.add(prop.ID);
         return;
       }
       this.interactedWith.add(prop.ID);
+      this.scene.animatePropAction(this.ID, "portal");
+      this.scene.animatePropAction(this.portal.linkedPortal.ID, "portal");
+      this.scene.animatePropAction(prop.ID, "teleported");
+      this.scene.produceSound("teleport");
       this.scene.mutatePropBehaviourAction(prop, {
         name: "positioned",
         newValue: {
@@ -41,7 +46,7 @@ export class Portal extends Prop implements ICollidable, IDrawableExt, IPortal {
   interactedWithLastTick = new Set<string>();
   interactedWith = new Set<string>();
 
-  onTick: Prop["onTick"] = (tickNum: number) => {
+  onTick: Prop["onTick"] = () => {
     this.interactedWithLastTick = new Set(this.interactedWith);
     this.interactedWith = new Set();
     if (this.portal.linkedPortal) return;

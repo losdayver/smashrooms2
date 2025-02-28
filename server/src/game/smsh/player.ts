@@ -11,7 +11,7 @@ import { ItemProp } from "./items";
 import { ItemSpawner } from "./spawners";
 import { WeaponPocket } from "./weapons";
 import { IScoreUpdateExt } from "../../../../smshTypes/messages";
-import { getRandomBetween } from "../../utils";
+import { getRandomBetween, stringToHash } from "../../utils";
 
 export class Player
   extends Prop
@@ -248,7 +248,9 @@ export class Player
     }
   };
   onCreated: Prop["onCreated"] = (_, reason) => {
-    this.drawable.overlay0.sprite = `hat${Math.floor(getRandomBetween(1, 6))}`;
+    this.drawable.overlay0.sprite = `hat${
+      (stringToHash(this.controlled.clientID) % 7) + 1
+    }`;
     if (reason == "connect") Player.score.register(this);
     this.collidable.colGroup = this.ID;
   };
