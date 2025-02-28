@@ -49,6 +49,30 @@
             "posY": 736
           }
         }
+      },
+      {
+        "name": "portal",
+        "behaviours": {
+          "positioned": {
+            "posX": 100,
+            "posY": 100
+          },
+          "portal": {
+            "portalID": "testPortal"
+          }
+        }
+      },
+      {
+        "name": "portal",
+        "behaviours": {
+          "positioned": {
+            "posX": 1000,
+            "posY": 200
+          },
+          "portal": {
+            "portalID": "testPortal"
+          }
+        }
       }
     ]
   }
