@@ -96,6 +96,9 @@
           "positioned": {
             "posX": 1920,
             "posY": 448
+          },
+          "spawner": {
+            "props": ["shotgunItem", "pistolItem", "blasterItem"]
           }
         }
       },
@@ -129,6 +132,9 @@
           "positioned": {
             "posX": 512,
             "posY": 448
+          },
+          "spawner": {
+            "props": ["shotgunItem", "pistolItem", "blasterItem"]
           }
         }
       },
