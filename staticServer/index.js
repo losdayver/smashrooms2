@@ -6,11 +6,20 @@ const app = express();
 const staticRoot = "../static/";
 
 app.use(express.json());
-app.use(express.static(staticRoot));
 
-app.set("styles", path.resolve(__dirname + staticRoot + "styles"));
-app.set("img", path.resolve(__dirname + staticRoot + "img"));
-app.set("stages", path.resolve(__dirname + staticRoot + "stages"));
+const scriptsPath = path.resolve(__dirname + staticRoot + "scripts");
+const noCache = (req, res, next) => {
+  console.log("used no cache route");
+  res.setHeader(
+    "Cache-Control",
+    "no-store, no-cache, must-revalidate, private"
+  );
+  res.setHeader("Pragma", "no-cache");
+  res.setHeader("Expires", "0");
+  next();
+};
+app.use("/scripts", noCache, express.static(scriptsPath));
+app.use(express.static(staticRoot));
 
 app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, staticRoot, "html", "index.html"));
