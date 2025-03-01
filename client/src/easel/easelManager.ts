@@ -302,7 +302,8 @@ export class EaselManager {
     this.layoutPivot.style.position = "relative";
     this.stage = stage;
     let width: number;
-    stage.layoutData.split(/\r\n|\r|\n/).forEach((line, y) => {
+    const layoutData = stage.layoutData.split(/\r\n|\r|\n/);
+    layoutData.forEach((line, y) => {
       width ??= line.length;
       for (let x = 0; x < line.length; x++) {
         const char = line[x];
@@ -312,6 +313,14 @@ export class EaselManager {
           img.className = "easel__layout-tile";
           img.style.top = (y * tileSize).toString();
           img.style.left = (x * tileSize).toString();
+          if (![" ", undefined].includes(layoutData[y - 1]?.[x]))
+            img.style.borderTopColor = "transparent";
+          if (![" ", undefined].includes(layoutData[y + 1]?.[x]))
+            img.style.borderBottomColor = "transparent";
+          if (![" ", undefined].includes(layoutData[y]?.[x + 1]))
+            img.style.borderRightColor = "transparent";
+          if (![" ", undefined].includes(layoutData[y]?.[x - 1]))
+            img.style.borderLeftColor = "transparent";
           this.layoutPivot.appendChild(img);
         }
       }

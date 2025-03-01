@@ -65,8 +65,7 @@
 
 .easel__layout-tile {
   position: absolute;
-  border: 1px solid #000000ba;
-  border-radius: 5px;
+  border: 2px solid #111111;
   box-shadow: 4px 6px 9px 0px #00000087;
 }
 
