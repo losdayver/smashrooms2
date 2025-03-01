@@ -111,7 +111,7 @@ export const weaponMap: Record<
     },
   },
   pistol: {
-    delay: 6,
+    delay: 10,
     onFire: (player: Player) => {
       player.scene.spawnPropAction("bullet", {
         positioned: {
@@ -145,7 +145,7 @@ export const weaponMap: Record<
           colGroup: player.ID,
         },
         moving: {
-          speedV: getRandomBetween(-1, 1),
+          speedV: getRandomBetween(-0.5, 0.5),
         },
       });
     },

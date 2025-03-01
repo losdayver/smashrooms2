@@ -27,17 +27,8 @@
         "name": "playerSpawner",
         "behaviours": {
           "positioned": {
-            "posX": 1920,
-            "posY": 256
-          }
-        }
-      },
-      {
-        "name": "playerSpawner",
-        "behaviours": {
-          "positioned": {
-            "posX": 864,
-            "posY": 140
+            "posX": 1184,
+            "posY": 800
           }
         }
       },
@@ -66,8 +57,8 @@
         "name": "portal",
         "behaviours": {
           "positioned": {
-            "posX": 864,
-            "posY": 672
+            "posX": 32,
+            "posY": 704
           },
           "portal": {
             "portalID": "2"
@@ -102,7 +93,7 @@
         "name": "itemSpawner",
         "behaviours": {
           "positioned": {
-            "posX": 1504,
+            "posX": 1920,
             "posY": 448
           }
         }
@@ -111,8 +102,11 @@
         "name": "itemSpawner",
         "behaviours": {
           "positioned": {
-            "posX": 672,
-            "posY": 128
+            "posX": 640,
+            "posY": 160
+          },
+          "spawner": {
+            "props": ["bazookaItem", "sniperItem"]
           }
         }
       },
@@ -122,15 +116,9 @@
           "positioned": {
             "posX": 1568,
             "posY": 192
-          }
-        }
-      },
-      {
-        "name": "itemSpawner",
-        "behaviours": {
-          "positioned": {
-            "posX": 1024,
-            "posY": 567
+          },
+          "spawner": {
+            "props": ["bazookaItem", "sniperItem"]
           }
         }
       },
@@ -147,7 +135,7 @@
         "name": "itemSpawner",
         "behaviours": {
           "positioned": {
-            "posX": 128,
+            "posX": 608,
             "posY": 832
           },
           "spawner": {
