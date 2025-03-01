@@ -57,21 +57,25 @@ export class FocusManager {
 
   private keyListener = async (e: KeyboardEvent, isDown: boolean) => {
     if (e.repeat) return;
-    for (const key of controlsList) {
-      if (this.controlsConfig.getValue(key).includes(e.code)) {
-        await this.getCurrentTag()?.onFocusReceiveKey?.(
-          key,
-          isDown ? "down" : "up",
-          e.code
-        );
-        return;
+    try {
+      for (const key of controlsList) {
+        if (this.controlsConfig.getValue(key).includes(e.code)) {
+          await this.getCurrentTag()?.onFocusReceiveKey?.(
+            key,
+            isDown ? "down" : "up",
+            e.code
+          );
+          return;
+        }
       }
+      await this.getCurrentTag()?.onFocusReceiveKey?.(
+        null,
+        isDown ? "down" : "up",
+        e.code
+      );
+    } catch {
+      this.controlsConfig.reset();
     }
-    await this.getCurrentTag()?.onFocusReceiveKey?.(
-      null,
-      isDown ? "down" : "up",
-      e.code
-    );
   };
 
   private getKeyControl = async (
