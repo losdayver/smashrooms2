@@ -48,6 +48,8 @@ export type IControlled = {
 export type ICollidable = IPositionedExt & {
   collidable: {
     onCollide?: (prop: Prop & PropBehaviours) => void;
+    // if empty - all collisions will be ignored
+    whitelist?: any[];
   };
 } & ICollidableExt;
 

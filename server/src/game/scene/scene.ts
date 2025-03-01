@@ -219,6 +219,16 @@ export class Scene implements IScene {
               if (
                 adjacentProp != prop &&
                 adjacentProp.collidable &&
+                (!adjacentProp.collidable.whitelist ||
+                  (adjacentProp.collidable.whitelist &&
+                    adjacentProp.collidable.whitelist.some(
+                      (cls) => prop instanceof cls
+                    ))) &&
+                (!prop.collidable.whitelist ||
+                  (prop.collidable.whitelist &&
+                    prop.collidable.whitelist.some(
+                      (cls) => adjacentProp instanceof cls
+                    ))) &&
                 !checkedCollisions.includes(adjacentProp.ID)
               ) {
                 const left1 = prop.positioned.posX + prop.collidable.offsetX;
