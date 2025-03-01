@@ -11,6 +11,7 @@ import {
   ISceneTemplate,
   ISpawnControlledPropEvent,
   ISpawnPropEvent,
+  Thinker,
 } from "./sceneTypes";
 import { doBenchmark, Mutex, pickRandom } from "./../../utils";
 import { Prop } from "./prop";
@@ -39,6 +40,7 @@ type ChunkUpdate = {
 
 export class Scene implements IScene {
   sendMessageToSubscriber: ISceneSubscriber["onReceiveMessageFromScene"];
+  thinker: Thinker;
 
   private chunkSize = 256;
   private propList: (Prop & PropBehaviours)[] = [];
@@ -183,6 +185,8 @@ export class Scene implements IScene {
 
   $isProcessingTick = false;
   tick: IScene["tick"] = async () => {
+    this.thinker?.onTick(this.tickNum);
+
     // const tickLoop = doBenchmark();
     if (this.$isProcessingTick) return;
     this.$isProcessingTick = true;
@@ -598,7 +602,8 @@ export class Scene implements IScene {
   constructor(
     propMap: Record<string, any>,
     stage?: StageExt,
-    propFactoryMethod?: (scene: IScene, stage: StageExt) => void
+    propFactoryMethod?: (scene: IScene, stage: StageExt) => void,
+    thinker?: Thinker
   ) {
     this.stage = stage;
     this.layoutLines = this.stage.layoutData.split(/\r\n|\r|\n/);
@@ -612,6 +617,8 @@ export class Scene implements IScene {
     };
     this.propMap = propMap;
     if (stage) propFactoryMethod?.(this, stage);
+    this.thinker = thinker;
+    this.thinker?.onSceneInit(this);
   }
 }
 

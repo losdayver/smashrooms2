@@ -4,6 +4,7 @@
   "gridSize": 32,
   "author": "losdayver",
   "extra": {
+    "chaosEvents": ["bombing"],
     "preload": [
       {
         "name": "playerSpawner",

@@ -350,3 +350,74 @@ export class Explosion
     }
   };
 }
+
+export class Bomb extends Prop implements IDrawableExt, IDamaging, IMoving {
+  positioned;
+  drawable = {
+    sprite: "bomb",
+    facing: "right",
+    offsetX: 16,
+    offsetY: 16,
+  };
+  collidable: ICollidable["collidable"] = {
+    sizeX: 8,
+    sizeY: 8,
+    offsetX: -16,
+    offsetY: -16,
+    onCollide: (prop: Prop & PropBehaviours) => {
+      if (projectileIgnore.some((cls) => prop instanceof cls)) return;
+      if (prop.collidable.colGroup != this.collidable.colGroup)
+        this.onExplode();
+    },
+  };
+  damaging = { damage: 15 };
+  moving = {
+    speedH: 0,
+    speedV: 25,
+  };
+
+  createdOn: number;
+  isExploded = false;
+
+  onExplode = () => {
+    if (this.isExploded) return;
+    this.isExploded = true;
+    this.scene.spawnPropAction("explosion", {
+      positioned: {
+        posX: this.positioned.posX,
+        posY: this.positioned.posY,
+      },
+    });
+    this.scene.destroyPropAction(this.ID);
+  };
+
+  onCreated = (tickNum: number) => {
+    this.createdOn = tickNum;
+    if (this.drawable.facing == "left") this.moving.speedH *= -1;
+  };
+
+  onTick: Prop["onTick"] = (tickNum) => {
+    if (
+      this.scene.getLayoutAt(this.positioned.posX, this.positioned.posY)
+        .solidity == "solid"
+    ) {
+      this.onExplode();
+      return;
+    }
+    this.scene.mutatePropBehaviourAction(this as Prop, {
+      name: "positioned",
+      newValue: {
+        ...this.positioned,
+        posX: (this.positioned.posX += this.moving.speedH),
+        posY: (this.positioned.posY += this.moving.speedV),
+      },
+    });
+    if (tickNum - this.createdOn > 200) {
+      this.scene.destroyPropAction(this.ID);
+    }
+  };
+
+  constructor(scene: IScene) {
+    super(scene);
+  }
+}
