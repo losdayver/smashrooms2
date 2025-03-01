@@ -162,7 +162,10 @@ export class GameMenuModal extends Modal implements IFocusable {
         this.focusManager.setFocus("controls");
         this.controlsModal.show();
       }),
-      makeBtn("Exit game", () => (document.location = document.location)),
+      makeBtn(
+        "Exit game",
+        () => (document.location.href = document.location.href)
+      ),
       makeIconLink("github.png", repoRoute)
     );
 

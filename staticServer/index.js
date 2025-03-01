@@ -9,7 +9,6 @@ app.use(express.json());
 
 const scriptsPath = path.resolve(__dirname + staticRoot + "scripts");
 const noCache = (req, res, next) => {
-  console.log("used no cache route");
   res.setHeader(
     "Cache-Control",
     "no-store, no-cache, must-revalidate, private"
