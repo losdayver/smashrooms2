@@ -63,6 +63,7 @@ export interface IServerNotificationExt {
 }
 export type NotificationTypesExt =
   | "info"
+  | "danger"
   | "warning"
   | "connected"
   | "disconnected"

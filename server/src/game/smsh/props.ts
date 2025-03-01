@@ -5,6 +5,7 @@ import { Prop } from "../scene/prop";
 import { StageExt } from "../../../../types/stage";
 import { Player } from "./player";
 import {
+  Bomb,
   Bullet,
   Explosion,
   Fist,
@@ -60,6 +61,7 @@ export const smshPropMap = {
   sniperBullet: SniperBullet,
   sniperItem: SniperItem,
   portal: Portal,
+  bomb: Bomb,
 } as const;
 
 export const smshPropFactory: (scene: IScene, stage: StageExt) => void = (
@@ -73,9 +75,19 @@ export const smshPropFactory: (scene: IScene, stage: StageExt) => void = (
   }
 };
 
-interface IStageMetaExtra {
+export interface IChaosEvent {
+  name: string;
+  duration: number;
+  message: string;
+  onTick: (tickNum: number, scene: IScene, stage: StageExt) => void;
+  onBegin: (tickNum: number, scene: IScene) => void;
+  onEnd: (tickNum: number, scene: IScene) => void;
+}
+
+export interface IStageMetaExtra {
   preload: {
     name: keyof typeof smshPropMap;
     behaviours?: RecursivePartial<PropBehaviours>;
   }[];
+  chaosEvents?: string[];
 }

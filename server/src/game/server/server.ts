@@ -1,4 +1,4 @@
-import { LayoutMetaExt } from "../../../../types/stage";
+import { LayoutMetaExt, StageExt } from "../../../../types/stage";
 import { config } from "../../config";
 import { severityLog } from "../../utils";
 import { Communicator } from "../communicator/communicator";
@@ -10,6 +10,7 @@ import { WSSocketServer } from "../sockets/sockets";
 import { ISocketServer } from "../sockets/socketsTypes";
 import fs from "fs";
 import path from "path";
+import { SmshThinker } from "../smsh/thinker";
 
 export class Server {
   private scene: IScene;
@@ -34,13 +35,19 @@ export class Server {
 
 export const getWSTestingServer = (port: number) => {
   severityLog(`starting server on port ${port}`);
-  const scene = new Scene(smshPropMap, getStageFS("ascend"), smshPropFactory);
+  const stage = getStageFS("ascend");
+  const scene = new Scene(
+    smshPropMap,
+    stage,
+    smshPropFactory,
+    new SmshThinker(stage)
+  );
   const communicator = new Communicator(scene);
   const wsServer = new WSSocketServer(communicator, port, 50);
   return new Server(wsServer, communicator, scene);
 };
 
-export const getStageFS = (name: string) => ({
+export const getStageFS = (name: string): StageExt => ({
   layoutData: fs
     .readFileSync(path.resolve(config.stagesRoute, name, `${name}.layout`))
     .toString(),
