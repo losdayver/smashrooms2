@@ -33,6 +33,7 @@ export class ShotgunItem extends ItemProp {
     sizeY: 32,
     offsetX: -16,
     offsetY: -16,
+    whitelist: [Player],
   };
   modifyPlayer = (player: Player) => {
     player.weaponPocket.pickWeapon("shotgun");
@@ -51,6 +52,7 @@ export class PistolItem extends ItemProp {
     sizeY: 32,
     offsetX: -16,
     offsetY: -16,
+    whitelist: [Player],
   };
   modifyPlayer = (player: Player) => {
     player.weaponPocket.pickWeapon("pistol");
@@ -70,6 +72,7 @@ export class BazookaItem extends ItemProp {
     sizeY: 32,
     offsetX: -16,
     offsetY: -16,
+    whitelist: [Player],
   };
   modifyPlayer = (player: Player) => {
     player.weaponPocket.pickWeapon("bazooka");
@@ -89,6 +92,7 @@ export class BlasterItem extends ItemProp {
     sizeY: 32,
     offsetX: -16,
     offsetY: -16,
+    whitelist: [Player],
   };
   modifyPlayer = (player: Player) => {
     player.weaponPocket.pickWeapon("blaster");
@@ -108,6 +112,7 @@ export class SniperItem extends ItemProp {
     sizeY: 32,
     offsetX: -16,
     offsetY: -16,
+    whitelist: [Player],
   };
   modifyPlayer = (player: Player) => {
     player.weaponPocket.pickWeapon("sniper");
@@ -127,6 +132,7 @@ export class MedikitItem extends ItemProp {
     sizeY: 32,
     offsetX: -16,
     offsetY: -16,
+    whitelist: [Player],
   };
   modifyPlayer = (player: Player) => {
     this.scene.animatePropAction(player.ID, "heal");
