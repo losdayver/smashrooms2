@@ -125,7 +125,7 @@ export class SniperBullet
         posY: (this.positioned.posY += this.moving.speedV),
       },
     });
-    if (tickNum - this.createdOn > 500) {
+    if (tickNum - this.createdOn > 200) {
       this.scene.destroyPropAction(this.ID);
     }
   };
@@ -309,7 +309,7 @@ export class Rocket extends Prop implements IDrawableExt, IDamaging, IMoving {
         posY: (this.positioned.posY += this.moving.speedV),
       },
     });
-    if (tickNum - this.createdOn > 500) {
+    if (tickNum - this.createdOn > 200) {
       this.scene.destroyPropAction(this.ID);
     }
   };
