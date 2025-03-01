@@ -120,6 +120,7 @@ export class Player
   private jumpSpeed = 22;
   private $isAlreadyDead = false;
   private $lastHitBy: Prop["ID"];
+  private static hatsCount = 8;
 
   doLayoutPhysics = () => {
     this.$lastVSpeed = this.$vSpeed;
@@ -249,7 +250,7 @@ export class Player
   };
   onCreated: Prop["onCreated"] = (_, reason) => {
     this.drawable.overlay0.sprite = `hat${
-      (stringToHash(this.controlled.clientID) % 7) + 1
+      (stringToHash(this.controlled.clientID) % Player.hatsCount) + 1
     }`;
     if (reason == "connect") Player.score.register(this);
     this.collidable.colGroup = this.ID;
