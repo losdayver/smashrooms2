@@ -34,7 +34,6 @@ export class AudioTrackManager
   protected storeSound = (name: keyof typeof soundTrackMap) => {
     this.currentSoundTrack = new Audio(soundTrackRoute + soundTrackMap[name]);
     this.currentSoundTrack.volume = 0.3;
-    this.currentSoundTrack.loop = true;
     this.currentSoundTrackName = name;
     return true;
   };
@@ -42,6 +41,8 @@ export class AudioTrackManager
   playSound = (name: keyof typeof soundTrackMap) => {
     if (this.currentSoundTrack) this.stopSound();
     this.storeSound(name);
+    this.currentSoundTrack.onended = () =>
+      this.eventEmitter.emit("onEndedSoundtrack", this.currentSoundTrackName);
     this.currentSoundTrack.play();
     this.eventEmitter.emit("onStartedSoundtrack", this.currentSoundTrackName);
     return null;
@@ -166,11 +167,15 @@ class StereoAudioEvent extends AudioPreamp {
 
 // class FivePointOneSound, class SevenPointOneSound, ...
 
-type SoundTrackEventsType = "onStartedSoundtrack" | "onStoppedSoundtrack";
+type SoundTrackEventsType =
+  | "onStartedSoundtrack"
+  | "onStoppedSoundtrack"
+  | "onEndedSoundtrack";
 
-const soundTrackMap = {
+export const soundTrackMap = {
   iceworld: "iceworld.mp3",
   mycelium: "mycelium.mp3",
+  ascend: "ascend.mp3",
 } as const;
 
 export const soundEventMap = {

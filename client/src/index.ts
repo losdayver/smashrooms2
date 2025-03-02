@@ -5,7 +5,11 @@ import {
   IServerNotificationExt,
   IServerSceneMetaMessageExt,
 } from "../../types/messages";
-import { AudioTrackManager, AudioEventManager } from "./audio/audioManager.js";
+import {
+  AudioTrackManager,
+  AudioEventManager,
+  soundTrackMap,
+} from "./audio/audioManager.js";
 import { Client } from "./client/client.js";
 import {
   ControlsConfig,
@@ -20,7 +24,7 @@ import { ScoreBoardModal } from "./modal/scoreboard.js";
 import { repoRoute } from "./routes.js";
 import { Chat } from "./ui/chat.js";
 import { Toast } from "./ui/toast.js";
-import { makeIconButton, makeIconLink } from "./utils.js";
+import { makeIconButton, makeIconLink, pickRandom } from "./utils.js";
 
 export class RegModal extends Modal {
   private onSubmit: (clientName: string) => void;
@@ -328,7 +332,7 @@ const initGameLayout = async () => {
       regModal.hide();
       client.getSceneMeta();
       focus.register(chat);
-      soundTrackMgr.playSound("mycelium");
+      soundTrackMgr.playSound(pickRandom(playlist));
     }
   });
   client.on("serverChat", "chat", (data: IServerChatMessageExt) => {
@@ -340,9 +344,21 @@ const initGameLayout = async () => {
 
   const soundTrackMgr = new AudioTrackManager();
 
+  // todo let player build his own playlist
+  const playlist: (keyof typeof soundTrackMap)[] = ["ascend", "mycelium"];
   soundTrackMgr.on("onStartedSoundtrack", "toast", (name: string) => {
     toast.notify(`smsh2 OST — ${name}`, "music");
   });
+  soundTrackMgr.on(
+    "onEndedSoundtrack",
+    "index",
+    (name: keyof typeof soundTrackMap) => {
+      let index = playlist.indexOf(name);
+      index++;
+      if (index >= playlist.length) index = 0;
+      soundTrackMgr.playSound(playlist[index]);
+    }
+  );
 
   const audioEventMgr = new AudioEventManager();
 
