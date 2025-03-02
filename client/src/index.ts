@@ -345,7 +345,11 @@ const initGameLayout = async () => {
   const soundTrackMgr = new AudioTrackManager();
 
   // todo let player build his own playlist
-  const playlist: (keyof typeof soundTrackMap)[] = ["ascend", "mycelium"];
+  const playlist: (keyof typeof soundTrackMap)[] = [
+    "ascend",
+    "mycelium",
+    "iceworld",
+  ];
   soundTrackMgr.on("onStartedSoundtrack", "toast", (name: string) => {
     toast.notify(`smsh2 OST — ${name}`, "music");
   });
