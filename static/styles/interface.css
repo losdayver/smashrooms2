@@ -8,3 +8,26 @@
   transform: translate(-50%, -50%);
   background-color: white;
 }
+
+.smsh-table,
+.smsh-table th,
+.smsh-table td {
+  border-collapse: collapse;
+}
+
+.smsh-table {
+  text-align: center;
+  margin: 0.5em 1em;
+}
+
+.smsh-table td {
+  padding: 3px 0.4em;
+}
+
+.smsh-table thead td {
+  font-weight: bold;
+}
+
+.smsh-table thead {
+  border-bottom: 1px solid black;
+}

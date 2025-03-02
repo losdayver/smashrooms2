@@ -43,7 +43,7 @@ export abstract class Modal {
 
     modal.style.setProperty("--input-width", "20em");
 
-    modal.style.width = props.width.toString();
+    modal.style.width = props.width?.toString?.() ?? "auto";
     modal.style.height = props.height?.toString?.() ?? "auto";
 
     const controls = d.createElement("div");
@@ -76,7 +76,7 @@ export abstract class Modal {
 }
 
 export interface IModalProps {
-  width: number;
+  width?: number;
   height?: number;
   title: string;
   noCloseButton?: boolean;
