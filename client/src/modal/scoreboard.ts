@@ -51,6 +51,7 @@ export class ScoreBoardModal extends Modal implements IFocusable {
   private constructTable = (): void => {
     this.board.innerHTML = "";
     const scoreTable = document.createElement("table");
+    scoreTable.className = "smsh-table";
     const tHead = document.createElement("thead");
     tHead.innerHTML = `<tr>
       <td>Rank</td>

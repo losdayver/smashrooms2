@@ -9,25 +9,25 @@
   background-color: white;
 }
 
-table,
-th,
-td {
+.smsh-table,
+.smsh-table th,
+.smsh-table td {
   border-collapse: collapse;
 }
 
-table {
+.smsh-table {
   text-align: center;
   margin: 0.5em 1em;
 }
 
-td {
+.smsh-table td {
   padding: 3px 0.4em;
 }
 
-thead td {
+.smsh-table thead td {
   font-weight: bold;
 }
 
-thead {
+.smsh-table thead {
   border-bottom: 1px solid black;
 }
