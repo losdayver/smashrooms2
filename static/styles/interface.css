@@ -8,3 +8,26 @@
   transform: translate(-50%, -50%);
   background-color: white;
 }
+
+table,
+th,
+td {
+  border-collapse: collapse;
+}
+
+table {
+  text-align: center;
+  margin: 0.5em 1em;
+}
+
+td {
+  padding: 3px 0.4em;
+}
+
+thead td {
+  font-weight: bold;
+}
+
+thead {
+  border-bottom: 1px solid black;
+}
