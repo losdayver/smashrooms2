@@ -1,4 +1,5 @@
 import {
+  ExternalLoadChunk,
   IAnimatePropEvent,
   IClientActionEvent,
   IDestroyControlledPropEvent,
@@ -120,10 +121,11 @@ export class Scene implements IScene {
           if (!batch.load) batch.load = [];
           chunkedUpdate.props.forEach((prop) => {
             if (!prop.drawable) return;
-            const partialProp: Omit<Prop, "scene"> & PropBehaviours = {
+            const partialProp: ExternalLoadChunk = {
               ID: prop.ID,
               drawable: prop.drawable,
               positioned: prop.positioned,
+              $isDestroyed: prop.$isDestroyed,
             };
             if (prop.nameTagged) partialProp.nameTagged = prop.nameTagged;
             if (prop.damageable) partialProp.damageable = prop.damageable;
@@ -200,14 +202,12 @@ export class Scene implements IScene {
     });
 
     // collision detection
-    const checkedCollisions: PropIDExt[] = [];
+    const checkedCollisions = new Set<PropIDExt>();
     for (const [coord, chunk] of Object.entries(this.$chunkedUpdates)) {
       const [x, y] = coord.split("_").map(Number);
       const adjacentChunks: ChunkUpdate[] = [chunk];
-
       for (const [coordAdj, chunkAdj] of Object.entries(this.$chunkedUpdates)) {
         const [xAdj, yAdj] = coordAdj.split("_").map(Number);
-
         if (
           chunkAdj != chunk &&
           Math.abs(xAdj - x) <= 1 &&
@@ -215,7 +215,6 @@ export class Scene implements IScene {
         )
           adjacentChunks.push(chunkAdj);
       }
-
       for (const prop of chunk.props) {
         if (prop.collidable) {
           for (const adjacentChunk of adjacentChunks) {
@@ -223,6 +222,7 @@ export class Scene implements IScene {
               if (
                 adjacentProp != prop &&
                 adjacentProp.collidable &&
+                !(prop.$isDestroyed || adjacentProp.$isDestroyed) &&
                 (!adjacentProp.collidable.whitelist ||
                   (adjacentProp.collidable.whitelist &&
                     adjacentProp.collidable.whitelist.some(
@@ -233,7 +233,7 @@ export class Scene implements IScene {
                     prop.collidable.whitelist.some(
                       (cls) => adjacentProp instanceof cls
                     ))) &&
-                !checkedCollisions.includes(adjacentProp.ID)
+                !checkedCollisions.has(adjacentProp.ID)
               ) {
                 const left1 = prop.positioned.posX + prop.collidable.offsetX;
                 const top1 = prop.positioned.posY + prop.collidable.offsetY;
@@ -261,7 +261,7 @@ export class Scene implements IScene {
               }
             }
           }
-          checkedCollisions.push(prop.ID);
+          checkedCollisions.add(prop.ID);
         }
       }
     }
@@ -464,12 +464,13 @@ export class Scene implements IScene {
   };
   disconnectAction: IScene["disconnectAction"] = async (clientID) => {
     const unlock = await this.internalEventQueueMutex.acquire();
+    const prop = this.queryProp(
+      (prop) => (prop as Prop & IControlled)?.controlled?.clientID == clientID
+    ) as Prop & INameTaggedExt;
+    if (prop) prop.$isDestroyed = true;
     try {
       this.sendNotification(
-        `${
-          this.propList.find((prop) => prop?.controlled?.clientID == clientID)
-            ?.nameTagged?.tag || "player"
-        } disconnected.`,
+        `${prop?.nameTagged?.tag || "player"} disconnected.`,
         "disconnected"
       );
       this.internalEventQueueMutex.value.unshift({
@@ -514,6 +515,8 @@ export class Scene implements IScene {
   destroyPropAction: IScene["destroyPropAction"] = async (propID) => {
     const unlock = await this.internalEventQueueMutex.acquire();
     try {
+      const prop = this.getPropByID(propID);
+      if (prop) prop.$isDestroyed = true;
       this.internalEventQueueMutex.value.unshift({
         name: "destroyProp",
         data: { ID: propID },

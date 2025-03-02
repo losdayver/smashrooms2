@@ -5,6 +5,7 @@ import { IScene, ISpawnControlledPropEvent } from "./sceneTypes";
 export abstract class Prop implements Prop {
   ID: string;
   scene: IScene;
+  $isDestroyed = false;
   onCreated?: (
     tickNum: number,
     reason?: ISpawnControlledPropEvent["data"]["type"]
