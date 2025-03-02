@@ -1,6 +1,6 @@
 import { IScene, ISceneSubscriber } from "../scene/sceneTypes";
-import { IConnectResponseMessageExt } from "../../../../types/messages";
 import { ICommunicator, ICommunicatorSubscriber } from "./communicatorTypes";
+import { Player } from "../smsh/player";
 
 export class Communicator implements ICommunicator {
   private scene: IScene;
@@ -17,12 +17,11 @@ export class Communicator implements ICommunicator {
   };
   processMessage: ICommunicator["processMessage"] = (from, msg, nameTag) => {
     if (msg.name == "connRes") {
-      this.scene.connectAction(
-        from,
-        (msg as IConnectResponseMessageExt).nameTag
-      );
-    } else if (msg.name == "disc") this.scene.disconnectAction(from);
-    else if (msg.name == "clientAct")
+      this.scene.connectAction(from, nameTag);
+    } else if (msg.name == "disc") {
+      Player.score.unlist(nameTag);
+      this.scene.disconnectAction(from);
+    } else if (msg.name == "clientAct")
       this.scene.clientAction(from, msg.data.code, nameTag, msg.data.status);
   };
 

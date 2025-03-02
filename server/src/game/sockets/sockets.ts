@@ -116,7 +116,7 @@ export class WSSocketServer implements ISocketServer {
       connectRes,
       `sockets connected new client ${message.clientName}`
     );
-    this.communicator.processMessage(clientID, connectRes);
+    this.communicator.processMessage(clientID, connectRes, message.clientName);
   };
 
   private checkClientForConnectionRequirement = (
@@ -209,10 +209,14 @@ export class WSSocketServer implements ISocketServer {
   private resolveDisconnect = (clientSocket: WebSocket) => {
     for (const [clientID, client] of this.clientMap.entries()) {
       if (client.socket == clientSocket) {
-        this.communicator.processMessage(clientID, {
-          name: "disc",
+        this.communicator.processMessage(
           clientID,
-        } satisfies IDisconnectMessageExt);
+          {
+            name: "disc",
+            clientID,
+          } satisfies IDisconnectMessageExt,
+          client.name
+        );
         this.clientMap.delete(clientID);
         severityLog(`sockets disconnected client ${clientID} ${client.name}`);
         return;

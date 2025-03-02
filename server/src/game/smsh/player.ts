@@ -240,9 +240,10 @@ export class Player
     this.weaponPocket.fireWeapon(this.$firing, tick);
     if (this.damageable.health <= 0 && !this.$isAlreadyDead) {
       this.$isAlreadyDead = true;
-      Player.score.increment(this, "D");
+      Player.score.increment(this.nameTagged.tag, "D");
       const killer = this.scene.getPropByID(this.$lastHitBy);
-      if (killer) Player.score.increment(killer as Player, "K");
+      if (killer)
+        Player.score.increment((killer as Player).nameTagged.tag, "K");
       this.scene.destroyPropAction(this.ID);
       this.scene.produceSound("death");
       this.scene.sendNotification(`${this.nameTagged.tag} died`, "dead");
@@ -252,11 +253,11 @@ export class Player
     this.drawable.overlay0.sprite = `hat${
       (stringToHash(this.controlled.clientID) % Player.hatsCount) + 1
     }`;
-    if (reason == "connect") Player.score.register(this);
+    if (reason == "connected") Player.score.register(this);
     this.collidable.colGroup = this.ID;
   };
   onDestroyed: Prop["onDestroyed"] = (reason) => {
-    if (reason == "disconnect") Player.score.unlist(this);
+    if (reason == "disconnect") Player.score.unlist(this.nameTagged.tag);
   };
   constructor(
     clientID: string,
@@ -273,16 +274,16 @@ class Score {
   private scene: IScene;
   private scoreObj: Record<string, { K: number; D: number }> = {};
 
-  unlist = (player: Player) => {
+  unlist = (tag: string) => {
     this.scene.sendArbitraryMessage(
       {
         name: "score",
-        tag: player.nameTagged.tag,
+        tag,
         unlist: true,
       } satisfies IScoreUpdateExt,
       "all"
     );
-    delete this.scoreObj[player.nameTagged.tag];
+    delete this.scoreObj[tag];
   };
   register = (player: Player) => {
     this.scoreObj[player.nameTagged.tag] = { K: 0, D: 0 };
@@ -307,14 +308,14 @@ class Score {
       "all"
     );
   };
-  increment = (player: Player, what: "K" | "D") => {
-    this.scoreObj[player.nameTagged.tag][what]++;
+  increment = (tag: string, what: "K" | "D") => {
+    this.scoreObj[tag][what]++;
     this.scene.sendArbitraryMessage(
       {
         name: "score",
-        tag: player.nameTagged.tag,
-        K: this.scoreObj[player.nameTagged.tag].K,
-        D: this.scoreObj[player.nameTagged.tag].D,
+        tag,
+        K: this.scoreObj[tag].K,
+        D: this.scoreObj[tag].D,
       } satisfies IScoreUpdateExt,
       "all"
     );

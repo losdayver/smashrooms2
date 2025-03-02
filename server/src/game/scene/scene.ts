@@ -340,7 +340,7 @@ export class Scene implements IScene {
       if (data.nameTag) prop.nameTagged = { tag: data.nameTag };
       if (prop.controlled) {
         this.propList.unshift(prop);
-        prop.onCreated?.(this.tickNum, "connect");
+        prop.onCreated?.(this.tickNum, data.type);
         this.$mutateChunkedUpdates(
           { props: [prop], load: [prop] },
           prop as Prop & IPositionedExt
