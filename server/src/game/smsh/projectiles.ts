@@ -32,7 +32,7 @@ export class Bullet extends Prop implements IDrawableExt, IDamaging, IMoving {
         this.scene.destroyPropAction(this.ID);
     },
   };
-  damaging = { damage: 15 };
+  damaging = { damage: 25 };
   moving = {
     speedH: 32,
     speedV: 0,
@@ -92,7 +92,7 @@ export class SniperBullet
         this.scene.destroyPropAction(this.ID);
     },
   };
-  damaging = { damage: 80 };
+  damaging = { damage: 65 };
   moving = {
     speedH: 64,
     speedV: 0,
@@ -155,7 +155,7 @@ export class Plasma extends Prop implements IDrawableExt, IDamaging, IMoving {
         this.scene.destroyPropAction(this.ID);
     },
   };
-  damaging = { damage: 10 };
+  damaging = { damage: 18 };
   moving = {
     speedH: 32,
     speedV: 0,
@@ -267,9 +267,9 @@ export class Rocket extends Prop implements IDrawableExt, IDamaging, IMoving {
         this.onExplode();
     },
   };
-  damaging = { damage: 15 };
+  damaging = { damage: 65 };
   moving = {
-    speedH: 25,
+    speedH: 20,
     speedV: 0,
   };
 
@@ -344,9 +344,7 @@ export class Explosion
   onTick = (tickNum: number) => {
     if (tickNum - this.createdOnTick > 0) {
       this.damaging.damage = 0;
-      if (tickNum - this.createdOnTick > 2) {
-        this.scene.destroyPropAction(this.ID);
-      }
+      this.scene.destroyPropAction(this.ID);
     }
   };
 }
