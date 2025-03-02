@@ -21,7 +21,6 @@ export class ScoreBoardModal extends Modal implements IFocusable {
       this.scoreArray = this.scoreArray.filter(
         (element: ScoreObj) => element.N !== update.tag
       );
-      this.sortScoreArrayDesc();
       this.constructBoard();
       return;
     }
