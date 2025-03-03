@@ -1,7 +1,13 @@
 import { soundTrackRoute, soundEventRoute } from "../routes.js";
 import { EventEmitter, IEventEmitterPublicInterface } from "../utils.js";
 
-abstract class AudioManager {
+export abstract class AudioManager {
+  public static defaultContextualVolume: number = 0.3;
+  public static maxContextualVolume: number = 0.4;
+  protected currentContextualVolume: number =
+    AudioManager.defaultContextualVolume;
+  protected isMuted: boolean = false;
+
   protected abstract storeSound(
     name: keyof typeof soundEventMap | keyof typeof soundTrackMap
   ): void;
@@ -11,6 +17,16 @@ abstract class AudioManager {
   ): Promise<number> | null;
 
   public abstract pauseSound(soundID: number | null): void;
+
+  public toggleMute = (): boolean => {
+    if (this.isMuted)
+      this.setContextualVolume(AudioManager.defaultContextualVolume);
+    else this.setContextualVolume(0);
+    this.isMuted = !this.isMuted;
+    return this.isMuted;
+  };
+
+  public abstract setContextualVolume(volume: number): void;
 
   public abstract stopSound(soundID: number | null): void;
 }
@@ -30,15 +46,16 @@ export class AudioTrackManager
 
   private currentSoundTrack: HTMLAudioElement;
   private currentSoundTrackName: string;
+  protected currentVolume: number = AudioTrackManager.defaultContextualVolume;
 
   protected storeSound = (name: keyof typeof soundTrackMap) => {
     this.currentSoundTrack = new Audio(soundTrackRoute + soundTrackMap[name]);
-    this.currentSoundTrack.volume = 0.3;
+    this.currentSoundTrack.volume = this.currentVolume;
     this.currentSoundTrackName = name;
     return true;
   };
 
-  playSound = (name: keyof typeof soundTrackMap) => {
+  playSound = (name: keyof typeof soundTrackMap): null => {
     if (this.currentSoundTrack) this.stopSound();
     this.storeSound(name);
     this.currentSoundTrack.onended = () =>
@@ -46,6 +63,23 @@ export class AudioTrackManager
     this.currentSoundTrack.play();
     this.eventEmitter.emit("onStartedSoundtrack", this.currentSoundTrackName);
     return null;
+  };
+
+  getCurrentSoundTrackInfo = (): string => {
+    return `smsh2 OST - ${this.currentSoundTrackName}`;
+  };
+
+  getCurrentSoundTrackProgress = (): number => {
+    if (!this.currentSoundTrack) return 0;
+    return Math.round(
+      (this.currentSoundTrack.currentTime / this.currentSoundTrack.duration) *
+        100
+    );
+  };
+
+  setContextualVolume = (volume: number): void => {
+    this.currentSoundTrack.volume = volume;
+    this.currentVolume = volume;
   };
 
   pauseSound = () => {
@@ -81,7 +115,11 @@ export class AudioEventManager extends AudioManager {
     while (this.currentAudioEvents.get(sndIndex)) sndIndex++;
     this.currentAudioEvents.set(
       sndIndex,
-      new StereoAudioEvent(this.audioCtx, this.audioBuffersCache.get(name))
+      new StereoAudioEvent(
+        this.audioCtx,
+        this.audioBuffersCache.get(name),
+        this.currentContextualVolume
+      )
     );
     return sndIndex;
   };
@@ -102,6 +140,16 @@ export class AudioEventManager extends AudioManager {
     this.currentAudioEvents.get(soundID).audioSrc?.stop();
   };
 
+  setContextualVolume(volume: number): void {
+    const channelBalance: ChannelBalance = {
+      X: volume,
+      Y: volume,
+    };
+    for (let [number, _] of this.currentAudioEvents)
+      this.currentAudioEvents.get(number).setChannelBalance(channelBalance);
+    this.currentContextualVolume = volume;
+  }
+
   stopSound = (soundID: number) => {
     this.pauseSound(soundID);
     this.currentAudioEvents.delete(soundID);
@@ -110,13 +158,15 @@ export class AudioEventManager extends AudioManager {
   // TODO: add calculation of channel balance value based on sound event's srcX (and srcY), or maybe even more complex logic
   //  and think about where it should be incapsulated
 
-  setSoundChannelBalance = (soundID: number, balanceVal: number) => {
+  setChannelBalanceForSound = (soundID: number, balanceVal: ChannelBalance) => {
     this.currentAudioEvents.get(soundID).setChannelBalance(balanceVal);
   };
 }
 
 abstract class AudioPreamp {
-  protected static defaultGain: number = 0.5;
+  // NOTE: 0 <= balanceVal.{X,Y} <= 1
+  public abstract setChannelBalance(balanceVal: ChannelBalance): void;
+
   protected abstract passThroughMixer(ctx: AudioContext): void;
 }
 
@@ -130,9 +180,9 @@ class StereoAudioEvent extends AudioPreamp {
   private gainNodeL: GainNode;
   private gainNodeR: GainNode;
 
-  setChannelBalance = (balanceVal: number) => {
-    this.gainNodeL.gain.value = StereoAudioEvent.defaultGain - balanceVal;
-    this.gainNodeR.gain.value = StereoAudioEvent.defaultGain + balanceVal;
+  setChannelBalance = (balanceVal: ChannelBalance): void => {
+    this.gainNodeL.gain.value = balanceVal.X;
+    this.gainNodeR.gain.value = balanceVal.X;
   };
 
   protected passThroughMixer = (ctx: AudioContext): void => {
@@ -144,15 +194,15 @@ class StereoAudioEvent extends AudioPreamp {
     this.mergerNode.connect(ctx.destination);
   };
 
-  constructor(ctx: AudioContext, audioBuf: AudioBuffer) {
+  constructor(ctx: AudioContext, audioBuf: AudioBuffer, gain: number) {
     super();
     this.audioSrc = ctx.createBufferSource();
     this.audioSrc.buffer = audioBuf;
 
     this.gainNodeL = new GainNode(ctx);
-    this.gainNodeL.gain.value = StereoAudioEvent.defaultGain;
+    this.gainNodeL.gain.value = gain;
     this.gainNodeR = new GainNode(ctx);
-    this.gainNodeR.gain.value = StereoAudioEvent.defaultGain;
+    this.gainNodeR.gain.value = gain;
 
     this.splitterNode = new ChannelSplitterNode(ctx, {
       numberOfOutputs: StereoAudioEvent.channelCount,
@@ -166,6 +216,11 @@ class StereoAudioEvent extends AudioPreamp {
 }
 
 // class FivePointOneSound, class SevenPointOneSound, ...
+
+type ChannelBalance = {
+  X: number;
+  Y: number;
+};
 
 type SoundTrackEventsType =
   | "onStartedSoundtrack"

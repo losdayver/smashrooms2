@@ -6,6 +6,7 @@ import {
   IServerSceneMetaMessageExt,
 } from "../../types/messages";
 import {
+  AudioManager,
   AudioTrackManager,
   AudioEventManager,
   soundTrackMap,
@@ -25,6 +26,7 @@ import { repoRoute } from "./routes.js";
 import { Chat } from "./ui/chat.js";
 import { Toast } from "./ui/toast.js";
 import { makeIconButton, makeIconLink, pickRandom } from "./utils.js";
+import { AudioWidget } from "./ui/audioWidget.js";
 
 export class RegModal extends Modal {
   private onSubmit: (clientName: string) => void;
@@ -111,12 +113,18 @@ export class RegModal extends Modal {
 
 // todo create unified menu modal factory
 export class GameMenuModal extends Modal implements IFocusable {
-  constructor(container: HTMLDivElement) {
+  constructor(
+    container: HTMLDivElement,
+    audioTrackMgr: AudioTrackManager,
+    audioEventMgr: AudioEventManager
+  ) {
     super(container, {
       title: "Menu",
       width: 500,
     });
+    this.audioWidget = new AudioWidget(audioTrackMgr, audioEventMgr);
   }
+  private audioWidget: AudioWidget;
   private focusManager: FocusManager;
 
   onClose = () => {
@@ -145,21 +153,22 @@ export class GameMenuModal extends Modal implements IFocusable {
   };
 
   protected getContent = () => {
-    const d = document;
-    const makeBtn = (text: string, onClick: () => void) => {
-      const button = d.createElement("button");
+    const makeBtn = (text: string, onClick: () => void): HTMLButtonElement => {
+      const button = document.createElement("button");
       button.classList.add("smsh-button");
       button.style.width = "95%";
       button.innerText = text;
       button.onclick = onClick;
       return button;
     };
-    const options = d.createElement("div");
+
+    const content = document.createElement("div");
+
+    const options = document.createElement("div");
     options.style.display = "flex";
     options.style.flexDirection = "column";
     options.style.alignItems = "center";
     options.style.gap = "8px";
-
     options.append(
       makeBtn("Controls", () => {
         this.hide();
@@ -173,7 +182,9 @@ export class GameMenuModal extends Modal implements IFocusable {
       makeIconLink("github.png", repoRoute)
     );
 
-    return options;
+    content.append(this.audioWidget.audioWidget, options);
+
+    return content;
   };
 }
 
@@ -351,7 +362,7 @@ const initGameLayout = async () => {
     "iceworld",
   ];
   soundTrackMgr.on("onStartedSoundtrack", "toast", (name: string) => {
-    toast.notify(`smsh2 OST — ${name}`, "music");
+    toast.notify(soundTrackMgr.getCurrentSoundTrackInfo(), "music");
   });
   soundTrackMgr.on(
     "onEndedSoundtrack",
@@ -387,13 +398,17 @@ const initGameLayout = async () => {
   });
 
   const menuModal = new GameMenuModal(
-    document.querySelector<HTMLDivElement>(".modal-container")
+    document.querySelector<HTMLDivElement>(".modal-container"),
+    soundTrackMgr,
+    audioEventMgr
   );
   focus.register(menuModal);
+
   const scoreBoardModal = new ScoreBoardModal(
     document.querySelector<HTMLDivElement>(".modal-container")
   );
   focus.register(scoreBoardModal);
+
   const regModal = new RegModal(
     document.querySelector<HTMLDivElement>(".modal-container"),
     (clientName: string) => {

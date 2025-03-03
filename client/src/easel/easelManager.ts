@@ -271,7 +271,7 @@ export class EaselManager {
       ${Math.floor(255 - healthPercentage * 2.05)},
       ${Math.floor(255 - (100 - healthPercentage) * 2.55)},
       ${Math.floor(50 - (100 - healthPercentage) / 2)}
-    `;
+    )`;
   };
 
   private onConnectHandler = (data: IConnectResponseMessageExt) => {
@@ -327,9 +327,8 @@ export class EaselManager {
     });
     this.currentStageWidth = width; // todo maybe put this in one nice object
     this.updateEaselScale();
-    document.querySelector(
-      "body"
-    ).style.backgroundImage = `url(${backgroundRoute}forest.png)`;
+    document.querySelector("body").style.backgroundImage =
+      `url(${backgroundRoute}forest.png)`;
     this.easelDiv.appendChild(this.layoutPivot);
   };
 

@@ -64,7 +64,6 @@ export class ScoreBoardModal extends Modal implements IFocusable {
     scoreTable.appendChild(tHead);
 
     const tBody = document.createElement("tbody");
-    console.log("Arr: ", this.scoreArray);
     for (let i: number = 0; i < this.scoreArray.length; i++) {
       const playerRow = document.createElement("tr");
       playerRow.innerHTML = `\
