@@ -19,7 +19,6 @@ export abstract class AudioEngine {
   public abstract pauseSound(soundID: number | null): void;
 
   public toggleMute = (): boolean => {
-    console.log("Мучу!!!");
     if (this.isMuted)
       this.setContextualVolume(this.lastPositiveContextualVolume);
     else this.setContextualVolume(0);
@@ -27,7 +26,7 @@ export abstract class AudioEngine {
     return this.isMuted;
   };
 
-  public abstract setContextualVolume(volume: number);
+  public abstract setContextualVolume(volume: number): void;
 
   public abstract stopSound(soundID: number | null): void;
 }
@@ -79,7 +78,7 @@ export class AudioTrackEngine
     );
   };
 
-  override setContextualVolume = (volume: number): void => {
+  setContextualVolume = (volume: number): void => {
     if (volume !== 0) this.lastPositiveContextualVolume = volume;
     this.currentSoundTrack.volume = volume;
   };
