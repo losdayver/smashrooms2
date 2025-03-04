@@ -6,6 +6,7 @@ import {
 import {
   gamepadEventToKeyMap,
   GamepadControlsObjType,
+  getKeyAlias,
 } from "./gamepadLayouts.js";
 
 export class FocusManager {
@@ -82,7 +83,7 @@ export class FocusManager {
     key: string
   ): Promise<keyof ControlsObjType> => {
     for (const control of controlsList)
-      if (this.controlsConfig.getValue(control).includes(key)) return control;
+      if (this.controlsConfig.getValue(control)?.includes(key)) return control;
     return null;
   };
 
@@ -91,7 +92,8 @@ export class FocusManager {
     for (const gamepad of navigator.getGamepads()) {
       if (!gamepad) return requestAnimationFrame(this.gamepadKeyListener);
       for (const [gpKey, isActivated] of Object.entries(gamepadEventToKeyMap)) {
-        const keyControl = await this.getKeyControl(gpKey);
+        const keyAlias = await getKeyAlias(gpKey);
+        const keyControl = await this.getKeyControl(keyAlias);
         const previouslyActivated = this.activeGamepadKeys.has(gpKey);
         if (isActivated(gamepad)) {
           if (!previouslyActivated) {
@@ -99,7 +101,7 @@ export class FocusManager {
             await this.getCurrentTag()?.onFocusReceiveKey?.(
               keyControl,
               "down",
-              gpKey
+              keyAlias
             );
           }
         } else {
@@ -107,7 +109,7 @@ export class FocusManager {
             await this.getCurrentTag()?.onFocusReceiveKey?.(
               keyControl,
               "up",
-              gpKey
+              keyAlias
             );
             this.activeGamepadKeys.delete(gpKey);
           }
