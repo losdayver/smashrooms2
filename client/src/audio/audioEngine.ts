@@ -4,7 +4,7 @@ import { EventEmitter, IEventEmitterPublicInterface } from "../utils.js";
 export abstract class AudioEngine {
   public static defaultContextualVolume: number = 0.3;
   public static maxContextualVolume: number = 0.4;
-  protected currentContextualVolume: number =
+  protected lastPositiveContextualVolume: number =
     AudioEngine.defaultContextualVolume;
   protected isMuted: boolean = false;
 
@@ -20,7 +20,7 @@ export abstract class AudioEngine {
 
   public toggleMute = (): boolean => {
     if (this.isMuted)
-      this.setContextualVolume(AudioEngine.defaultContextualVolume);
+      this.setContextualVolume(this.lastPositiveContextualVolume);
     else this.setContextualVolume(0);
     this.isMuted = !this.isMuted;
     return this.isMuted;
@@ -46,11 +46,12 @@ export class AudioTrackEngine
 
   private currentSoundTrack: HTMLAudioElement;
   private currentSoundTrackName: string;
-  protected currentVolume: number = AudioTrackEngine.defaultContextualVolume;
+  protected lastPositiveContextualVolume: number =
+    AudioTrackEngine.defaultContextualVolume;
 
   protected storeSound = (name: keyof typeof soundTrackMap) => {
     this.currentSoundTrack = new Audio(soundTrackRoute + soundTrackMap[name]);
-    this.currentSoundTrack.volume = this.currentVolume;
+    this.currentSoundTrack.volume = this.lastPositiveContextualVolume;
     this.currentSoundTrackName = name;
     return true;
   };
@@ -78,8 +79,8 @@ export class AudioTrackEngine
   };
 
   setContextualVolume = (volume: number): void => {
+    if (volume !== 0) this.lastPositiveContextualVolume = volume;
     this.currentSoundTrack.volume = volume;
-    this.currentVolume = volume;
   };
 
   pauseSound = () => {
@@ -118,7 +119,7 @@ export class AudioEventEngine extends AudioEngine {
       new StereoAudioEvent(
         this.audioCtx,
         this.audioBuffersCache.get(name),
-        this.currentContextualVolume
+        this.lastPositiveContextualVolume
       )
     );
     return sndIndex;
@@ -140,15 +141,15 @@ export class AudioEventEngine extends AudioEngine {
     this.currentAudioEvents.get(soundID).audioSrc?.stop();
   };
 
-  setContextualVolume(volume: number): void {
+  setContextualVolume = (volume: number): void => {
+    if (volume !== 0) this.lastPositiveContextualVolume = volume;
     const channelBalance: ChannelBalance = {
       X: volume,
       Y: volume,
     };
     for (let [number, _] of this.currentAudioEvents)
       this.currentAudioEvents.get(number).setChannelBalance(channelBalance);
-    this.currentContextualVolume = volume;
-  }
+  };
 
   stopSound = (soundID: number) => {
     this.pauseSound(soundID);

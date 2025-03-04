@@ -30,7 +30,7 @@ export class EaselManager {
   private clientPropNameTag: string;
   private clientPropID: string;
   private static readonly defaultNicknameHighlightColor = "yellow";
-  private audioEventMgr: AudioEventEngine;
+  private audioEventEng: AudioEventEngine;
 
   private readonly loadPropSoundMap: Partial<
     Record<string, keyof typeof soundEventMap>
@@ -76,7 +76,7 @@ export class EaselManager {
     if (prop.damageable) this.updateHealth(easelProp, prop as IDamageableExt);
 
     const sound = this.loadPropSoundMap[prop.drawable?.sprite];
-    if (sound) this.audioEventMgr.playSound(sound);
+    if (sound) this.audioEventEng.playSound(sound);
 
     if (prop.nameTagged?.tag == this.clientPropNameTag) {
       this.clientPropID = prop.ID;
@@ -142,7 +142,7 @@ export class EaselManager {
       this.propList.forEach((prop, index) => {
         if (propToDeleteID == prop.ID) {
           const sound = this.deletePropSoundMap[prop.drawable.sprite];
-          if (sound) this.audioEventMgr.playSound(sound);
+          if (sound) this.audioEventEng.playSound(sound);
           prop.container.remove();
           this.propList.splice(index, 1);
           return;
@@ -164,7 +164,7 @@ export class EaselManager {
       const prop = this.propList.find((prop) => prop.ID == a.ID);
       if (prop) {
         const sound = this.animatePropSoundMap[a.name];
-        if (sound) this.audioEventMgr.playSound(sound);
+        if (sound) this.audioEventEng.playSound(sound);
         const animClass = `easel__prop-sprite--${a.name}`;
         prop.img.className = "";
         void prop.img.offsetWidth;
@@ -338,7 +338,7 @@ export class EaselManager {
     audioEventMgr: AudioEventEngine
   ) {
     this.easelDiv = easelDiv;
-    this.audioEventMgr = audioEventMgr;
+    this.audioEventEng = audioEventMgr;
 
     this.pivot = document.createElement("div");
     this.pivot.style.zIndex = "99";
@@ -381,7 +381,7 @@ export class EaselManager {
       EaselManager.defaultNicknameHighlightColor
     );
     client.on("sound", "self", (data: ISoundMessageExt) => {
-      this.audioEventMgr.playSound(data.sound as keyof typeof soundEventMap);
+      this.audioEventEng.playSound(data.sound as keyof typeof soundEventMap);
     });
     window.addEventListener("resize", this.updateEaselScale);
   }
