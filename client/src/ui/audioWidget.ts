@@ -1,20 +1,20 @@
 import {
-  AudioEventManager,
-  AudioManager,
-  AudioTrackManager,
-} from "../audio/audioManager.js";
+  AudioEngine,
+  AudioTrackEngine,
+  AudioEventEngine,
+} from "../audio/audioEngine.js";
 
 // TODO: icons, decorative buttons
 export class AudioWidget {
   public audioWidget: HTMLDivElement;
-  private audioTrackMgr: AudioTrackManager;
-  private audioEventMgr: AudioEventManager;
+  private audioTrackMgr: AudioTrackEngine;
+  private audioEventMgr: AudioEventEngine;
   private static widgetCaseColor: string = "#764E3F";
   private static widgetBorderColor: string = "#75634C";
 
   constructor(
-    audioTrackMgr: AudioTrackManager,
-    audioEventMgr: AudioEventManager
+    audioTrackMgr: AudioTrackEngine,
+    audioEventMgr: AudioEventEngine
   ) {
     this.audioTrackMgr = audioTrackMgr;
     this.audioEventMgr = audioEventMgr;
@@ -107,7 +107,7 @@ export class AudioWidget {
 
   // TODO: make constant button width, so that container wouldn't be resized
   private makeToggleMuteBtn = (
-    audioMgr: AudioManager,
+    audioMgr: AudioEngine,
     rangeID: string
   ): HTMLButtonElement => {
     const toggleMuteBtn = document.createElement("button");
@@ -132,7 +132,7 @@ export class AudioWidget {
   };
 
   private makeVolumeControl = (
-    audioMgr: AudioManager,
+    audioMgr: AudioEngine,
     id: string,
     defaultVolume: number = 66
   ): HTMLInputElement => {
@@ -145,7 +145,7 @@ export class AudioWidget {
     musicVolumeControl.addEventListener("input", (event) => {
       audioMgr.setContextualVolume(
         (parseFloat((event.target as HTMLInputElement).value) *
-          AudioTrackManager.maxContextualVolume) /
+          AudioEngine.maxContextualVolume) /
           100
       );
     });

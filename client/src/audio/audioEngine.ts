@@ -1,11 +1,11 @@
 import { soundTrackRoute, soundEventRoute } from "../routes.js";
 import { EventEmitter, IEventEmitterPublicInterface } from "../utils.js";
 
-export abstract class AudioManager {
+export abstract class AudioEngine {
   public static defaultContextualVolume: number = 0.3;
   public static maxContextualVolume: number = 0.4;
   protected currentContextualVolume: number =
-    AudioManager.defaultContextualVolume;
+    AudioEngine.defaultContextualVolume;
   protected isMuted: boolean = false;
 
   protected abstract storeSound(
@@ -20,7 +20,7 @@ export abstract class AudioManager {
 
   public toggleMute = (): boolean => {
     if (this.isMuted)
-      this.setContextualVolume(AudioManager.defaultContextualVolume);
+      this.setContextualVolume(AudioEngine.defaultContextualVolume);
     else this.setContextualVolume(0);
     this.isMuted = !this.isMuted;
     return this.isMuted;
@@ -31,8 +31,8 @@ export abstract class AudioManager {
   public abstract stopSound(soundID: number | null): void;
 }
 
-export class AudioTrackManager
-  extends AudioManager
+export class AudioTrackEngine
+  extends AudioEngine
   implements IEventEmitterPublicInterface<SoundTrackEventsType>
 {
   private eventEmitter = new EventEmitter<SoundTrackEventsType>();
@@ -46,7 +46,7 @@ export class AudioTrackManager
 
   private currentSoundTrack: HTMLAudioElement;
   private currentSoundTrackName: string;
-  protected currentVolume: number = AudioTrackManager.defaultContextualVolume;
+  protected currentVolume: number = AudioTrackEngine.defaultContextualVolume;
 
   protected storeSound = (name: keyof typeof soundTrackMap) => {
     this.currentSoundTrack = new Audio(soundTrackRoute + soundTrackMap[name]);
@@ -93,7 +93,7 @@ export class AudioTrackManager
   };
 }
 
-export class AudioEventManager extends AudioManager {
+export class AudioEventEngine extends AudioEngine {
   private audioCtx: AudioContext = new AudioContext();
   private audioBuffersCache = new Map<string, AudioBuffer>();
   private currentAudioEvents = new Map<number, StereoAudioEvent>();

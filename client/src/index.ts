@@ -6,11 +6,11 @@ import {
   IServerSceneMetaMessageExt,
 } from "../../types/messages";
 import {
-  AudioManager,
-  AudioTrackManager,
-  AudioEventManager,
+  AudioEngine,
+  AudioTrackEngine,
+  AudioEventEngine,
   soundTrackMap,
-} from "./audio/audioManager.js";
+} from "./audio/audioEngine.js";
 import { Client } from "./client/client.js";
 import {
   ControlsConfig,
@@ -115,8 +115,8 @@ export class RegModal extends Modal {
 export class GameMenuModal extends Modal implements IFocusable {
   constructor(
     container: HTMLDivElement,
-    audioTrackMgr: AudioTrackManager,
-    audioEventMgr: AudioEventManager
+    audioTrackMgr: AudioTrackEngine,
+    audioEventMgr: AudioEventEngine
   ) {
     super(container, {
       title: "Menu",
@@ -344,7 +344,7 @@ const initGameLayout = async () => {
       regModal.hide();
       client.getSceneMeta();
       focus.register(chat);
-      soundTrackMgr.playSound(pickRandom(playlist));
+      audioTrackEng.playSound(pickRandom(playlist));
     }
   });
   client.on("serverChat", "chat", (data: IServerChatMessageExt) => {
@@ -354,7 +354,7 @@ const initGameLayout = async () => {
     scoreBoardModal.updateScore(data);
   });
 
-  const soundTrackMgr = new AudioTrackManager();
+  const audioTrackEng = new AudioTrackEngine();
 
   // todo let player build his own playlist
   const playlist: (keyof typeof soundTrackMap)[] = [
@@ -362,21 +362,21 @@ const initGameLayout = async () => {
     "mycelium",
     "iceworld",
   ];
-  soundTrackMgr.on("onStartedSoundtrack", "toast", (name: string) => {
-    toast.notify(soundTrackMgr.getCurrentSoundTrackInfo(), "music");
+  audioTrackEng.on("onStartedSoundtrack", "toast", (name: string) => {
+    toast.notify(audioTrackEng.getCurrentSoundTrackInfo(), "music");
   });
-  soundTrackMgr.on(
+  audioTrackEng.on(
     "onEndedSoundtrack",
     "index",
     (name: keyof typeof soundTrackMap) => {
       let index = playlist.indexOf(name);
       index++;
       if (index >= playlist.length) index = 0;
-      soundTrackMgr.playSound(playlist[index]);
+      audioTrackEng.playSound(playlist[index]);
     }
   );
 
-  const audioEventMgr = new AudioEventManager();
+  const audioEventEng = new AudioEventEngine();
 
   const toast = new Toast(document.querySelector(".toast-container"));
   client.on("serverNotify", "toast", (data: IServerNotificationExt) =>
@@ -390,7 +390,7 @@ const initGameLayout = async () => {
   });
 
   const easel = document.querySelector<HTMLDivElement>(".easel");
-  const easelManager = new EaselManager(easel, client, audioEventMgr);
+  const easelManager = new EaselManager(easel, client, audioEventEng);
 
   const focus = new FocusManager();
   focus.register(client);
@@ -400,8 +400,8 @@ const initGameLayout = async () => {
 
   const menuModal = new GameMenuModal(
     document.querySelector<HTMLDivElement>(".modal-container"),
-    soundTrackMgr,
-    audioEventMgr
+    audioTrackEng,
+    audioEventEng
   );
   focus.register(menuModal);
 

@@ -10,7 +10,7 @@ import {
   ISceneUpdatesMessageData,
 } from "../../../types/sceneTypes";
 import { StageExt } from "../../../types/stage";
-import { AudioEventManager, soundEventMap } from "../audio/audioManager.js";
+import { AudioEventEngine, soundEventMap } from "../audio/audioEngine.js";
 import { Client } from "../client/client.js";
 import {
   backgroundRoute,
@@ -30,7 +30,7 @@ export class EaselManager {
   private clientPropNameTag: string;
   private clientPropID: string;
   private static readonly defaultNicknameHighlightColor = "yellow";
-  audioEventMgr: AudioEventManager;
+  private audioEventMgr: AudioEventEngine;
 
   private readonly loadPropSoundMap: Partial<
     Record<string, keyof typeof soundEventMap>
@@ -335,7 +335,7 @@ export class EaselManager {
   constructor(
     easelDiv: HTMLDivElement | HTMLSpanElement,
     client: Client,
-    audioEventMgr: AudioEventManager
+    audioEventMgr: AudioEventEngine
   ) {
     this.easelDiv = easelDiv;
     this.audioEventMgr = audioEventMgr;
