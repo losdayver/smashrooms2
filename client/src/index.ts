@@ -320,9 +320,10 @@ export class ControlsModal extends Modal implements IFocusable {
 
     const tipsDiv = Object.assign(d.createElement("div"), {
       innerHTML: `<h3>Tips and tricks:</h3>
-      <p>Pressing down arrow whilst standing on semi-solid platforms lets you fall through them</p>
-      <p>Quick tapping fire button does not let you fire faster. Just hold it down</p>
-      <p>You can mute music by right clicking the browser tab and choosing "mute" option</p>`,
+      <ul>
+      <li>Pressing down arrow whilst standing on semi-solid platforms lets you fall through them</li>
+      <li>Quick tapping fire button does not let you fire faster. Just hold it down</li>
+      </ul>`,
     });
 
     content.append(headerDiv, ...getControls(), tipsDiv);

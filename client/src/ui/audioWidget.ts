@@ -75,7 +75,7 @@ export class AudioWidget {
     soundsWidget.style.justifyContent = "center";
 
     const soundsWidgetInfo = document.createElement("h4");
-    soundsWidgetInfo.innerText = "Sound events settings";
+    soundsWidgetInfo.innerText = "SFX";
 
     const soundsCtrls = this.makeAudioCtrlsContainer();
     const toggleMuteSoundsBtn = this.makeToggleMuteBtn(
