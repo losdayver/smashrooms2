@@ -19,6 +19,7 @@ export abstract class AudioEngine {
   public abstract pauseSound(soundID: number | null): void;
 
   public toggleMute = (): boolean => {
+    console.log("Мучу!!!");
     if (this.isMuted)
       this.setContextualVolume(this.lastPositiveContextualVolume);
     else this.setContextualVolume(0);
@@ -26,7 +27,7 @@ export abstract class AudioEngine {
     return this.isMuted;
   };
 
-  public abstract setContextualVolume(volume: number): void;
+  public abstract setContextualVolume(volume: number);
 
   public abstract stopSound(soundID: number | null): void;
 }
@@ -78,7 +79,7 @@ export class AudioTrackEngine
     );
   };
 
-  setContextualVolume = (volume: number): void => {
+  override setContextualVolume = (volume: number): void => {
     if (volume !== 0) this.lastPositiveContextualVolume = volume;
     this.currentSoundTrack.volume = volume;
   };
@@ -119,7 +120,7 @@ export class AudioEventEngine extends AudioEngine {
       new StereoAudioEvent(
         this.audioCtx,
         this.audioBuffersCache.get(name),
-        this.lastPositiveContextualVolume
+        this.isMuted ? 0 : this.lastPositiveContextualVolume
       )
     );
     return sndIndex;
