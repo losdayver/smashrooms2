@@ -183,7 +183,6 @@ export class AudioEventEngine extends AudioEngine {
       muted: this.isMuted,
       currentVolume: this.lastPositiveContextualVolume,
     };
-    newConfigValue.muted = this.isMuted;
     if (volume !== 0) {
       this.lastPositiveContextualVolume = volume;
       newConfigValue.currentVolume = volume;
