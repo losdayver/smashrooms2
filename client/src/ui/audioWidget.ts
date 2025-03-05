@@ -32,7 +32,6 @@ export class AudioWidget {
     musicWidget.style.borderLeft = `0.7em solid ${AudioWidget.widgetBorderColor}`;
     musicWidget.style.borderRight = `0.7em solid ${AudioWidget.widgetBorderColor}`;
     musicWidget.style.backgroundColor = "#333333";
-
     const trackInfo = document.createElement("div");
     trackInfo.classList.add("track-info");
     trackInfo.innerText = this.getFormattedMusicInfo(
@@ -47,21 +46,13 @@ export class AudioWidget {
         );
       }
     );
-
     const musicProgress = document.createElement("progress");
     musicProgress.value = 0;
     setInterval(() => {
       musicProgress.value = this.audioTrackMgr.getCurrentSoundTrackProgress();
     }, 1000);
     musicProgress.max = 100;
-
-    const musicCtrls = this.makeAudioCtrlsContainer();
-    const toggleMuteMusicBtn = this.makeToggleMuteBtn(
-      this.audioTrackMgr,
-      "music"
-    );
-    const musicVolumeCtrl = this.makeVolumeControl(this.audioTrackMgr, "music");
-    musicCtrls.append(toggleMuteMusicBtn, musicVolumeCtrl);
+    const musicCtrls = new AudioControlGroup(this.audioTrackMgr).container;
     musicWidget.append(trackInfo, musicProgress, musicCtrls);
 
     const soundsWidget = document.createElement("div");
@@ -73,20 +64,9 @@ export class AudioWidget {
     soundsWidget.style.borderRight = `0.7em solid ${AudioWidget.widgetBorderColor}`;
     soundsWidget.style.display = "flex";
     soundsWidget.style.justifyContent = "center";
-
     const soundsWidgetInfo = document.createElement("h4");
     soundsWidgetInfo.innerText = "SFX";
-
-    const soundsCtrls = this.makeAudioCtrlsContainer();
-    const toggleMuteSoundsBtn = this.makeToggleMuteBtn(
-      this.audioEventMgr,
-      "sounds"
-    );
-    const soundEventsVolumeCtrl = this.makeVolumeControl(
-      this.audioEventMgr,
-      "sounds"
-    );
-    soundsCtrls.append(toggleMuteSoundsBtn, soundEventsVolumeCtrl);
+    const soundsCtrls = new AudioControlGroup(this.audioEventMgr).container;
     soundsWidget.append(soundsWidgetInfo, soundsCtrls);
 
     audioSettings.append(musicWidget, soundsWidget);
@@ -97,53 +77,54 @@ export class AudioWidget {
   private getFormattedMusicInfo = (track: string): string => {
     return `🎵 Now playing: ${this.audioTrackMgr.getCurrentSoundTrackInfo()}`;
   };
+}
+
+class AudioControlGroup {
+  private audioEng: AudioEngine;
+  public container: HTMLDivElement;
+  private toggleMuteBtn: HTMLButtonElement;
+  private volumeControl: HTMLInputElement;
+
+  constructor(audioEng: AudioEngine) {
+    this.audioEng = audioEng;
+    this.container = this.makeAudioCtrlsContainer();
+    this.container.append();
+  }
 
   private makeAudioCtrlsContainer = (): HTMLDivElement => {
     const audioCtrls = document.createElement("div");
     audioCtrls.style.display = "flex";
     audioCtrls.style.gap = "2.5em";
+    this.toggleMuteBtn = this.makeToggleMuteBtn();
+    this.volumeControl = this.makeVolumeControl();
+    this.toggleMuteBtn.addEventListener("click", (event) => {
+      this.changeControlsState(this.audioEng.toggleMute());
+    });
+    this.changeControlsState(this.audioEng.isMuted);
+    audioCtrls.append(this.toggleMuteBtn, this.volumeControl);
     return audioCtrls;
   };
 
   // TODO: make constant button width, so that container wouldn't be resized
-  private makeToggleMuteBtn = (
-    audioMgr: AudioEngine,
-    rangeID: string
-  ): HTMLButtonElement => {
+  private makeToggleMuteBtn = (): HTMLButtonElement => {
     const toggleMuteBtn = document.createElement("button");
     toggleMuteBtn.classList.add("smsh-button");
-    toggleMuteBtn.innerText = "Mute";
-    toggleMuteBtn.setAttribute("range", rangeID);
-    toggleMuteBtn.addEventListener("click", () => {
-      const targetInputRange = document.querySelector(
-        `#${toggleMuteBtn.getAttribute("range")}`
-      ) as HTMLInputElement;
-      if (audioMgr.toggleMute()) {
-        toggleMuteBtn.innerText = "Unmute";
-        targetInputRange.disabled = true;
-        targetInputRange.style.opacity = "0.25";
-      } else {
-        toggleMuteBtn.innerText = "Mute";
-        targetInputRange.disabled = false;
-        targetInputRange.style.opacity = null;
-      }
-    });
+    toggleMuteBtn.innerText = this.audioEng.isMuted ? "Unmute" : "Mute";
     return toggleMuteBtn;
   };
 
-  private makeVolumeControl = (
-    audioMgr: AudioEngine,
-    id: string,
-    defaultVolume: number = 66
-  ): HTMLInputElement => {
+  private makeVolumeControl = (): HTMLInputElement => {
     const musicVolumeControl = document.createElement("input");
     musicVolumeControl.type = "range";
-    musicVolumeControl.id = id;
-    musicVolumeControl.value = defaultVolume.toString();
+    musicVolumeControl.value = Math.floor(
+      (this.audioEng.lastPositiveContextualVolume /
+        AudioEngine.maxContextualVolume) *
+        100
+    ).toString();
     musicVolumeControl.max = "100";
     // TODO: type of event
     musicVolumeControl.addEventListener("input", (event) => {
-      audioMgr.setContextualVolume(
+      this.audioEng.setContextualVolume(
         (parseFloat((event.target as HTMLInputElement).value) *
           AudioEngine.maxContextualVolume) /
           100
@@ -151,5 +132,17 @@ export class AudioWidget {
     });
     // TODO: add tick marks for range inputs
     return musicVolumeControl;
+  };
+
+  changeControlsState = (isMuted: boolean): void => {
+    if (isMuted) {
+      this.toggleMuteBtn.innerText = "Unmute";
+      this.volumeControl.disabled = true;
+      this.volumeControl.style.opacity = "0.25";
+    } else {
+      this.toggleMuteBtn.innerText = "Mute";
+      this.volumeControl.disabled = false;
+      this.volumeControl.style.opacity = null;
+    }
   };
 }

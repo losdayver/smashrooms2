@@ -1,12 +1,27 @@
+import {
+  AudioConfig,
+  AudioSettingObjType,
+  AudioSetting,
+} from "../config/config.js";
 import { soundTrackRoute, soundEventRoute } from "../routes.js";
 import { EventEmitter, IEventEmitterPublicInterface } from "../utils.js";
 
 export abstract class AudioEngine {
-  public static defaultContextualVolume: number = 0.3;
+  protected audioCfg: AudioConfig = new AudioConfig();
+  protected audioCfgKey: keyof AudioSettingObjType;
+  public lastPositiveContextualVolume: number;
   public static maxContextualVolume: number = 0.4;
-  protected lastPositiveContextualVolume: number =
-    AudioEngine.defaultContextualVolume;
-  protected isMuted: boolean = false;
+  public isMuted: boolean = false;
+
+  constructor(audioCfgKey: keyof AudioSettingObjType) {
+    this.audioCfgKey = audioCfgKey;
+    this.lastPositiveContextualVolume ??=
+      this.audioCfg.getValue(this.audioCfgKey)?.currentVolume ?? 0.3;
+    if (this.audioCfg.getValue(this.audioCfgKey)?.muted) {
+      console.log("Мучу!!!");
+      this.toggleMute();
+    }
+  }
 
   protected abstract storeSound(
     name: keyof typeof soundEventMap | keyof typeof soundTrackMap
@@ -19,14 +34,20 @@ export abstract class AudioEngine {
   public abstract pauseSound(soundID: number | null): void;
 
   public toggleMute = (): boolean => {
-    if (this.isMuted)
+    if (this.isMuted) {
       this.setContextualVolume(this.lastPositiveContextualVolume);
-    else this.setContextualVolume(0);
+    } else {
+      this.setContextualVolume(0);
+    }
     this.isMuted = !this.isMuted;
+    this.audioCfg.setValue(this.audioCfgKey, {
+      muted: this.isMuted,
+      currentVolume: this.audioCfg.getValue(this.audioCfgKey).currentVolume,
+    });
     return this.isMuted;
   };
 
-  public abstract setContextualVolume(volume: number): void;
+  public setContextualVolume = (volume: number): void => {};
 
   public abstract stopSound(soundID: number | null): void;
 }
@@ -44,14 +65,18 @@ export class AudioTrackEngine
   off = (eventName: SoundTrackEventsType, callbackID: string) =>
     this.eventEmitter.off(eventName, callbackID);
 
+  constructor() {
+    super("music");
+  }
+
   private currentSoundTrack: HTMLAudioElement;
   private currentSoundTrackName: string;
-  protected lastPositiveContextualVolume: number =
-    AudioTrackEngine.defaultContextualVolume;
 
   protected storeSound = (name: keyof typeof soundTrackMap) => {
     this.currentSoundTrack = new Audio(soundTrackRoute + soundTrackMap[name]);
-    this.currentSoundTrack.volume = this.lastPositiveContextualVolume;
+    this.currentSoundTrack.volume = this.isMuted
+      ? 0
+      : this.lastPositiveContextualVolume;
     this.currentSoundTrackName = name;
     return true;
   };
@@ -79,8 +104,17 @@ export class AudioTrackEngine
   };
 
   setContextualVolume = (volume: number): void => {
-    if (volume !== 0) this.lastPositiveContextualVolume = volume;
+    const newConfigValue: AudioSetting = {
+      muted: this.isMuted,
+      currentVolume: this.lastPositiveContextualVolume,
+    };
+    newConfigValue.muted = this.isMuted;
+    if (volume !== 0) {
+      this.lastPositiveContextualVolume = volume;
+      newConfigValue.currentVolume = volume;
+    }
     this.currentSoundTrack.volume = volume;
+    this.audioCfg.setValue(this.audioCfgKey, newConfigValue);
   };
 
   pauseSound = () => {
@@ -98,6 +132,10 @@ export class AudioEventEngine extends AudioEngine {
   private audioCtx: AudioContext = new AudioContext();
   private audioBuffersCache = new Map<string, AudioBuffer>();
   private currentAudioEvents = new Map<number, StereoAudioEvent>();
+
+  constructor() {
+    super("sfx");
+  }
 
   protected storeSound = async (
     name: keyof typeof soundEventMap
@@ -142,13 +180,22 @@ export class AudioEventEngine extends AudioEngine {
   };
 
   setContextualVolume = (volume: number): void => {
-    if (volume !== 0) this.lastPositiveContextualVolume = volume;
+    const newConfigValue: AudioSetting = {
+      muted: this.isMuted,
+      currentVolume: this.lastPositiveContextualVolume,
+    };
+    newConfigValue.muted = this.isMuted;
+    if (volume !== 0) {
+      this.lastPositiveContextualVolume = volume;
+      newConfigValue.currentVolume = volume;
+    }
     const channelBalance: ChannelBalance = {
       X: volume,
       Y: volume,
     };
     for (let [number, _] of this.currentAudioEvents)
       this.currentAudioEvents.get(number).setChannelBalance(channelBalance);
+    this.audioCfg.setValue(this.audioCfgKey, newConfigValue);
   };
 
   stopSound = (soundID: number) => {
