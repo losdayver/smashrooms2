@@ -18,7 +18,6 @@ export abstract class AudioEngine {
     this.lastPositiveContextualVolume ??=
       this.audioCfg.getValue(this.audioCfgKey)?.currentVolume ?? 0.3;
     if (this.audioCfg.getValue(this.audioCfgKey)?.muted) {
-      console.log("Мучу!!!");
       this.toggleMute();
     }
   }
