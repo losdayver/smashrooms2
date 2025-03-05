@@ -28,6 +28,7 @@ export class EventEmitter<EventNames extends string>
       this.events[eventName].forEach((event) => void event.callback(data));
   }
 }
+
 export interface IEventEmitterPublicInterface<EventNames extends string> {
   on: (
     eventName: EventNames,
@@ -36,6 +37,7 @@ export interface IEventEmitterPublicInterface<EventNames extends string> {
   ) => void;
   off: (eventName: EventNames, callbackID: string) => void;
 }
+
 export const makeIconLink = (iconBasename: string, url: string) => {
   const d = document;
   const a = d.createElement("a");
@@ -46,6 +48,7 @@ export const makeIconLink = (iconBasename: string, url: string) => {
   a.appendChild(img);
   return a;
 };
+
 export const makeIconButton = (iconBasename: string, onClick: () => void) => {
   const d = document;
   const img = d.createElement("img");
@@ -54,5 +57,6 @@ export const makeIconButton = (iconBasename: string, onClick: () => void) => {
   img.onclick = onClick;
   return img;
 };
+
 export const pickRandom = (array: any[]) =>
   array[Math.floor(Math.random() * array.length)];
