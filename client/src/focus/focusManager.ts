@@ -60,7 +60,7 @@ export class FocusManager {
     if (event.key === "Tab") event.preventDefault();
     try {
       for (const key of controlsList) {
-        if (this.controlsConfig.getValue(key).includes(e.code)) {
+        if (this.controlsConfig.getValue(key).includes(event.code)) {
           await this.getCurrentTag()?.onFocusReceiveKey?.(
             key,
             isDown ? "down" : "up",
