@@ -56,8 +56,8 @@ export class FocusManager {
   };
 
   private keyListener = async (event: KeyboardEvent, isDown: boolean) => {
+    if (event.key == "Tab") event.preventDefault();
     if (event.repeat) return;
-    if (event.key === "Tab") event.preventDefault();
     try {
       for (const key of controlsList) {
         if (this.controlsConfig.getValue(key).includes(event.code)) {
