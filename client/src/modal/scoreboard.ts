@@ -6,6 +6,10 @@ export class ScoreBoardModal extends Modal implements IFocusable {
   constructor(container: HTMLDivElement) {
     super(container, {
       title: "Score board",
+      noCloseButton: true,
+      overlayStyle: {
+        backdropFilter: "none",
+      },
     });
     this.board = document.createElement("div");
     this.board.style.display = "flex";
@@ -88,7 +92,11 @@ export class ScoreBoardModal extends Modal implements IFocusable {
   getFocusTag = () => "scoreboard";
   onFocused = this.show;
   onFocusReceiveKey: IFocusable["onFocusReceiveKey"] = (key, status) => {
-    if (status == "down" && key == "back") this.hide();
+    if (
+      (status == "down" && key == "back") ||
+      (status == "up" && key == "select")
+    )
+      this.hide();
   };
   onFocusRegistered = (focusManager: FocusManager) => {
     this.focusManager = focusManager;

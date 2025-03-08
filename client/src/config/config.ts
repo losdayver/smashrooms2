@@ -73,7 +73,7 @@ export const defaultControlsObj: ControlsObjType = {
   confirm: ["Enter"],
   revive: ["KeyR", "Circle"],
   swap: ["KeyQ", "Triangle"],
-  select: ["Digit1"],
+  select: ["Tab"],
 };
 
 export const controlsList = [

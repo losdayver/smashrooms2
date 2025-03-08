@@ -38,6 +38,11 @@ export abstract class Modal {
     overlay.classList.add("modal__overlay", "modal__overlay--hidden");
     this.overlay = overlay;
 
+    if (props.overlayStyle)
+      Object.entries(props.overlayStyle).forEach(([key, val]) => {
+        overlay.style[key] = val;
+      });
+
     const modal = d.createElement("div");
     modal.classList.add("modal", "modal--hidden");
 
@@ -45,6 +50,11 @@ export abstract class Modal {
 
     modal.style.width = props.width?.toString?.() ?? "auto";
     modal.style.height = props.height?.toString?.() ?? "auto";
+
+    if (props.modalStyle)
+      Object.entries(props.modalStyle).forEach(([key, val]) => {
+        modal.style[key] = val;
+      });
 
     const controls = d.createElement("div");
     controls.classList.add("modal__controls");
@@ -80,6 +90,8 @@ export interface IModalProps {
   height?: number;
   title: string;
   noCloseButton?: boolean;
+  modalStyle?: Partial<CSSStyleDeclaration>;
+  overlayStyle?: Partial<CSSStyleDeclaration>;
 }
 
 export class EmptyModal extends Modal {

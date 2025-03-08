@@ -55,15 +55,16 @@ export class FocusManager {
     this.gamepadsMap.delete(e.gamepad.index);
   };
 
-  private keyListener = async (e: KeyboardEvent, isDown: boolean) => {
-    if (e.repeat) return;
+  private keyListener = async (event: KeyboardEvent, isDown: boolean) => {
+    if (event.key == "Tab") event.preventDefault();
+    if (event.repeat) return;
     try {
       for (const key of controlsList) {
-        if (this.controlsConfig.getValue(key).includes(e.code)) {
+        if (this.controlsConfig.getValue(key).includes(event.code)) {
           await this.getCurrentTag()?.onFocusReceiveKey?.(
             key,
             isDown ? "down" : "up",
-            e.code
+            event.code
           );
           return;
         }
@@ -71,7 +72,7 @@ export class FocusManager {
       await this.getCurrentTag()?.onFocusReceiveKey?.(
         null,
         isDown ? "down" : "up",
-        e.code
+        event.code
       );
     } catch {
       this.controlsConfig.reset();
