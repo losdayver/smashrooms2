@@ -10,7 +10,7 @@ import {
   ISceneUpdatesMessageData,
 } from "../../../types/sceneTypes";
 import { StageExt } from "../../../types/stage";
-import { AudioEventManager, soundEventMap } from "../audio/audioManager.js";
+import { AudioEventEngine, soundEventMap } from "../audio/audioEngine.js";
 import { Client } from "../client/client.js";
 import {
   backgroundRoute,
@@ -30,7 +30,7 @@ export class EaselManager {
   private clientPropNameTag: string;
   private clientPropID: string;
   private static readonly defaultNicknameHighlightColor = "yellow";
-  audioEventMgr: AudioEventManager;
+  private audioEventEng: AudioEventEngine;
 
   private readonly loadPropSoundMap: Partial<
     Record<string, keyof typeof soundEventMap>
@@ -76,7 +76,7 @@ export class EaselManager {
     if (prop.damageable) this.updateHealth(easelProp, prop as IDamageableExt);
 
     const sound = this.loadPropSoundMap[prop.drawable?.sprite];
-    if (sound) this.audioEventMgr.playSound(sound);
+    if (sound) this.audioEventEng.playSound(sound);
 
     if (prop.nameTagged?.tag == this.clientPropNameTag) {
       this.clientPropID = prop.ID;
@@ -142,7 +142,7 @@ export class EaselManager {
       this.propList.forEach((prop, index) => {
         if (propToDeleteID == prop.ID) {
           const sound = this.deletePropSoundMap[prop.drawable.sprite];
-          if (sound) this.audioEventMgr.playSound(sound);
+          if (sound) this.audioEventEng.playSound(sound);
           prop.container.remove();
           this.propList.splice(index, 1);
           return;
@@ -164,7 +164,7 @@ export class EaselManager {
       const prop = this.propList.find((prop) => prop.ID == a.ID);
       if (prop) {
         const sound = this.animatePropSoundMap[a.name];
-        if (sound) this.audioEventMgr.playSound(sound);
+        if (sound) this.audioEventEng.playSound(sound);
         const animClass = `easel__prop-sprite--${a.name}`;
         prop.img.className = "";
         void prop.img.offsetWidth;
@@ -271,7 +271,7 @@ export class EaselManager {
       ${Math.floor(255 - healthPercentage * 2.05)},
       ${Math.floor(255 - (100 - healthPercentage) * 2.55)},
       ${Math.floor(50 - (100 - healthPercentage) / 2)}
-    `;
+    )`;
   };
 
   private onConnectHandler = (data: IConnectResponseMessageExt) => {
@@ -327,19 +327,18 @@ export class EaselManager {
     });
     this.currentStageWidth = width; // todo maybe put this in one nice object
     this.updateEaselScale();
-    document.querySelector(
-      "body"
-    ).style.backgroundImage = `url(${backgroundRoute}forest.png)`;
+    document.querySelector("body").style.backgroundImage =
+      `url(${backgroundRoute}forest.png)`;
     this.easelDiv.appendChild(this.layoutPivot);
   };
 
   constructor(
     easelDiv: HTMLDivElement | HTMLSpanElement,
     client: Client,
-    audioEventMgr: AudioEventManager
+    audioEventMgr: AudioEventEngine
   ) {
     this.easelDiv = easelDiv;
-    this.audioEventMgr = audioEventMgr;
+    this.audioEventEng = audioEventMgr;
 
     this.pivot = document.createElement("div");
     this.pivot.style.zIndex = "99";
@@ -382,7 +381,7 @@ export class EaselManager {
       EaselManager.defaultNicknameHighlightColor
     );
     client.on("sound", "self", (data: ISoundMessageExt) => {
-      this.audioEventMgr.playSound(data.sound as keyof typeof soundEventMap);
+      this.audioEventEng.playSound(data.sound as keyof typeof soundEventMap);
     });
     window.addEventListener("resize", this.updateEaselScale);
   }

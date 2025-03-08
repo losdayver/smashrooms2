@@ -9,6 +9,142 @@
   background-color: white;
 }
 
+.music-widget {
+  margin: 0.8em 1em 1em;
+}
+
+.smsh-widget {
+  margin: 0;
+  padding: 1em;
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+  gap: 1em;
+}
+
+.smsh-widget h4 {
+  margin: 0;
+}
+
+.track-info {
+  text-align: center;
+  color: lightgreen;
+}
+
+.smsh-widget progress {
+  width: 80%;
+  background-color: gray;
+  color: white;
+  margin: 0 auto;
+  height: 10px;
+  border: none;
+  border-radius: 3px;
+}
+
+/* TODO: Chromium ignores this. WebKit probably too. */
+.smsh-widget progress::-moz-progress-bar {
+  background-color: whitesmoke;
+}
+
+.smsh-widget input[type="range"] {
+  width: 100%;
+  margin: 6.5px 0;
+  background-color: transparent;
+  -webkit-appearance: none;
+}
+
+.smsh-widget input[type="range"]:focus {
+  outline: none;
+}
+
+.smsh-widget input[type="range"]::-webkit-slider-runnable-track {
+  background: #eaeaea;
+  border: 2px solid #242424;
+  border-radius: 3px;
+  width: 100%;
+  height: 7px;
+  cursor: pointer;
+}
+
+.smsh-widget input[type="range"]::-webkit-slider-thumb {
+  margin-top: -8.5px;
+  width: 10px;
+  height: 20px;
+  background: #afbfbf;
+  border: 2.2px solid #000000;
+  border-radius: 3px;
+  cursor: pointer;
+  -webkit-appearance: none;
+}
+
+.smsh-widget input[type="range"]:focus::-webkit-slider-runnable-track {
+  background: #f7f7f7;
+}
+
+.smsh-widget input[type="range"]::-moz-range-track {
+  background: #eaeaea;
+  border: 2px solid #242424;
+  border-radius: 3px;
+  width: 100%;
+  height: 7px;
+  cursor: pointer;
+}
+
+.smsh-widget input[type="range"]::-moz-range-thumb {
+  width: 10px;
+  height: 20px;
+  background: #afbfbf;
+  border: 2.2px solid #000000;
+  border-radius: 3px;
+  cursor: pointer;
+}
+
+.smsh-widget input[type="range"]::-ms-track {
+  background: transparent;
+  border-color: transparent;
+  border-width: 7.5px 0;
+  color: transparent;
+  width: 100%;
+  height: 7px;
+  cursor: pointer;
+}
+
+.smsh-widget input[type="range"]::-ms-fill-lower {
+  background: #dddddd;
+  border: 2px solid #242424;
+  border-radius: 6px;
+}
+
+.smsh-widget input[type="range"]::-ms-fill-upper {
+  background: #eaeaea;
+  border: 2px solid #242424;
+  border-radius: 6px;
+}
+
+.smsh-widget input[type="range"]::-ms-thumb {
+  width: 10px;
+  height: 20px;
+  background: #afbfbf;
+  border: 2.2px solid #000000;
+  border-radius: 3px;
+  cursor: pointer;
+  margin-top: 0px;
+}
+
+.smsh-widget input[type="range"]:focus::-ms-fill-lower {
+  background: #eaeaea;
+}
+
+.smsh-widget input[type="range"]:focus::-ms-fill-upper {
+  background: #f7f7f7;
+}
+
+@supports (-ms-ime-align: auto) {
+  .smsh-widget input[type="range"] {
+    margin: 0;
+  }
+}
+
 .smsh-table,
 .smsh-table th,
 .smsh-table td {
