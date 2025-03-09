@@ -120,7 +120,7 @@ export class Player
   private jumpSpeed = 22;
   private $isAlreadyDead = false;
   private $lastHitBy: Prop["ID"];
-  private static hatsCount = 8;
+  private static hatsCount = 9;
 
   doLayoutPhysics = () => {
     this.$lastVSpeed = this.$vSpeed;
