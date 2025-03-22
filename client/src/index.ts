@@ -357,6 +357,7 @@ const initGameLayout = async () => {
 
   // todo let player build his own playlist
   const playlist: (keyof typeof soundTrackMap)[] = [
+    "yeast soup",
     "bioluminescence",
     "ascend",
     "mycelium",

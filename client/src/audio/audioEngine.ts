@@ -278,6 +278,7 @@ export const soundTrackMap = {
   mycelium: "mycelium.mp3",
   ascend: "ascend.mp3",
   bioluminescence: "bioluminescence.mp3",
+  "yeast soup": "yeast soup.mp3",
 } as const;
 
 export const soundEventMap = {
