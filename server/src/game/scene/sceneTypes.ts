@@ -13,6 +13,7 @@ import {
   PropIDExt,
 } from "../../../../types/sceneTypes";
 import { Prop } from "./prop";
+import { StageExt } from "../../../../types/stage";
 
 export interface IScene extends ISceneActions {
   subscribe: (sceneSubscriber: ISceneSubscriber) => void;
@@ -63,7 +64,11 @@ export interface ISceneActions {
 
 export abstract class Thinker {
   onTick: (tickNum: number) => void;
-  onSceneInit: (scene: IScene) => void;
+  init: (scene: IScene, stage?: StageExt) => void;
+}
+
+export interface IStageLoader {
+  load: (name: string) => StageExt;
 }
 
 /** describes event that is put into event queue upon receiving action from outside */
@@ -88,7 +93,7 @@ export interface ISpawnControlledPropEvent {
     posY: number;
     propName: string;
     clientID: ClientID;
-    type: "connected" | "revived";
+    type: "connected" | "revive" | "reviveSilent";
     nameTag: string;
   };
 }

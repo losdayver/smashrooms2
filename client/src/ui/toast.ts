@@ -8,7 +8,7 @@ const toastIconMap: Record<NotificationTypesExt, string> = {
   disconnected: "disconnected.png",
   music: "music.png",
   dead: "dead.png",
-  revived: "revived.png",
+  revive: "revived.png",
   danger: "danger.png",
 };
 

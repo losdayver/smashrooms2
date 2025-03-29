@@ -3,6 +3,7 @@
   "stageSystemName": "ascend",
   "gridSize": 32,
   "author": "losdayver",
+  "timeLimit": 180,
   "extra": {
     "chaosEvents": ["bombing"],
     "preload": [

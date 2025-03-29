@@ -33,14 +33,15 @@ export class Server {
   }
 }
 
-export const getWSTestingServer = (port: number) => {
+export const getWSServer = (port: number) => {
   severityLog(`starting server on port ${port}`);
   const stage = getStageFS("ascend");
   const scene = new Scene(
     smshPropMap,
-    stage,
+    ["testing", "ascend"],
+    { load: getStageFS },
     smshPropFactory,
-    new SmshThinker(stage)
+    new SmshThinker()
   );
   const communicator = new Communicator(scene);
   const wsServer = new WSSocketServer(communicator, port, 50);

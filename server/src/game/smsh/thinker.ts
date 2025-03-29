@@ -11,7 +11,7 @@ export class SmshThinker implements Thinker {
 
   chaosEvents: IChaosEvent[];
   onTick = (tickNum: number) => {
-    if (!this.chaosEvents) return;
+    if (!this.chaosEvents || tickNum == 0) return;
     if (this.currentChaosEvent) {
       this.currentChaosEvent.onTick(tickNum, this.scene, this.stage);
       if (tickNum - this.startedOn > this.currentChaosEvent.duration) {
@@ -20,7 +20,7 @@ export class SmshThinker implements Thinker {
       }
       return;
     }
-    if (!this.currentChaosEvent && tickNum % 1000 == 0) {
+    if (!this.currentChaosEvent && tickNum % 1500 == 0) {
       this.currentChaosEvent = pickRandom(this.chaosEvents);
       this.startedOn = tickNum;
       this.scene.sendNotification(
@@ -32,15 +32,15 @@ export class SmshThinker implements Thinker {
       this.currentChaosEvent.onBegin(tickNum, this.scene);
     }
   };
-  onSceneInit = (scene: IScene) => {
+  init = (scene: IScene, stage?: StageExt) => {
+    this.currentChaosEvent = undefined;
+    this.startedOn = undefined;
     this.scene = scene;
-  };
-  constructor(stage: StageExt) {
     this.stage = stage;
     this.chaosEvents = (stage.meta.extra as IStageMetaExtra).chaosEvents?.map(
       (name) => chaosEventMap[name]
     );
-  }
+  };
 }
 
 const chaosEventMap: Record<string, IChaosEvent> = {

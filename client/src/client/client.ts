@@ -5,6 +5,7 @@ import {
   IConnectMessageExt,
   IClientSceneMetaMessageExt,
   IConnectResponseMessageExt,
+  IStageChangeExt,
 } from "../../../types/messages";
 import { PropIDExt } from "../../../types/sceneTypes";
 import { ControlsObjType } from "../config/config.js";
@@ -27,6 +28,7 @@ export class Client
   private socket: WebSocket;
   private ID: PropIDExt;
   private connString: string;
+  private clientName: string;
 
   readonly isRegistered = false;
 
@@ -82,7 +84,8 @@ export class Client
   private socketSend = <T extends object>(data: T) =>
     this.socket.send(JSON.stringify(data));
 
-  connectByClientName = (clientName: string) => {
+  connectByClientName = (clientName?: string) => {
+    this.clientName ??= clientName;
     if (
       [WebSocket.CLOSED, WebSocket.CLOSING].includes(
         this.socket.readyState as any
@@ -91,7 +94,7 @@ export class Client
       this.initSocket();
     this.socketSend({
       name: "conn",
-      clientName: clientName,
+      clientName: this.clientName,
     } satisfies IConnectMessageExt);
   };
   sendInput = (code: ClientActionCodesExt, status: ClientActionStatusExt) =>
@@ -131,6 +134,10 @@ export class Client
     this.on("socketClose", "self", () => {
       this.initSocket();
       (this.isRegistered as any) = false;
+    });
+    this.on("stageChange", "self", (msg: IStageChangeExt) => {
+      if (msg.status == "reloadStage")
+        this.sendInput("reviveSilent", "pressed");
     });
   }
 }

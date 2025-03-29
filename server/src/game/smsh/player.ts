@@ -309,13 +309,18 @@ class Score {
     );
   };
   increment = (tag: string, what: "K" | "D") => {
+    if (!this.scoreObj[tag])
+      this.register({
+        controlled: { clientID: "all" },
+        nameTagged: { tag: tag },
+      } as any);
     this.scoreObj[tag][what]++;
     this.scene.sendArbitraryMessage(
       {
         name: "score",
         tag,
-        K: this.scoreObj[tag].K,
-        D: this.scoreObj[tag].D,
+        K: this.scoreObj[tag]?.K ?? 0,
+        D: this.scoreObj[tag]?.D ?? 0,
       } satisfies IScoreUpdateExt,
       "all"
     );

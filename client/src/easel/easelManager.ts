@@ -3,6 +3,7 @@ import {
   ISceneUpdatesMessageExt,
   IServerSceneMetaMessageExt,
   ISoundMessageExt,
+  IStageChangeExt,
 } from "../../../types/messages";
 import {
   IBehaviouredPropExt,
@@ -23,7 +24,7 @@ export class EaselManager {
   private easelDiv: HTMLDivElement | HTMLSpanElement;
   private pivot: HTMLDivElement;
   private layoutPivot: HTMLDivElement;
-  private propList: IEaselProp[] = [];
+  private propList: IEaselProp[];
   private stage: StageExt;
   private currentStageWidth: number;
   client: Client;
@@ -42,6 +43,19 @@ export class EaselManager {
     plasma: "blaster",
     sniperBullet: "sniperBullet",
   } as const;
+
+  private initState = () => {
+    this.propList = [];
+    this.stage = undefined;
+    this.currentStageWidth = undefined;
+    this.clientPropID = undefined;
+    this.layoutPivot?.remove?.();
+    this.pivot?.remove?.();
+    this.pivot = document.createElement("div");
+    this.pivot.style.zIndex = "99";
+    this.easelDiv.appendChild(this.pivot);
+    this.pivot.style.position = "relative";
+  };
 
   private loadProp = (prop: IBehaviouredPropExt) => {
     const img = document.createElement("img");
@@ -327,8 +341,9 @@ export class EaselManager {
     });
     this.currentStageWidth = width; // todo maybe put this in one nice object
     this.updateEaselScale();
-    document.querySelector("body").style.backgroundImage =
-      `url(${backgroundRoute}forest.png)`;
+    document.querySelector(
+      "body"
+    ).style.backgroundImage = `url(${backgroundRoute}forest.png)`;
     this.easelDiv.appendChild(this.layoutPivot);
   };
 
@@ -339,13 +354,8 @@ export class EaselManager {
   ) {
     this.easelDiv = easelDiv;
     this.audioEventEng = audioEventMgr;
-
-    this.pivot = document.createElement("div");
-    this.pivot.style.zIndex = "99";
-
-    easelDiv.appendChild(this.pivot);
-    this.pivot.style.position = "relative";
     this.client = client;
+    this.initState();
 
     client.on("connRes", "easel", (data: IConnectResponseMessageExt) =>
       this.onConnectHandler(data)
@@ -380,8 +390,14 @@ export class EaselManager {
       "--easel__prop-sprite--border-color",
       EaselManager.defaultNicknameHighlightColor
     );
-    client.on("sound", "self", (data: ISoundMessageExt) => {
+    client.on("sound", "easel", (data: ISoundMessageExt) => {
       this.audioEventEng.playSound(data.sound as keyof typeof soundEventMap);
+    });
+    client.on("stageChange", "easel", (msg: IStageChangeExt) => {
+      if (msg.status == "reloadStage") {
+        this.initState();
+        client.getSceneMeta();
+      }
     });
     window.addEventListener("resize", this.updateEaselScale);
   }

@@ -407,7 +407,8 @@ const initGameLayout = async () => {
   focus.register(menuModal);
 
   const scoreBoardModal = new ScoreBoardModal(
-    document.querySelector<HTMLDivElement>(".modal-container")
+    document.querySelector<HTMLDivElement>(".modal-container"),
+    client
   );
   focus.register(scoreBoardModal);
 
