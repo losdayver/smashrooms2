@@ -12,9 +12,10 @@ import {
   ISceneTemplate,
   ISpawnControlledPropEvent,
   ISpawnPropEvent,
+  IStageLoader,
   Thinker,
 } from "./sceneTypes";
-import { doBenchmark, Mutex, pickRandom } from "./../../utils";
+import { doBenchmark, Mutex, pickRandom, sleep } from "./../../utils";
 import { Prop } from "./prop";
 import { IControlled, PropBehaviours } from "./propTypes";
 import {
@@ -28,6 +29,7 @@ import { ClientID } from "../commonTypes";
 import {
   IServerNotificationExt,
   ISoundMessageExt,
+  IStageChangeExt,
 } from "../../../../types/messages";
 
 type ChunkedUpdateMap = Record<`${number}_${number}`, ChunkUpdate>;
@@ -43,18 +45,77 @@ export class Scene implements IScene {
   sendMessageToSubscriber: ISceneSubscriber["onReceiveMessageFromScene"];
   thinker: Thinker;
 
-  private chunkSize = 256;
-  private propList: (Prop & PropBehaviours)[] = [];
-  private internalEventQueueMutex = new Mutex<IInternalEvent[]>([]);
+  private chunkSize: number;
+  private propList: (Prop & PropBehaviours)[];
+  private internalEventQueueMutex: Mutex<IInternalEvent[]>;
+  private tickMutex: Mutex<number>;
   private internalEventHandlerMap: Record<
     IInternalEvent["name"],
     (data: any) => void
   >;
-  tickNum = 0;
+  tickNum: number;
   private stage: StageExt;
+  private stageNames: string[];
+  private stageLoader: IStageLoader;
+  private stageTimerID: NodeJS.Timeout;
   private layoutLines: string[];
+  private propFactoryMethod: (scene: IScene, stage: StageExt) => void;
+  private $preventTick = false;
 
-  private $chunkedUpdates: ChunkedUpdateMap = {};
+  private $chunkedUpdates: ChunkedUpdateMap;
+
+  private initState = () => {
+    this.chunkSize = 256;
+    this.propList = [];
+    this.internalEventQueueMutex = new Mutex<IInternalEvent[]>([]);
+    this.tickNum = 0;
+    this.stage = undefined;
+    this.layoutLines = undefined;
+    this.$chunkedUpdates = {};
+    this.stageTimerID = undefined;
+    this.$preventTick = false;
+    this.tickMutex = new Mutex(1);
+  };
+
+  loadStage = (name: string) => {
+    if (!name) return;
+    this.stage = this.stageLoader.load(name);
+    this.layoutLines = this.stage.layoutData.split(/\r\n|\r|\n/);
+    this.propFactoryMethod?.(this, this.stage);
+    this.thinker?.init(this, this.stage);
+    if (this.stage.meta.timeLimit)
+      this.stageTimerID = setTimeout(
+        this.onStageChange,
+        this.stage.meta.timeLimit * 1000
+      );
+  };
+
+  private onStageChange = async () => {
+    this.sendArbitraryMessage(
+      {
+        name: "stageChange",
+        status: "showScore",
+      } satisfies IStageChangeExt,
+      "all"
+    );
+    this.$preventTick = true;
+    const unlock = await this.tickMutex.acquire();
+    let stageNameIndex: number = 0;
+    if (this.stage)
+      stageNameIndex =
+        this.stageNames.indexOf(this.stage.meta.stageSystemName) + 1;
+    await sleep(5000);
+    this.initState();
+    this.loadStage(this.stageNames[stageNameIndex % this.stageNames.length]);
+    unlock();
+    this.sendArbitraryMessage(
+      {
+        name: "stageChange",
+        status: "reloadStage",
+      } satisfies IStageChangeExt,
+      "all"
+    );
+  };
 
   /** mutates $chunkedUpdates by mutating or creating new chunk with given properties
    * @param partialChunkUpdate contains changes that are to be applied during mutation
@@ -187,6 +248,8 @@ export class Scene implements IScene {
 
   $isProcessingTick = false;
   tick: IScene["tick"] = async () => {
+    if (this.$preventTick) return;
+    const unlock = await this.tickMutex.acquire();
     this.thinker?.onTick(this.tickNum);
 
     // const tickLoop = doBenchmark();
@@ -285,6 +348,8 @@ export class Scene implements IScene {
     this.$generateExternalEventBatch("all", "everyUpdate");
     this.tickNum++;
     this.$isProcessingTick = false;
+
+    unlock();
   };
 
   produceSound: IScene["produceSound"] = (sound) => {
@@ -345,12 +410,13 @@ export class Scene implements IScene {
           { props: [prop], load: [prop] },
           prop as Prop & IPositionedExt
         );
-        this.sendNotification(
-          `${data.nameTag} ${
-            data.type == "connected" ? "connected" : "is back"
-          }!`,
-          data.type
-        );
+        if (data.type != "reviveSilent")
+          this.sendNotification(
+            `${data.nameTag} ${
+              data.type == "connected" ? "connected" : "is back"
+            }!`,
+            data.type
+          );
       }
     }
   };
@@ -389,16 +455,16 @@ export class Scene implements IScene {
       (prop) => prop.controlled?.clientID == data.clientID
     ) as Prop & IControlled;
     if (!prop) {
-      if (data.code == "revive") {
+      if (["revive", "reviveSilent"].includes(data.code)) {
         this.spawnControlledPropHandler({
           clientID: data.clientID,
           nameTag: data.nameTag,
           posX: 100,
           posY: 100,
           propName: "player",
-          type: "revived",
+          type: data.code as ISpawnControlledPropEvent["data"]["type"],
         });
-        this.produceSound("revive");
+        if (data.code == "revive") this.produceSound("revive");
       }
     } else prop.controlled.onReceive(data.code, data.status);
   };
@@ -604,12 +670,15 @@ export class Scene implements IScene {
 
   constructor(
     propMap: Record<string, any>,
-    stage?: StageExt,
+    stageNames?: string[],
+    stageLoader?: IStageLoader,
     propFactoryMethod?: (scene: IScene, stage: StageExt) => void,
     thinker?: Thinker
   ) {
-    this.stage = stage;
-    this.layoutLines = this.stage.layoutData.split(/\r\n|\r|\n/);
+    this.initState();
+    this.stageNames = stageNames;
+    this.stageLoader = stageLoader;
+
     this.internalEventHandlerMap = {
       spawnControlledProp: this.spawnControlledPropHandler,
       spawnProp: this.spawnPropHandler,
@@ -619,9 +688,9 @@ export class Scene implements IScene {
       animateProp: this.animatePropHandler,
     };
     this.propMap = propMap;
-    if (stage) propFactoryMethod?.(this, stage);
+    this.propFactoryMethod = propFactoryMethod;
     this.thinker = thinker;
-    this.thinker?.onSceneInit(this);
+    this.loadStage(stageNames?.[0]);
   }
 }
 

@@ -1,4 +1,4 @@
-import { getWSTestingServer } from "./game/server/server";
+import { getWSServer } from "./game/server/server";
 
-const server = getWSTestingServer(5889);
+const server = getWSServer(5889);
 server.start();

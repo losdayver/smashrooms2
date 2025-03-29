@@ -93,3 +93,5 @@ export const stringToHash = (str: string) => {
   }
   return Math.abs(hash);
 };
+export const sleep = (ms: number) =>
+  new Promise((resolve) => setTimeout(resolve, ms));

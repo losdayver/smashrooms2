@@ -1,9 +1,11 @@
 import { IScoreUpdateExt } from "../../../smshTypes/messages";
+import { IStageChangeExt } from "../../../types/messages";
+import { Client } from "../client/client.js";
 import { FocusManager, IFocusable } from "../focus/focusManager.js";
 import { Modal } from "./modal.js";
 
 export class ScoreBoardModal extends Modal implements IFocusable {
-  constructor(container: HTMLDivElement) {
+  constructor(container: HTMLDivElement, client: Client) {
     super(container, {
       title: "Score board",
       noCloseButton: true,
@@ -11,11 +13,21 @@ export class ScoreBoardModal extends Modal implements IFocusable {
         backdropFilter: "none",
       },
     });
+    client.on("stageChange", "scoreboard", (msg: IStageChangeExt) => {
+      if (msg.status == "showScore") {
+        this.allowHide = false;
+        this.focusManager.setFocus("scoreboard"); // todo hide all the modals besides the scoreboard modal
+      } else if (msg.status == "reloadStage") {
+        this.allowHide = true;
+        this.hide();
+      }
+    });
     this.board = document.createElement("div");
     this.board.style.display = "flex";
     this.board.style.justifyContent = "center";
   }
   private focusManager: FocusManager;
+  private allowHide = true;
 
   private board: HTMLDivElement;
   private scoreArray: ScoreObj[] = [];
@@ -93,8 +105,9 @@ export class ScoreBoardModal extends Modal implements IFocusable {
   onFocused = this.show;
   onFocusReceiveKey: IFocusable["onFocusReceiveKey"] = (key, status) => {
     if (
-      (status == "down" && key == "back") ||
-      (status == "up" && key == "select")
+      this.allowHide &&
+      ((status == "down" && key == "back") ||
+        (status == "up" && key == "select"))
     )
       this.hide();
   };

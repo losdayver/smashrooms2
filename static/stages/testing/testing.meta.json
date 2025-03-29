@@ -3,6 +3,7 @@
   "stageSystemName": "testing",
   "gridSize": 32,
   "author": "losdayver",
+  "timeLimit": 180,
   "extra": {
     "preload": [
       {
@@ -74,30 +75,6 @@
           "positioned": {
             "posX": 1696,
             "posY": 672
-          }
-        }
-      },
-      {
-        "name": "portal",
-        "behaviours": {
-          "positioned": {
-            "posX": 100,
-            "posY": 100
-          },
-          "portal": {
-            "portalID": "testPortal"
-          }
-        }
-      },
-      {
-        "name": "portal",
-        "behaviours": {
-          "positioned": {
-            "posX": 1000,
-            "posY": 200
-          },
-          "portal": {
-            "portalID": "testPortal"
           }
         }
       }

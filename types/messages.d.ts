@@ -69,11 +69,16 @@ export type NotificationTypesExt =
   | "disconnected"
   | "music"
   | "dead"
-  | "revived";
+  | "revive";
 
 export interface ISoundMessageExt {
   name: "sound";
   sound: string;
+}
+
+export interface IStageChangeExt {
+  name: "stageChange";
+  status: "showScore" | "reloadStage";
 }
 
 /** This interface represents an abstract message */
@@ -94,7 +99,8 @@ export type IMessageExt =
   | IServerSceneMetaMessageExt
   | IClientSceneMetaMessageExt
   | IServerNotificationExt
-  | ISoundMessageExt;
+  | ISoundMessageExt
+  | IStageChangeExt;
 
 export interface IClientActionMessageExt extends IGenericMessageExt {
   name: "clientAct";
@@ -110,5 +116,6 @@ export type ClientActionCodesExt =
   | "fire"
   | "duck"
   | "revive"
+  | "reviveSilent"
   | "swap";
 export type ClientActionStatusExt = "pressed" | "released";
