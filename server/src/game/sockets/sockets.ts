@@ -35,6 +35,7 @@ export class WSSocketServer implements ISocketServer {
     this.init();
     this.initClientConnectionChecks();
   }
+
   onReceiveMessageFromCommunicator = (
     event: any,
     clientID: ClientID | "all"

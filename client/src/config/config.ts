@@ -1,4 +1,4 @@
-export abstract class LSConfig<C extends object = object> {
+export abstract class LSConfig<C extends object> {
   private lsKey: string;
   private disableCache = false;
   private obj: C;

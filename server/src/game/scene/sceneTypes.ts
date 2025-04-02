@@ -37,7 +37,7 @@ export interface IScene extends ISceneActions {
   ) => void;
   getPropByID: (ID: Prop["ID"]) => Prop;
   queryProp: (queryFunc: (prop: Prop) => boolean) => Prop;
-  thinker?: Thinker;
+  scheduler?: Scheduler;
   readonly tickNum: number;
 }
 /** This interface represents actions that are turned into scene events in event loop */
@@ -62,7 +62,7 @@ export interface ISceneActions {
   animatePropAction: (propID: PropIDExt, name: string) => Promise<void>;
 }
 
-export abstract class Thinker {
+export abstract class Scheduler {
   onTick: (tickNum: number) => void;
   init: (scene: IScene, stage?: StageExt) => void;
 }

@@ -13,7 +13,7 @@ import {
   ISpawnControlledPropEvent,
   ISpawnPropEvent,
   IStageLoader,
-  Thinker,
+  Scheduler,
 } from "./sceneTypes";
 import { doBenchmark, Mutex, pickRandom, sleep } from "./../../utils";
 import { Prop } from "./prop";
@@ -43,7 +43,7 @@ type ChunkUpdate = {
 
 export class Scene implements IScene {
   sendMessageToSubscriber: ISceneSubscriber["onReceiveMessageFromScene"];
-  thinker: Thinker;
+  scheduler: Scheduler;
 
   private chunkSize: number;
   private propList: (Prop & PropBehaviours)[];
@@ -82,7 +82,7 @@ export class Scene implements IScene {
     this.stage = this.stageLoader.load(name);
     this.layoutLines = this.stage.layoutData.split(/\r\n|\r|\n/);
     this.propFactoryMethod?.(this, this.stage);
-    this.thinker?.init(this, this.stage);
+    this.scheduler?.init(this, this.stage);
     if (this.stage.meta.timeLimit)
       this.stageTimerID = setTimeout(
         this.onStageChange,
@@ -250,7 +250,7 @@ export class Scene implements IScene {
   tick: IScene["tick"] = async () => {
     if (this.$preventTick) return;
     const unlock = await this.tickMutex.acquire();
-    this.thinker?.onTick(this.tickNum);
+    this.scheduler?.onTick(this.tickNum);
 
     // const tickLoop = doBenchmark();
     if (this.$isProcessingTick) return;
@@ -673,7 +673,7 @@ export class Scene implements IScene {
     stageNames?: string[],
     stageLoader?: IStageLoader,
     propFactoryMethod?: (scene: IScene, stage: StageExt) => void,
-    thinker?: Thinker
+    thinker?: Scheduler
   ) {
     this.initState();
     this.stageNames = stageNames;
@@ -689,7 +689,7 @@ export class Scene implements IScene {
     };
     this.propMap = propMap;
     this.propFactoryMethod = propFactoryMethod;
-    this.thinker = thinker;
+    this.scheduler = thinker;
     this.loadStage(stageNames?.[0]);
   }
 }

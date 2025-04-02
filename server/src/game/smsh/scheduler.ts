@@ -1,9 +1,9 @@
 import { LayoutMetaExt, StageExt } from "../../../../types/stage";
 import { getRandomBetween, pickRandom } from "../../utils";
-import { IScene, Thinker } from "../scene/sceneTypes";
+import { IScene, Scheduler } from "../scene/sceneTypes";
 import { IChaosEvent, IStageMetaExtra } from "./props";
 
-export class SmshThinker implements Thinker {
+export class BombardmentScheduler implements Scheduler {
   scene: IScene;
   currentChaosEvent: IChaosEvent;
   startedOn: number;

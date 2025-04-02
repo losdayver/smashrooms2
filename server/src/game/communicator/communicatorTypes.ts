@@ -29,21 +29,25 @@ export type ICommunicatorRequests =
   | IDisconnectionRequest
   | IClientSceneActionRequest
   | IClientSceneMessageRequest;
+
 export interface IConnectionRequest {
   name: "connectionReq";
 }
+
 export interface IDisconnectionRequest {
   name: "disconnectionReq";
   body: {
     clientID: ClientID;
   };
 }
+
 export interface IClientSceneActionRequest {
   name: "clientSceneActionReq";
   body: {
     code: ClientActionCodesExt;
   };
 }
+
 export interface IClientSceneMessageRequest {
   name: "clientMsgReq";
   body: {
