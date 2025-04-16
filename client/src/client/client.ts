@@ -28,7 +28,6 @@ export class Client
   private socket: WebSocket;
   private ID: PropIDExt;
   private connString: string;
-  private clientName: string;
 
   readonly isRegistered = false;
 
@@ -84,8 +83,7 @@ export class Client
   private socketSend = <T extends object>(data: T) =>
     this.socket.send(JSON.stringify(data));
 
-  connectByClientName = (clientName?: string) => {
-    this.clientName ??= clientName;
+  connectByClientName = (clientName: string) => {
     if (
       [WebSocket.CLOSED, WebSocket.CLOSING].includes(
         this.socket.readyState as any
@@ -94,7 +92,7 @@ export class Client
       this.initSocket();
     this.socketSend({
       name: "conn",
-      clientName: this.clientName,
+      clientName: clientName,
     } satisfies IConnectMessageExt);
   };
   sendInput = (code: ClientActionCodesExt, status: ClientActionStatusExt) =>
