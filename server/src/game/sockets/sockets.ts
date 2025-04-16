@@ -177,7 +177,7 @@ export class WSSocketServer implements ISocketServer {
     map.set("notAlreadyConnected", {
       restrictionCause: "already connected",
       successCondition: (clientSocket, msg, clientFromMap): boolean => {
-        if (clientSocket == clientFromMap.socket) return false;
+        if (clientSocket === clientFromMap.socket) return false;
         return true;
       },
       getLogFailureMsg: (clientName: string) =>
@@ -188,7 +188,7 @@ export class WSSocketServer implements ISocketServer {
     map.set("nameNotOccupied", {
       restrictionCause: "name is already occupied",
       successCondition: (clientSocket, clientMsg, clientFromMap): boolean => {
-        if (clientFromMap.name == clientMsg.clientName) return false;
+        if (clientFromMap.name === clientMsg.clientName) return false;
         return true;
       },
       getLogFailureMsg: (clientName: string) =>

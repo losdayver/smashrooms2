@@ -387,6 +387,7 @@ export class Scene implements IScene {
         );
     }
   };
+
   private spawnControlledPropHandler = (
     data: ISpawnControlledPropEvent["data"]
   ) => {
@@ -420,6 +421,7 @@ export class Scene implements IScene {
       }
     }
   };
+
   private destroyPropHandler = (data: IDestroyPropEvent["data"]) => {
     for (let i = 0; i < this.propList.length; i++) {
       if (this.propList[i].ID == data.ID) {
@@ -432,6 +434,7 @@ export class Scene implements IScene {
       }
     }
   };
+
   private destroyControlledPropHandler = (
     data: IDestroyControlledPropEvent["data"]
   ) => {
@@ -450,6 +453,7 @@ export class Scene implements IScene {
       }
     }
   };
+
   private clientActionHandler = (data: IClientActionEvent["data"]) => {
     const prop = this.propList.find(
       (prop) => prop.controlled?.clientID == data.clientID
@@ -506,6 +510,7 @@ export class Scene implements IScene {
       unlock();
     }
   };
+
   connectAction: IScene["connectAction"] = async (clientID, nameTag) => {
     const unlock = await this.internalEventQueueMutex.acquire();
     try {
@@ -528,6 +533,7 @@ export class Scene implements IScene {
       this.$generateExternalEventBatch(clientID, "currentState");
     }
   };
+
   disconnectAction: IScene["disconnectAction"] = async (clientID) => {
     const unlock = await this.internalEventQueueMutex.acquire();
     const prop = this.queryProp(
@@ -548,6 +554,7 @@ export class Scene implements IScene {
       unlock();
     }
   };
+
   mutatePropBehaviourAction: IScene["mutatePropBehaviourAction"] = (
     propOrID,
     behaviour
@@ -563,6 +570,7 @@ export class Scene implements IScene {
         prop as Prop & IPositionedExt
       );
   };
+
   spawnPropAction: IScene["spawnPropAction"] = async (
     propName,
     behaviours?
@@ -578,6 +586,7 @@ export class Scene implements IScene {
     this.internalEventQueueMutex.value.unshift(event);
     unlock();
   };
+
   destroyPropAction: IScene["destroyPropAction"] = async (propID) => {
     const unlock = await this.internalEventQueueMutex.acquire();
     try {
@@ -591,6 +600,7 @@ export class Scene implements IScene {
       unlock();
     }
   };
+
   animatePropAction: IScene["animatePropAction"] = async (propID, name) => {
     const unlock = await this.internalEventQueueMutex.acquire();
     try {
@@ -673,7 +683,7 @@ export class Scene implements IScene {
     stageNames?: string[],
     stageLoader?: IStageLoader,
     propFactoryMethod?: (scene: IScene, stage: StageExt) => void,
-    thinker?: Scheduler
+    scheduler?: Scheduler
   ) {
     this.initState();
     this.stageNames = stageNames;
@@ -689,7 +699,7 @@ export class Scene implements IScene {
     };
     this.propMap = propMap;
     this.propFactoryMethod = propFactoryMethod;
-    this.scheduler = thinker;
+    this.scheduler = scheduler;
     this.loadStage(stageNames?.[0]);
   }
 }

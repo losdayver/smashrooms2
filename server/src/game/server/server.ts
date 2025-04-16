@@ -10,7 +10,7 @@ import { WSSocketServer } from "../sockets/sockets";
 import { ISocketServer } from "../sockets/socketsTypes";
 import fs from "fs";
 import path from "path";
-import { BombardmentScheduler } from "../smsh/scheduler";
+import { SmshScheduler } from "../smsh/scheduler";
 
 export class Server {
   private scene: IScene;
@@ -41,7 +41,7 @@ export const getWSServer = (port: number) => {
     ["testing", "ascend"],
     { load: getStageFS },
     smshPropFactory,
-    new BombardmentScheduler()
+    new SmshScheduler()
   );
   const communicator = new Communicator(scene);
   const wsServer = new WSSocketServer(communicator, port, 50);

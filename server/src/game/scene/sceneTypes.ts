@@ -40,6 +40,7 @@ export interface IScene extends ISceneActions {
   scheduler?: Scheduler;
   readonly tickNum: number;
 }
+
 /** This interface represents actions that are turned into scene events in event loop */
 export interface ISceneActions {
   clientAction: (
@@ -79,6 +80,7 @@ export type IInternalEvent =
   | IDestroyControlledPropEvent
   | IClientActionEvent
   | IAnimatePropEvent;
+
 export interface ISpawnPropEvent {
   name: "spawnProp";
   data: {
@@ -86,6 +88,7 @@ export interface ISpawnPropEvent {
     behaviours?: RecursivePartial<PropBehaviours>;
   };
 }
+
 export interface ISpawnControlledPropEvent {
   name: "spawnControlledProp";
   data: {
@@ -97,12 +100,14 @@ export interface ISpawnControlledPropEvent {
     nameTag: string;
   };
 }
+
 export interface IDestroyControlledPropEvent {
   name: "destroyControlledProp";
   data: {
     clientID: ClientID;
   };
 }
+
 export interface IDestroyPropEvent {
   name: "destroyProp";
   data: {
@@ -114,6 +119,7 @@ export interface IAnimatePropEvent {
   name: "animateProp";
   data: IAnimationExt;
 }
+
 export interface IClientActionEvent {
   name: "clientAction";
   data: {
