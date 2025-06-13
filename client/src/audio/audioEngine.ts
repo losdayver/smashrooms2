@@ -4,7 +4,7 @@ import {
   AudioSetting,
 } from "../config/config.js";
 import { soundTrackRoute, soundEventRoute } from "../routes.js";
-import { EventEmitter, IEventEmitterPublicInterface } from "../utils.js";
+import { SignalEmitter, ISignalEmitterPublicInterface } from "../utils.js";
 
 export abstract class AudioEngine {
   protected audioCfg: AudioConfig = new AudioConfig();
@@ -53,16 +53,16 @@ export abstract class AudioEngine {
 
 export class AudioTrackEngine
   extends AudioEngine
-  implements IEventEmitterPublicInterface<SoundTrackEventsType>
+  implements ISignalEmitterPublicInterface<SoundTrackEventsType>
 {
-  private eventEmitter = new EventEmitter<SoundTrackEventsType>();
+  private signalEmitter = new SignalEmitter<SoundTrackEventsType>();
   on = (
     eventName: SoundTrackEventsType,
     callbackID: string,
     callback: (data?: any) => void | Promise<void>
-  ) => this.eventEmitter.on(eventName, callbackID, callback);
+  ) => this.signalEmitter.on(eventName, callbackID, callback);
   off = (eventName: SoundTrackEventsType, callbackID: string) =>
-    this.eventEmitter.off(eventName, callbackID);
+    this.signalEmitter.off(eventName, callbackID);
 
   constructor() {
     super("music");
@@ -84,9 +84,9 @@ export class AudioTrackEngine
     if (this.currentSoundTrack) this.stopSound();
     this.storeSound(name);
     this.currentSoundTrack.onended = () =>
-      this.eventEmitter.emit("onEndedSoundtrack", this.currentSoundTrackName);
+      this.signalEmitter.emit("onEndedSoundtrack", this.currentSoundTrackName);
     this.currentSoundTrack.play();
-    this.eventEmitter.emit("onStartedSoundtrack", this.currentSoundTrackName);
+    this.signalEmitter.emit("onStartedSoundtrack", this.currentSoundTrackName);
     return null;
   };
 
@@ -123,7 +123,7 @@ export class AudioTrackEngine
   stopSound = () => {
     this.pauseSound();
     this.currentSoundTrack.currentTime = 0;
-    this.eventEmitter.emit("onStoppedSoundtrack", this.currentSoundTrackName);
+    this.signalEmitter.emit("onStoppedSoundtrack", this.currentSoundTrackName);
   };
 }
 

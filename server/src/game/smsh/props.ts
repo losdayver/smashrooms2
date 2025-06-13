@@ -75,7 +75,7 @@ export const smshPropFactory: (scene: IScene, stage: StageExt) => void = (
   }
 };
 
-export interface IChaosEvent {
+export interface IDisaster {
   name: string;
   duration: number;
   message: string;
@@ -89,5 +89,5 @@ export interface IStageMetaExtra {
     name: keyof typeof smshPropMap;
     behaviours?: RecursivePartial<PropBehaviours>;
   }[];
-  chaosEvents?: string[];
+  disasters?: string[];
 }

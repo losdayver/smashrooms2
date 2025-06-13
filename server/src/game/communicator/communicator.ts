@@ -9,12 +9,14 @@ export class Communicator implements ICommunicator {
   subscribe: ICommunicator["subscribe"] = (subscriber) => {
     this.sendMessageToSubscriber = subscriber.onReceiveMessageFromCommunicator;
   };
+
   onReceiveMessageFromScene: ISceneSubscriber["onReceiveMessageFromScene"] = (
     message,
     clientID?
   ) => {
     this.sendMessageToSubscriber(message, clientID || "all");
   };
+
   processMessage: ICommunicator["processMessage"] = (from, msg, nameTag) => {
     if (msg.name == "connRes") {
       this.scene.connectAction(from, nameTag);
