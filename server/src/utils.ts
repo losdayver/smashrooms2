@@ -77,8 +77,8 @@ export type RecursivePartial<T> = {
   [P in keyof T]?: T[P] extends (infer U)[]
     ? RecursivePartial<U>[]
     : T[P] extends object | undefined
-      ? RecursivePartial<T[P]>
-      : T[P];
+    ? RecursivePartial<T[P]>
+    : T[P];
 };
 
 export const doBenchmark = () => {
@@ -105,3 +105,6 @@ export const stringToHash = (str: string) => {
 
 export const sleep = (ms: number) =>
   new Promise((resolve) => setTimeout(resolve, ms));
+
+export const instanceOfCheck = (instance: any) => (_class: any) =>
+  instance instanceof _class;
