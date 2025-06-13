@@ -35,7 +35,6 @@ export class Server {
 
 export const getWSServer = (port: number) => {
   severityLog(`starting server on port ${port}`);
-  const stage = getStageFS("ascend");
   const scene = new Scene(
     smshPropMap,
     ["testing", "ascend"],
