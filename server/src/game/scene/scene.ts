@@ -14,29 +14,23 @@ import {
   ISpawnPropEvent,
   IStageLoader,
   Scheduler,
-} from "./sceneTypes";
-import {
-  doBenchmark,
-  instanceOfCheck,
-  Mutex,
-  pickRandom,
-  sleep,
-} from "./../../utils";
-import { Prop } from "./prop";
-import { IControlled, PropBehaviours } from "./propTypes";
+} from "@server/game/scene/sceneTypes";
+import { doBenchmark, Mutex, pickRandom, sleep } from "@server/utils";
+import { Prop } from "@server/game/scene/prop";
+import { IControlled, PropBehaviours } from "@server/game/scene/propTypes";
 import {
   IAnimationExt,
   INameTaggedExt,
   IPositionedExt,
   PropIDExt,
-} from "../../../../types/sceneTypes";
-import { StageExt } from "../../../../types/stage";
-import { ClientID } from "../commonTypes";
+} from "@stdTypes/sceneTypes";
+import { StageExt } from "@stdTypes/stage";
+import { ClientID } from "@server/game/commonTypes";
 import {
   IServerNotificationExt,
   ISoundMessageExt,
   IStageChangeExt,
-} from "../../../../types/messages";
+} from "@stdTypes/messages";
 
 type ChunkedUpdateMap = Record<`${number}_${number}`, ChunkUpdate>;
 type ChunkUpdate = {
@@ -289,37 +283,19 @@ export class Scene implements IScene {
           for (const adjacentChunk of adjacentChunks) {
             for (const adjacentProp of adjacentChunk.props) {
               if (
-                adjacentProp == prop ||
-                !adjacentProp.collidable ||
-                prop.$isDestroyed ||
-                adjacentProp.$isDestroyed
-              )
-                continue;
-
-              const whitelistCheck =
+                adjacentProp != prop &&
+                adjacentProp.collidable &&
+                !(prop.$isDestroyed || adjacentProp.$isDestroyed) &&
                 (!adjacentProp.collidable.whitelist ||
-                  adjacentProp.collidable.whitelist.some(
-                    instanceOfCheck(prop)
-                  )) &&
+                  (adjacentProp.collidable.whitelist &&
+                    adjacentProp.collidable.whitelist.some(
+                      (cls) => prop instanceof cls
+                    ))) &&
                 (!prop.collidable.whitelist ||
-                  prop.collidable.whitelist.some(
-                    instanceOfCheck(adjacentProp)
-                  ));
-
-              const colGroupCheck =
-                (prop.collidable.colGroup == adjacentProp.collidable.colGroup &&
-                  prop.collidable.colGroup == null) ||
-                prop.collidable.colGroup != adjacentProp.collidable.colGroup ||
-                adjacentProp.collidable.colGroupIgnoreList?.some(
-                  instanceOfCheck(prop)
-                ) ||
-                prop.collidable.colGroupIgnoreList?.some(
-                  instanceOfCheck(adjacentProp)
-                );
-
-              if (
-                colGroupCheck &&
-                whitelistCheck &&
+                  (prop.collidable.whitelist &&
+                    prop.collidable.whitelist.some(
+                      (cls) => adjacentProp instanceof cls
+                    ))) &&
                 !checkedCollisions.has(adjacentProp.ID)
               ) {
                 const left1 = prop.positioned.posX + prop.collidable.offsetX;

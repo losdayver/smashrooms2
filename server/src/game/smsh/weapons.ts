@@ -1,5 +1,5 @@
-import { getRandomBetween } from "../../utils";
-import { Player } from "./player";
+import { getRandomBetween } from "@server/utils";
+import { Player } from "@server/game/smsh/player";
 
 export class WeaponPocket {
   private player: Player;

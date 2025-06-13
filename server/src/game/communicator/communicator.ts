@@ -1,6 +1,9 @@
-import { IScene, ISceneSubscriber } from "../scene/sceneTypes";
-import { ICommunicator, ICommunicatorSubscriber } from "./communicatorTypes";
-import { Player } from "../smsh/player";
+import { IScene, ISceneSubscriber } from "@server/game/scene/sceneTypes";
+import {
+  ICommunicator,
+  ICommunicatorSubscriber,
+} from "@server/game/communicator/communicatorTypes";
+import { Player } from "@server/game/smsh/player";
 
 export class Communicator implements ICommunicator {
   private scene: IScene;

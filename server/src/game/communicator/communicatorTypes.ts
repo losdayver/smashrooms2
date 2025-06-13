@@ -1,5 +1,5 @@
-import { ClientID } from "../commonTypes";
-import { ISceneSubscriber } from "../scene/sceneTypes";
+import { ClientID } from "@server/game/commonTypes";
+import { ISceneSubscriber } from "@server/game/scene/sceneTypes";
 import {
   IClientActionMessageExt,
   IConnectResponseMessageExt,
@@ -7,7 +7,7 @@ import {
   IGenericMessageExt,
   ClientActionCodesExt,
   IClientSceneMetaMessageExt,
-} from "../../../../types/messages";
+} from "@stdTypes/messages";
 
 export interface ICommunicator extends ISceneSubscriber {
   processMessage: (

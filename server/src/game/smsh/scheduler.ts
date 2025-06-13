@@ -1,7 +1,7 @@
-import { LayoutMetaExt, StageExt } from "../../../../types/stage";
-import { getRandomBetween, pickRandom } from "../../utils";
-import { IScene, Scheduler } from "../scene/sceneTypes";
-import { IDisaster, IStageMetaExtra } from "./props";
+import { LayoutMetaExt, StageExt } from "@stdTypes/stage";
+import { getRandomBetween, pickRandom } from "@server/utils";
+import { IScene, Scheduler } from "@server/game/scene/sceneTypes";
+import { IDisaster, IStageMetaExtra } from "@server/game/smsh/props";
 
 export class SmshScheduler implements Scheduler {
   scene: IScene;

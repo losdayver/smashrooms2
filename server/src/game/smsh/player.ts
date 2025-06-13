@@ -1,17 +1,17 @@
-import { IDrawableExt, INameTaggedExt } from "../../../../types/sceneTypes";
-import { Prop } from "../scene/prop";
+import { IDrawableExt, INameTaggedExt } from "@stdTypes/sceneTypes";
+import { Prop } from "@server/game/scene/prop";
 import {
   ICollidable,
   IControlled,
   IDamageable,
   PropBehaviours,
-} from "../scene/propTypes";
-import { IScene } from "../scene/sceneTypes";
-import { ItemProp } from "./items";
-import { ItemSpawner } from "./spawners";
-import { WeaponPocket } from "./weapons";
-import { IScoreUpdateExt } from "../../../../smshTypes/messages";
-import { stringToHash } from "../../utils";
+} from "@server/game/scene/propTypes";
+import { IScene } from "@server/game/scene/sceneTypes";
+import { ItemProp } from "@server/game/smsh/items";
+import { ItemSpawner } from "@server/game/smsh/spawners";
+import { WeaponPocket } from "@server/game/smsh/weapons";
+import { IScoreUpdateExt } from "@smshTypes/messages";
+import { getRandomBetween, stringToHash } from "@server/utils";
 
 export class Player
   extends Prop
@@ -65,7 +65,7 @@ export class Player
     offsetX: -16,
     offsetY: 0,
     onCollide: (prop: Prop & PropBehaviours) => {
-      if (prop.damaging) {
+      if (prop.damaging && prop.collidable.colGroup != this.ID) {
         this.$lastHitBy = prop.collidable.colGroup;
         if (prop.moving) this.$punchH = 2 * Math.sign(prop.moving.speedH);
         this.scene.mutatePropBehaviourAction(this, {
@@ -241,11 +241,9 @@ export class Player
     if (this.damageable.health <= 0 && !this.$isAlreadyDead) {
       this.$isAlreadyDead = true;
       Player.score.increment(this.nameTagged.tag, "D");
-      if (this.$lastHitBy != this.ID) {
-        const killer = this.scene.getPropByID(this.$lastHitBy);
-        if (killer)
-          Player.score.increment((killer as Player).nameTagged.tag, "K");
-      }
+      const killer = this.scene.getPropByID(this.$lastHitBy);
+      if (killer)
+        Player.score.increment((killer as Player).nameTagged.tag, "K");
       this.scene.destroyPropAction(this.ID);
       this.scene.produceSound("death");
       this.scene.sendNotification(`${this.nameTagged.tag} died`, "dead");

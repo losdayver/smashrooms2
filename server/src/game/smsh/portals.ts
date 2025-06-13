@@ -2,9 +2,13 @@ import {
   IDrawableExt,
   IPositionedExt,
   ISpriteOverlay,
-} from "../../../../types/sceneTypes";
-import { Prop } from "../scene/prop";
-import { ICollidable, IPortal, PropBehaviours } from "../scene/propTypes";
+} from "@stdTypes/sceneTypes";
+import { Prop } from "@server/game/scene/prop";
+import {
+  ICollidable,
+  IPortal,
+  PropBehaviours,
+} from "@server/game/scene/propTypes";
 
 export class Portal extends Prop implements ICollidable, IDrawableExt, IPortal {
   portal;

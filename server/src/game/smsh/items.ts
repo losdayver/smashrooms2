@@ -1,8 +1,8 @@
-import { ICollidable, PropBehaviours } from "../scene/propTypes";
-import { IScene } from "../scene/sceneTypes";
-import { Prop } from "../scene/prop";
-import { Player } from "./player";
-import { IDrawableExt, IHasMasterExt } from "../../../../types/sceneTypes";
+import { Prop } from "@server/game/scene/prop";
+import { ICollidable, PropBehaviours } from "@server/game/scene/propTypes";
+import { IScene } from "@server/game/scene/sceneTypes";
+import { Player } from "@server/game/smsh/player";
+import { IDrawableExt, IHasMasterExt } from "@stdTypes/sceneTypes";
 
 export abstract class ItemProp
   extends Prop

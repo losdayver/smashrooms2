@@ -1,15 +1,14 @@
-import { IDrawableExt } from "../../../../types/sceneTypes";
-import { Prop } from "../scene/prop";
+import { IDrawableExt } from "@stdTypes/sceneTypes";
+import { Prop } from "@server/game/scene/prop";
 import {
   ICollidable,
   IDamaging,
   IMoving,
   ITeleportProhibit,
   PropBehaviours,
-} from "../scene/propTypes";
-import { IScene } from "../scene/sceneTypes";
-import { Player } from "./player";
-import { Portal } from "./portals";
+} from "@server/game/scene/propTypes";
+import { IScene } from "@server/game/scene/sceneTypes";
+import { Portal } from "@server/game/smsh/portals";
 
 const projectileIgnore = [Portal];
 
@@ -285,9 +284,6 @@ export class Rocket extends Prop implements IDrawableExt, IDamaging, IMoving {
         posX: this.positioned.posX,
         posY: this.positioned.posY,
       },
-      collidable: {
-        colGroup: this.collidable.colGroup,
-      },
     });
     this.scene.destroyPropAction(this.ID);
   };
@@ -336,13 +332,7 @@ export class Explosion
     offsetY: 64,
     anim: "appear",
   };
-  collidable: ICollidable["collidable"] = {
-    sizeX: 128,
-    sizeY: 128,
-    offsetX: -64,
-    offsetY: -64,
-    colGroupIgnoreList: [Player],
-  };
+  collidable = { sizeX: 128, sizeY: 128, offsetX: -64, offsetY: -64 };
   damaging = { damage: 60 };
 
   createdOnTick: number;

@@ -1,5 +1,5 @@
-import { ClientActionStatusExt } from "../../../../types/messages";
-import { Prop } from "./prop";
+import { ClientActionStatusExt } from "@stdTypes/messages";
+import { Prop } from "@server/game/scene/prop";
 import {
   ICollidableExt,
   IControlledExt,
@@ -9,8 +9,8 @@ import {
   INameTaggedExt,
   IPositionedExt,
   IHasMasterExt,
-} from "../../../../types/sceneTypes";
-import { Portal } from "../smsh/portals";
+} from "@stdTypes/sceneTypes";
+import { Portal } from "@server/game/smsh/portals";
 
 export type PropBehaviours = Partial<
   IPositionedExt &
@@ -48,10 +48,8 @@ export type IControlled = {
 export type ICollidable = IPositionedExt & {
   collidable: {
     onCollide?: (prop: Prop & PropBehaviours) => void;
-    /** if not empty, collisions ONLY with the props in the following list will be registered */
+    // if empty - all collisions will be ignored
     whitelist?: any[];
-    /** colGroup will ignore props in the following list */
-    colGroupIgnoreList?: any[];
   };
 } & ICollidableExt;
 

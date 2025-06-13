@@ -1,16 +1,16 @@
-import { LayoutMetaExt, StageExt } from "../../../../types/stage";
-import { config } from "../../config";
-import { severityLog } from "../../utils";
-import { Communicator } from "../communicator/communicator";
-import { ICommunicator } from "../communicator/communicatorTypes";
-import { smshPropFactory, smshPropMap } from "../smsh/props";
-import { Scene } from "../scene/scene";
-import { IScene } from "../scene/sceneTypes";
-import { WSSocketServer } from "../sockets/sockets";
-import { ISocketServer } from "../sockets/socketsTypes";
 import fs from "fs";
 import path from "path";
-import { SmshScheduler } from "../smsh/scheduler";
+import { LayoutMetaExt, StageExt } from "@stdTypes/stage";
+import { config } from "@server/config";
+import { severityLog } from "@server/utils";
+import { Communicator } from "@server/game/communicator/communicator";
+import { ICommunicator } from "@server/game/communicator/communicatorTypes";
+import { smshPropFactory, smshPropMap } from "@server/game/smsh/props";
+import { Scene } from "@server/game/scene/scene";
+import { IScene } from "@server/game/scene/sceneTypes";
+import { WSSocketServer } from "@server/game/sockets/sockets";
+import { ISocketServer } from "@server/game/sockets/socketsTypes";
+import { SmshScheduler } from "@server/game/smsh/scheduler";
 
 export class Server {
   private scene: IScene;
