@@ -1,49 +1,50 @@
 import { LayoutMetaExt, StageExt } from "../../../../types/stage";
 import { getRandomBetween, pickRandom } from "../../utils";
-import { IScene, Thinker } from "../scene/sceneTypes";
-import { IChaosEvent, IStageMetaExtra } from "./props";
+import { IScene, Scheduler } from "../scene/sceneTypes";
+import { IDisaster, IStageMetaExtra } from "./props";
 
-export class SmshThinker implements Thinker {
+export class SmshScheduler implements Scheduler {
   scene: IScene;
-  currentChaosEvent: IChaosEvent;
+  currentDisaster: IDisaster;
   startedOn: number;
   stage: StageExt;
 
-  chaosEvents: IChaosEvent[];
+  disasters: IDisaster[];
   onTick = (tickNum: number) => {
-    if (!this.chaosEvents || tickNum == 0) return;
-    if (this.currentChaosEvent) {
-      this.currentChaosEvent.onTick(tickNum, this.scene, this.stage);
-      if (tickNum - this.startedOn > this.currentChaosEvent.duration) {
-        this.currentChaosEvent.onEnd(tickNum, this.scene);
-        this.currentChaosEvent = null;
+    if (!this.disasters || tickNum == 0) return;
+    if (this.currentDisaster) {
+      this.currentDisaster.onTick(tickNum, this.scene, this.stage);
+      if (tickNum - this.startedOn > this.currentDisaster.duration) {
+        this.currentDisaster.onEnd(tickNum, this.scene);
+        this.currentDisaster = null;
       }
       return;
     }
-    if (!this.currentChaosEvent && tickNum % 1500 == 0) {
-      this.currentChaosEvent = pickRandom(this.chaosEvents);
+    if (!this.currentDisaster && tickNum % 1500 == 0) {
+      this.currentDisaster = pickRandom(this.disasters);
       this.startedOn = tickNum;
       this.scene.sendNotification(
-        this.currentChaosEvent.message,
+        this.currentDisaster.message,
         "danger",
         "all"
       );
       this.scene.produceSound("siren");
-      this.currentChaosEvent.onBegin(tickNum, this.scene);
+      this.currentDisaster.onBegin(tickNum, this.scene);
     }
   };
+
   init = (scene: IScene, stage?: StageExt) => {
-    this.currentChaosEvent = undefined;
+    this.currentDisaster = undefined;
     this.startedOn = undefined;
     this.scene = scene;
     this.stage = stage;
-    this.chaosEvents = (stage.meta.extra as IStageMetaExtra).chaosEvents?.map(
-      (name) => chaosEventMap[name]
+    this.disasters = (stage.meta.extra as IStageMetaExtra).disasters?.map(
+      (name) => disasterMap[name]
     );
   };
 }
 
-const chaosEventMap: Record<string, IChaosEvent> = {
+const disasterMap: Record<string, IDisaster> = {
   bombing: {
     name: "Carpet Bombing",
     message: "Carpet bombing incoming!",

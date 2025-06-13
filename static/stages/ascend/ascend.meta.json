@@ -5,7 +5,7 @@
   "author": "losdayver",
   "timeLimit": 180,
   "extra": {
-    "chaosEvents": ["bombing"],
+    "disasters": ["bombing"],
     "preload": [
       {
         "name": "playerSpawner",

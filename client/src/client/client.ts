@@ -10,7 +10,7 @@ import {
 import { PropIDExt } from "../../../types/sceneTypes";
 import { ControlsObjType } from "../config/config.js";
 import { FocusManager, IFocusable } from "../focus/focusManager.js";
-import { EventEmitter, IEventEmitterPublicInterface } from "../utils.js";
+import { SignalEmitter, ISignalEmitterPublicInterface } from "../utils.js";
 import { ClientActionCodesExt } from "../../../types/messages";
 import {
   IScoreUpdateExt,
@@ -23,7 +23,7 @@ type ClientEventEmitterType =
   | "socketClose";
 
 export class Client
-  implements IEventEmitterPublicInterface<ClientEventEmitterType>, IFocusable
+  implements ISignalEmitterPublicInterface<ClientEventEmitterType>, IFocusable
 {
   private socket: WebSocket;
   private ID: PropIDExt;
@@ -32,14 +32,14 @@ export class Client
 
   readonly isRegistered = false;
 
-  private eventEmitter = new EventEmitter<ClientEventEmitterType>();
+  private signalEmitter = new SignalEmitter<ClientEventEmitterType>();
   on = (
     eventName: ClientEventEmitterType,
     callbackID: string,
     callback: (data?: any) => void | Promise<void>
-  ) => this.eventEmitter.on(eventName, callbackID, callback);
+  ) => this.signalEmitter.on(eventName, callbackID, callback);
   off = (eventName: ClientEventEmitterType, callbackID: string) =>
-    this.eventEmitter.off(eventName, callbackID);
+    this.signalEmitter.off(eventName, callbackID);
 
   private focusManager: FocusManager;
   getFocusTag = () => "client";
@@ -76,8 +76,8 @@ export class Client
 
   private initSocket = () => {
     this.socket = new WebSocket(this.connString);
-    this.socket.onopen = () => this.eventEmitter.emit("socketOpen");
-    this.socket.onclose = () => this.eventEmitter.emit("socketClose");
+    this.socket.onopen = () => this.signalEmitter.emit("socketOpen");
+    this.socket.onclose = () => this.signalEmitter.emit("socketClose");
     this.socket.onmessage = this.onmessage;
   };
 
@@ -97,6 +97,7 @@ export class Client
       clientName: this.clientName,
     } satisfies IConnectMessageExt);
   };
+
   sendInput = (code: ClientActionCodesExt, status: ClientActionStatusExt) =>
     this.socketSend({
       name: "clientAct",
@@ -105,10 +106,12 @@ export class Client
         status,
       },
     } satisfies IClientActionMessageExt);
+
   getSceneMeta = () =>
     this.socketSend({
       name: "clientSceneMeta",
     } satisfies IClientSceneMetaMessageExt);
+
   sendChatMessage = (message: string) =>
     this.socketSend({
       name: "clientChat",
@@ -122,7 +125,7 @@ export class Client
     } catch {
       return;
     }
-    this.eventEmitter.emit(parsedMsg.name, parsedMsg);
+    this.signalEmitter.emit(parsedMsg.name, parsedMsg);
   };
 
   constructor(connString: string) {
