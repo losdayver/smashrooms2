@@ -1,15 +1,15 @@
-import { IDrawableExt } from "../../../../types/sceneTypes";
-import { Prop } from "../scene/prop";
+import { IDrawableExt } from "@stdTypes/sceneTypes";
+import { Prop } from "@server/game/scene/prop";
 import {
   ICollidable,
   IDamaging,
   IMoving,
   ITeleportProhibit,
   PropBehaviours,
-} from "../scene/propTypes";
-import { IScene } from "../scene/sceneTypes";
-import { Player } from "./player";
-import { Portal } from "./portals";
+} from "@server/game/scene/propTypes";
+import { IScene } from "@server/game/scene/sceneTypes";
+import { Portal } from "@server/game/smsh/portals";
+import { Player } from "@server/game/smsh/player";
 
 const projectileIgnore = [Portal];
 

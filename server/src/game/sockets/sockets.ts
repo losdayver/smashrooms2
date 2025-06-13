@@ -1,8 +1,7 @@
 import { WebSocketServer, WebSocket } from "ws";
 import { randomUUID } from "crypto";
-
-import { ICommunicator } from "../communicator/communicatorTypes";
-import { ISocketServer } from "./socketsTypes";
+import { ICommunicator } from "@server/game/communicator/communicatorTypes";
+import { ISocketServer } from "@server/game/sockets/socketsTypes";
 import {
   IGenericNotRegisteredResponseMessageExt,
   IConnectResponseMessageExt,
@@ -14,9 +13,9 @@ import {
   IClientChatMessageExt,
   IClientSceneMetaMessageExt,
   IServerSceneMetaMessageExt,
-} from "../../../../types/messages";
-import { bufferFromObj, severityLog, wslogSend } from "./../../utils";
-import { ClientID } from "../commonTypes";
+} from "@stdTypes/messages";
+import { bufferFromObj, severityLog, wslogSend } from "@server/utils";
+import { ClientID } from "@server/game/commonTypes";
 
 export class WSSocketServer implements ISocketServer {
   private communicator: ICommunicator;

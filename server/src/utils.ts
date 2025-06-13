@@ -1,5 +1,5 @@
-import { config } from "./config";
 import { WebSocket } from "ws";
+import { config } from "@server/config";
 
 export const bufferFromObj = (obj: object) => Buffer.from(JSON.stringify(obj));
 
@@ -77,8 +77,8 @@ export type RecursivePartial<T> = {
   [P in keyof T]?: T[P] extends (infer U)[]
     ? RecursivePartial<U>[]
     : T[P] extends object | undefined
-    ? RecursivePartial<T[P]>
-    : T[P];
+      ? RecursivePartial<T[P]>
+      : T[P];
 };
 
 export const doBenchmark = () => {

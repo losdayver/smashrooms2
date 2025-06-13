@@ -1,19 +1,15 @@
-import { ClientID } from "../commonTypes";
+import { ClientID } from "@server/game/commonTypes";
 import {
   ClientActionStatusExt,
   IGenericMessageExt,
   IServerSceneMetaMessageExt,
   NotificationTypesExt,
-} from "../../../../types/messages";
-import { PropBehaviours } from "./propTypes";
-import { RecursivePartial } from "../../utils";
-import {
-  IAnimationExt,
-  ICollidableExt,
-  PropIDExt,
-} from "../../../../types/sceneTypes";
-import { Prop } from "./prop";
-import { StageExt } from "../../../../types/stage";
+} from "@stdTypes/messages";
+import { PropBehaviours } from "@server/game/scene/propTypes";
+import { RecursivePartial } from "@server/utils";
+import { IAnimationExt, ICollidableExt, PropIDExt } from "@stdTypes/sceneTypes";
+import { Prop } from "@server/game/scene/prop";
+import { StageExt } from "@stdTypes/stage";
 
 export interface IScene extends ISceneActions {
   subscribe: (sceneSubscriber: ISceneSubscriber) => void;

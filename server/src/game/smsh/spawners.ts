@@ -1,8 +1,8 @@
-import { pickRandom } from "../../utils";
-import { Prop } from "../scene/prop";
-import { ISpawner, PropBehaviours } from "../scene/propTypes";
-import { IScene } from "../scene/sceneTypes";
-import { smshPropMap } from "./props";
+import { pickRandom } from "@server/utils";
+import { Prop } from "@server/game/scene/prop";
+import { ISpawner, PropBehaviours } from "@server/game/scene/propTypes";
+import { IScene } from "@server/game/scene/sceneTypes";
+import { smshPropMap } from "@server/game/smsh/props";
 
 export class PlayerSpawner extends Prop implements ItemSpawnerType {
   spawner: ItemSpawnerType["spawner"] = {

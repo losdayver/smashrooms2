@@ -1,17 +1,17 @@
-import { IDrawableExt, INameTaggedExt } from "../../../../types/sceneTypes";
-import { Prop } from "../scene/prop";
+import { IDrawableExt, INameTaggedExt } from "@stdTypes/sceneTypes";
+import { Prop } from "@server/game/scene/prop";
 import {
   ICollidable,
   IControlled,
   IDamageable,
   PropBehaviours,
-} from "../scene/propTypes";
-import { IScene } from "../scene/sceneTypes";
-import { ItemProp } from "./items";
-import { ItemSpawner } from "./spawners";
-import { WeaponPocket } from "./weapons";
-import { IScoreUpdateExt } from "../../../../smshTypes/messages";
-import { stringToHash } from "../../utils";
+} from "@server/game/scene/propTypes";
+import { IScene } from "@server/game/scene/sceneTypes";
+import { ItemProp } from "@server/game/smsh/items";
+import { ItemSpawner } from "@server/game/smsh/spawners";
+import { WeaponPocket } from "@server/game/smsh/weapons";
+import { IScoreUpdateExt } from "@smshTypes/messages";
+import { getRandomBetween, stringToHash } from "@server/utils";
 
 export class Player
   extends Prop
@@ -242,9 +242,9 @@ export class Player
       this.$isAlreadyDead = true;
       Player.score.increment(this.nameTagged.tag, "D");
       if (this.$lastHitBy != this.ID) {
-        const killer = this.scene.getPropByID(this.$lastHitBy);
-        if (killer)
-          Player.score.increment((killer as Player).nameTagged.tag, "K");
+      const killer = this.scene.getPropByID(this.$lastHitBy);
+      if (killer)
+        Player.score.increment((killer as Player).nameTagged.tag, "K");
       }
       this.scene.destroyPropAction(this.ID);
       this.scene.produceSound("death");

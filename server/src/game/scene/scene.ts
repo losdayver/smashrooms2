@@ -14,29 +14,29 @@ import {
   ISpawnPropEvent,
   IStageLoader,
   Scheduler,
-} from "./sceneTypes";
+} from "@server/game/scene/sceneTypes";
 import {
   doBenchmark,
   instanceOfCheck,
   Mutex,
   pickRandom,
   sleep,
-} from "./../../utils";
-import { Prop } from "./prop";
-import { IControlled, PropBehaviours } from "./propTypes";
+} from "@server/utils";
+import { Prop } from "@server/game/scene/prop";
+import { IControlled, PropBehaviours } from "@server/game/scene/propTypes";
 import {
   IAnimationExt,
   INameTaggedExt,
   IPositionedExt,
   PropIDExt,
-} from "../../../../types/sceneTypes";
-import { StageExt } from "../../../../types/stage";
-import { ClientID } from "../commonTypes";
+} from "@stdTypes/sceneTypes";
+import { StageExt } from "@stdTypes/stage";
+import { ClientID } from "@server/game/commonTypes";
 import {
   IServerNotificationExt,
   ISoundMessageExt,
   IStageChangeExt,
-} from "../../../../types/messages";
+} from "@stdTypes/messages";
 
 type ChunkedUpdateMap = Record<`${number}_${number}`, ChunkUpdate>;
 type ChunkUpdate = {

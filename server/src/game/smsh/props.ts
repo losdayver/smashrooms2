@@ -1,9 +1,9 @@
-import { IDamageable, PropBehaviours } from "../scene/propTypes";
-import { IScene } from "../scene/sceneTypes";
-import { RecursivePartial } from "../../utils";
-import { Prop } from "../scene/prop";
-import { StageExt } from "../../../../types/stage";
-import { Player } from "./player";
+import { IDamageable, PropBehaviours } from "@server/game/scene/propTypes";
+import { IScene } from "@server/game/scene/sceneTypes";
+import { RecursivePartial } from "@server/utils";
+import { Prop } from "@server/game/scene/prop";
+import { StageExt } from "@stdTypes/stage";
+import { Player } from "@server/game/smsh/player";
 import {
   Bomb,
   Bullet,
@@ -12,8 +12,8 @@ import {
   Plasma,
   Rocket,
   SniperBullet,
-} from "./projectiles";
-import { ItemSpawner, PlayerSpawner } from "./spawners";
+} from "@server/game/smsh/projectiles";
+import { ItemSpawner, PlayerSpawner } from "@server/game/smsh/spawners";
 import {
   BazookaItem,
   BlasterItem,
@@ -21,9 +21,9 @@ import {
   PistolItem,
   ShotgunItem,
   SniperItem,
-} from "./items";
-import { IDrawableExt } from "../../../../types/sceneTypes";
-import { Portal } from "./portals";
+} from "@server/game/smsh/items";
+import { IDrawableExt } from "@stdTypes/sceneTypes";
+import { Portal } from "@server/game/smsh/portals";
 
 export class Crate extends Prop implements IDamageable, IDrawableExt {
   damageable = { health: 10, maxHealth: 10 };

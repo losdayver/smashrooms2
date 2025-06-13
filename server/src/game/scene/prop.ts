@@ -1,6 +1,9 @@
-import { PropBehaviours } from "./propTypes";
+import { PropBehaviours } from "@server/game/scene/propTypes";
+import {
+  IScene,
+  ISpawnControlledPropEvent,
+} from "@server/game/scene/sceneTypes";
 import { randomUUID } from "crypto";
-import { IScene, ISpawnControlledPropEvent } from "./sceneTypes";
 
 export abstract class Prop implements Prop {
   ID: string;
