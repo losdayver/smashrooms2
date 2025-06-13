@@ -284,6 +284,9 @@ export class Rocket extends Prop implements IDrawableExt, IDamaging, IMoving {
         posX: this.positioned.posX,
         posY: this.positioned.posY,
       },
+      collidable: {
+        colGroup: this.collidable.colGroup,
+      },
     });
     this.scene.destroyPropAction(this.ID);
   };
@@ -332,7 +335,13 @@ export class Explosion
     offsetY: 64,
     anim: "appear",
   };
-  collidable = { sizeX: 128, sizeY: 128, offsetX: -64, offsetY: -64 };
+  collidable: ICollidable["collidable"] = {
+    sizeX: 128,
+    sizeY: 128,
+    offsetX: -64,
+    offsetY: -64,
+    colGroupIgnoreList: [Player],
+  };
   damaging = { damage: 60 };
 
   createdOnTick: number;

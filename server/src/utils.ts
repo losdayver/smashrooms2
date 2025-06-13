@@ -105,3 +105,6 @@ export const stringToHash = (str: string) => {
 
 export const sleep = (ms: number) =>
   new Promise((resolve) => setTimeout(resolve, ms));
+
+export const instanceOfCheck = (instance: any) => (_class: any) =>
+  instance instanceof _class;

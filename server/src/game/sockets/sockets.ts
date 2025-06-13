@@ -1,6 +1,5 @@
 import { WebSocketServer, WebSocket } from "ws";
 import { randomUUID } from "crypto";
-
 import { ICommunicator } from "@server/game/communicator/communicatorTypes";
 import { ISocketServer } from "@server/game/sockets/socketsTypes";
 import {

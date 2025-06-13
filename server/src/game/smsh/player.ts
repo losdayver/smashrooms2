@@ -65,7 +65,7 @@ export class Player
     offsetX: -16,
     offsetY: 0,
     onCollide: (prop: Prop & PropBehaviours) => {
-      if (prop.damaging && prop.collidable.colGroup != this.ID) {
+      if (prop.damaging) {
         this.$lastHitBy = prop.collidable.colGroup;
         if (prop.moving) this.$punchH = 2 * Math.sign(prop.moving.speedH);
         this.scene.mutatePropBehaviourAction(this, {
@@ -241,9 +241,11 @@ export class Player
     if (this.damageable.health <= 0 && !this.$isAlreadyDead) {
       this.$isAlreadyDead = true;
       Player.score.increment(this.nameTagged.tag, "D");
+      if (this.$lastHitBy != this.ID) {
       const killer = this.scene.getPropByID(this.$lastHitBy);
       if (killer)
         Player.score.increment((killer as Player).nameTagged.tag, "K");
+      }
       this.scene.destroyPropAction(this.ID);
       this.scene.produceSound("death");
       this.scene.sendNotification(`${this.nameTagged.tag} died`, "dead");

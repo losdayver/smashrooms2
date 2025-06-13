@@ -283,19 +283,37 @@ export class Scene implements IScene {
           for (const adjacentChunk of adjacentChunks) {
             for (const adjacentProp of adjacentChunk.props) {
               if (
-                adjacentProp != prop &&
-                adjacentProp.collidable &&
-                !(prop.$isDestroyed || adjacentProp.$isDestroyed) &&
+                adjacentProp == prop ||
+                !adjacentProp.collidable ||
+                prop.$isDestroyed ||
+                adjacentProp.$isDestroyed
+              )
+                continue;
+
+              const whitelistCheck =
                 (!adjacentProp.collidable.whitelist ||
-                  (adjacentProp.collidable.whitelist &&
                     adjacentProp.collidable.whitelist.some(
-                      (cls) => prop instanceof cls
-                    ))) &&
+                    instanceOfCheck(prop)
+                  )) &&
                 (!prop.collidable.whitelist ||
-                  (prop.collidable.whitelist &&
                     prop.collidable.whitelist.some(
-                      (cls) => adjacentProp instanceof cls
-                    ))) &&
+                    instanceOfCheck(adjacentProp)
+                  ));
+
+              const colGroupCheck =
+                (prop.collidable.colGroup == adjacentProp.collidable.colGroup &&
+                  prop.collidable.colGroup == null) ||
+                prop.collidable.colGroup != adjacentProp.collidable.colGroup ||
+                adjacentProp.collidable.colGroupIgnoreList?.some(
+                  instanceOfCheck(prop)
+                ) ||
+                prop.collidable.colGroupIgnoreList?.some(
+                  instanceOfCheck(adjacentProp)
+                );
+
+              if (
+                colGroupCheck &&
+                whitelistCheck &&
                 !checkedCollisions.has(adjacentProp.ID)
               ) {
                 const left1 = prop.positioned.posX + prop.collidable.offsetX;
