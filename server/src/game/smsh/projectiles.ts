@@ -9,6 +9,7 @@ import {
 } from "@server/game/scene/propTypes";
 import { IScene } from "@server/game/scene/sceneTypes";
 import { Portal } from "@server/game/smsh/portals";
+import { Player } from "@server/game/smsh/player";
 
 const projectileIgnore = [Portal];
 

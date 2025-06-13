@@ -15,7 +15,13 @@ import {
   IStageLoader,
   Scheduler,
 } from "@server/game/scene/sceneTypes";
-import { doBenchmark, Mutex, pickRandom, sleep } from "@server/utils";
+import {
+  doBenchmark,
+  instanceOfCheck,
+  Mutex,
+  pickRandom,
+  sleep,
+} from "@server/utils";
 import { Prop } from "@server/game/scene/prop";
 import { IControlled, PropBehaviours } from "@server/game/scene/propTypes";
 import {
@@ -292,11 +298,11 @@ export class Scene implements IScene {
 
               const whitelistCheck =
                 (!adjacentProp.collidable.whitelist ||
-                    adjacentProp.collidable.whitelist.some(
+                  adjacentProp.collidable.whitelist.some(
                     instanceOfCheck(prop)
                   )) &&
                 (!prop.collidable.whitelist ||
-                    prop.collidable.whitelist.some(
+                  prop.collidable.whitelist.some(
                     instanceOfCheck(adjacentProp)
                   ));
 
