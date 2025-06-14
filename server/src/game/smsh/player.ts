@@ -254,6 +254,7 @@ export class Player
           Player.score.increment((killer as Player).nameTagged.tag, "K");
       }
       this.scene.spawnPropAction("ghost", {
+        drawable: { facing: this.drawable.facing },
         positioned: { ...this.positioned },
       });
       this.scene.destroyPropAction(this.ID);
@@ -284,11 +285,11 @@ export class Player
 
 export class PlayerGhost extends Prop implements IDrawableExt {
   drawable: IDrawableExt["drawable"] = {
+    offsetX: 16,
     facing: "left",
-    offsetX: 0,
     offsetY: 0,
     sprite: "playerGhost",
-    anim: "appear",
+    anim: "playerGhost",
   };
   positioned;
 
@@ -303,7 +304,7 @@ export class PlayerGhost extends Prop implements IDrawableExt {
       name: "positioned",
       newValue: { posY: this.positioned.posY - 5 },
     });
-    if (tickNum - this.createdOn > 20) this.scene.destroyPropAction(this.ID);
+    if (tickNum - this.createdOn > 50) this.scene.destroyPropAction(this.ID);
   };
 }
 

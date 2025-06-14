@@ -222,3 +222,18 @@
     filter: drop-shadow(0 0 0px rgba(0, 238, 255, 0)) brightness(1);
   }
 }
+
+.easel__prop-sprite--playerGhost {
+  animation: playerGhost__keyframes 1.4s linear forwards;
+}
+
+@keyframes playerGhost__keyframes {
+  0% {
+    transform: scale(0.1);
+    opacity: 0.6;
+  }
+  100% {
+    transform: scale(1.6);
+    opacity: 0;
+  }
+}
