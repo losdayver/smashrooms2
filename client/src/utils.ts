@@ -46,10 +46,15 @@ export interface ISignalEmitterPublicInterface<EventNames extends string> {
   off: (eventName: EventNames, callbackID: string) => void;
 }
 
-export const makeIconLink = (iconBasename: string, url: string) => {
+export const makeIconLink = (
+  iconBasename: string,
+  url: string,
+  blank?: boolean
+) => {
   const d = document;
   const a = d.createElement("a");
   a.href = url;
+  blank && (a.target = "_blank");
   const img = d.createElement("img");
   img.setAttribute("src", `${iconRoute}${iconBasename}`);
   img.setAttribute("width", "32px");
