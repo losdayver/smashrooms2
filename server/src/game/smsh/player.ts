@@ -287,7 +287,7 @@ export class PlayerGhost extends Prop implements IDrawableExt {
   drawable: IDrawableExt["drawable"] = {
     offsetX: 16,
     facing: "left",
-    offsetY: 0,
+    offsetY: -32,
     sprite: "playerGhost",
     anim: "playerGhost",
   };
