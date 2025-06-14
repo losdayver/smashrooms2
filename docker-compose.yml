@@ -1,0 +1,12 @@
+services:
+  ws-server:
+    build:
+      dockerfile: ./Dockerfile-ws-server
+    ports:
+      - "5889:5889"
+
+  static-server:
+    build:
+      dockerfile: ./Dockerfile-static-server
+    ports:
+      - "5890:5890"
