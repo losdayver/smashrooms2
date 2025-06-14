@@ -20,18 +20,22 @@ The testing environment is already deployed here http://olegzhmelev.ru:5890. Not
 
 ### Docker
 
-To deploy the application, simply run the `deploy.bash` script, which will automatically build a new Docker image and start the application within the `smashrooms2-container` Docker container:
+To deploy the application, simply run the `deploy.bash` script, which will automatically build Docker images and start the application within `smashrooms2-ws-server` and `smashrooms2-static-server` Docker containers:
 
-```
+```sh
 ./deploy.bash
 ```
+
+Before that make sure:
+- you have installed docker-compose;
+- you are in the `docker` group.
 
 By default, the application operates on two TCP ports: `5889` and `5890`. Port 5889 is utilized for WebSocket connections, while port 5890 is used for serving static content. You can access the application user interface at http://127.0.0.1:5890.
 
 ## License
 
-This project is licensed under the terms of the GNU General Public License (GPL) v3.0. 
-You can freely redistribute and modify this software under the terms of the GPL. 
+This project is licensed under the terms of the GNU General Public License (GPL) v3.0.
+You can freely redistribute and modify this software under the terms of the GPL.
 For more details, please see the LICENSE.txt file included in this repository.
 
 ## Copyright
