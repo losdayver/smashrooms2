@@ -21,10 +21,10 @@ module.exports = {
       },
     ],
   },
-  devtool: "source-map", // For debugging
+  devtool: "source-map",
   devServer: {
     static: "./dist",
-    hot: true, // Enable Hot Module Replacement
+    hot: true,
     port: 9000,
   },
 };
