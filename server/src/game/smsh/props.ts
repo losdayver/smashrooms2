@@ -3,7 +3,7 @@ import { IScene } from "@server/game/scene/sceneTypes";
 import { RecursivePartial } from "@server/utils";
 import { Prop } from "@server/game/scene/prop";
 import { StageExt } from "@stdTypes/stage";
-import { Player } from "@server/game/smsh/player";
+import { Player, PlayerGhost } from "@server/game/smsh/player";
 import {
   Bomb,
   Bullet,
@@ -62,6 +62,7 @@ export const smshPropMap = {
   sniperItem: SniperItem,
   portal: Portal,
   bomb: Bomb,
+  ghost: PlayerGhost,
 } as const;
 
 export const smshPropFactory: (scene: IScene, stage: StageExt) => void = (

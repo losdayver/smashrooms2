@@ -1,4 +1,8 @@
-import { IDrawableExt, INameTaggedExt } from "@stdTypes/sceneTypes";
+import {
+  IDrawableExt,
+  INameTaggedExt,
+  IPositionedExt,
+} from "@stdTypes/sceneTypes";
 import { Prop } from "@server/game/scene/prop";
 import {
   ICollidable,
@@ -6,12 +10,15 @@ import {
   IDamageable,
   PropBehaviours,
 } from "@server/game/scene/propTypes";
-import { IScene } from "@server/game/scene/sceneTypes";
+import {
+  IScene,
+  ISpawnControlledPropEvent,
+} from "@server/game/scene/sceneTypes";
 import { ItemProp } from "@server/game/smsh/items";
 import { ItemSpawner } from "@server/game/smsh/spawners";
 import { WeaponPocket } from "@server/game/smsh/weapons";
 import { IScoreUpdateExt } from "@smshTypes/messages";
-import { getRandomBetween, stringToHash } from "@server/utils";
+import { stringToHash } from "@server/utils";
 
 export class Player
   extends Prop
@@ -242,10 +249,14 @@ export class Player
       this.$isAlreadyDead = true;
       Player.score.increment(this.nameTagged.tag, "D");
       if (this.$lastHitBy != this.ID) {
-      const killer = this.scene.getPropByID(this.$lastHitBy);
-      if (killer)
-        Player.score.increment((killer as Player).nameTagged.tag, "K");
+        const killer = this.scene.getPropByID(this.$lastHitBy);
+        if (killer)
+          Player.score.increment((killer as Player).nameTagged.tag, "K");
       }
+      this.scene.spawnPropAction("ghost", {
+        drawable: { facing: this.drawable.facing },
+        positioned: { ...this.positioned },
+      });
       this.scene.destroyPropAction(this.ID);
       this.scene.produceSound("death");
       this.scene.sendNotification(`${this.nameTagged.tag} died`, "dead");
@@ -270,6 +281,31 @@ export class Player
     Player.score ??= new Score(this.scene);
     this.controlled.clientID = clientID;
   }
+}
+
+export class PlayerGhost extends Prop implements IDrawableExt {
+  drawable: IDrawableExt["drawable"] = {
+    offsetX: 16,
+    facing: "left",
+    offsetY: -32,
+    sprite: "playerGhost",
+    anim: "playerGhost",
+  };
+  positioned;
+
+  createdOn: number;
+
+  onCreated: Prop["onTick"] = (tickNum) => {
+    this.createdOn = tickNum;
+  };
+
+  onTick: Prop["onTick"] = (tickNum) => {
+    this.scene.mutatePropBehaviourAction(this, {
+      name: "positioned",
+      newValue: { posY: this.positioned.posY - 5 },
+    });
+    if (tickNum - this.createdOn > 50) this.scene.destroyPropAction(this.ID);
+  };
 }
 
 class Score {
