@@ -5,6 +5,7 @@
     "moduleResolution": "bundler",
     "baseUrl": "./",
     "outDir": "../static/scripts",
+    "sourceMap": true,
     "strict": true,
     "esModuleInterop": true,
     "strictNullChecks": false,
