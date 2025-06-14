@@ -7,12 +7,16 @@
 }
 
 .toast__notification {
-  background-color: white;
+  background: rgba(255, 255, 255, 0.616);
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
   height: 2em;
   display: flex;
   gap: 0.5em;
   image-rendering: pixelated;
   animation: slideInRight 0.2s linear forwards;
+  opacity: 0.5;
 }
 
 .toast__notification + .toast__notification {
@@ -20,7 +24,6 @@
 }
 
 .toast__notification__icon {
-  background-color: white;
   width: 32px;
   height: 32px;
   z-index: 1;
