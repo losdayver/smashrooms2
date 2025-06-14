@@ -1,7 +1,8 @@
 {
   "compilerOptions": {
     "target": "ES2020",
-    "module": "ES2020",
+    "module": "esnext",
+    "moduleResolution": "bundler",
     "outDir": "../static/scripts",
     "strict": true,
     "esModuleInterop": true,
