@@ -1,6 +1,9 @@
 FROM node:22
 WORKDIR /app
-COPY *-ws-server.bash server types smshTypes .
+COPY server ./server/
+COPY types ./types/
+COPY smshTypes ./smshTypes/
+COPY *-ws-server.bash ./
 RUN chmod +x *-ws-server.bash
 RUN npm i -g typescript
 RUN ./build-ws-server.bash

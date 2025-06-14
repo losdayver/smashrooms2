@@ -1,6 +1,10 @@
 FROM node:22
 WORKDIR /app
-COPY *-static-server.bash staticServer types smshTypes .
+COPY *-static-server.bash ./
+COPY static ./static/
+COPY staticServer ./staticServer/
+COPY types ./types/
+COPY smshTypes ./smshTypes/
 RUN chmod +x *-static-server.bash
 RUN ls
 RUN ./build-static-server.bash
