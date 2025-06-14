@@ -1,4 +1,4 @@
-import { iconRoute } from "./routes.js";
+import { iconRoute } from "@client/routes";
 
 type SignalEmitterCallback = (data?: any) => void | Promise<void>;
 

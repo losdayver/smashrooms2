@@ -2,9 +2,9 @@ import {
   AudioConfig,
   AudioSettingObjType,
   AudioSetting,
-} from "../config/config.js";
-import { soundTrackRoute, soundEventRoute } from "../routes.js";
-import { SignalEmitter, ISignalEmitterPublicInterface } from "../utils.js";
+} from "@client/config/config";
+import { soundTrackRoute, soundEventRoute } from "@client/routes";
+import { SignalEmitter, ISignalEmitterPublicInterface } from "@client/utils";
 
 export abstract class AudioEngine {
   protected audioCfg: AudioConfig = new AudioConfig();

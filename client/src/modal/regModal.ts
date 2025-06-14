@@ -1,8 +1,8 @@
-import { IServerSceneMetaMessageExt } from "../../../types/messages.js";
-import { Client } from "../client/client.js";
-import { makeIconButton } from "../utils.js";
-import { commitInfoToHtml, getLastCommitInfo } from "../versioning/github.js";
-import { Modal } from "./modal.js";
+import { IServerSceneMetaMessageExt } from "@stdTypes/messages";
+import { Client } from "@client/client/client";
+import { makeIconButton } from "@client/utils";
+import { commitInfoToHtml, getLastCommitInfo } from "@client/versioning/github";
+import { Modal } from "@client/modal/modal";
 
 export class RegModal extends Modal {
   private onSubmit: (clientName: string) => void;

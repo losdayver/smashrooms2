@@ -1,4 +1,4 @@
-import { iconRoute } from "../routes.js";
+import { iconRoute } from "@client/routes";
 
 export abstract class Modal {
   protected abstract getContent: () => HTMLElement;

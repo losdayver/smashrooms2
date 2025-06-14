@@ -4,21 +4,21 @@ import {
   IServerSceneMetaMessageExt,
   ISoundMessageExt,
   IStageChangeExt,
-} from "../../../types/messages";
+} from "@stdTypes/messages";
 import {
   IBehaviouredPropExt,
   IDamageableExt,
   ISceneUpdatesMessageData,
-} from "../../../types/sceneTypes";
-import { StageExt } from "../../../types/stage";
-import { AudioEventEngine, soundEventMap } from "../audio/audioEngine.js";
-import { Client } from "../client/client.js";
+} from "@stdTypes/sceneTypes";
+import { StageExt } from "@stdTypes/stage";
+import { AudioEventEngine, soundEventMap } from "@client/audio/audioEngine";
+import { Client } from "@client/client/client";
 import {
   backgroundRoute,
   layoutSpriteRoute,
   propSpriteRoute,
   stagesRoute,
-} from "../routes.js";
+} from "@client/routes";
 
 export class EaselManager {
   private easelDiv: HTMLDivElement | HTMLSpanElement;
@@ -341,9 +341,8 @@ export class EaselManager {
     });
     this.currentStageWidth = width; // todo maybe put this in one nice object
     this.updateEaselScale();
-    document.querySelector(
-      "body"
-    ).style.backgroundImage = `url(${backgroundRoute}forest.png)`;
+    document.querySelector("body").style.backgroundImage =
+      `url(${backgroundRoute}forest.png)`;
     this.easelDiv.appendChild(this.layoutPivot);
   };
 

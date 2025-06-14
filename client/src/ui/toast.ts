@@ -1,5 +1,5 @@
-import { NotificationTypesExt } from "../../../types/messages";
-import { iconRoute } from "../routes.js";
+import { NotificationTypesExt } from "@stdTypes/messages";
+import { iconRoute } from "@client/routes";
 
 const toastIconMap: Record<NotificationTypesExt, string> = {
   info: "info.png",
@@ -16,7 +16,8 @@ export class Toast {
   private toastEl: HTMLDivElement;
   private maxCount = 5;
   private timeout: number;
-  private removeTimeout: number;
+  // TODO: number / NodeJS.Timeout type ?
+  private removeTimeout: any;
   private static toastWidth = 300;
   private static textAreaWidth = Toast.toastWidth - (22 + 3 * 5);
 

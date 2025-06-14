@@ -6,16 +6,13 @@ import {
   IClientSceneMetaMessageExt,
   IConnectResponseMessageExt,
   IStageChangeExt,
-} from "../../../types/messages";
-import { PropIDExt } from "../../../types/sceneTypes";
-import { ControlsObjType } from "../config/config.js";
-import { FocusManager, IFocusable } from "../focus/focusManager.js";
-import { SignalEmitter, ISignalEmitterPublicInterface } from "../utils.js";
-import { ClientActionCodesExt } from "../../../types/messages";
-import {
-  IScoreUpdateExt,
-  SmshMessageTypeExt,
-} from "../../../smshTypes/messages";
+} from "@stdTypes/messages";
+import { PropIDExt } from "@stdTypes/sceneTypes";
+import { ControlsObjType } from "@client/config/config";
+import { FocusManager, IFocusable } from "@client/focus/focusManager";
+import { SignalEmitter, ISignalEmitterPublicInterface } from "@client/utils";
+import { ClientActionCodesExt } from "@stdTypes/messages";
+import { IScoreUpdateExt, SmshMessageTypeExt } from "@smshTypes/messages";
 
 type ClientEventEmitterType =
   | SmshMessageTypeExt["name"]

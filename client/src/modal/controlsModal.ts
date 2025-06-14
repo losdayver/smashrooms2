@@ -3,9 +3,9 @@ import {
   controlsList,
   ControlsObjType,
   defaultControlsObj,
-} from "../config/config.js";
-import { FocusManager, IFocusable } from "../focus/focusManager.js";
-import { Modal } from "./modal.js";
+} from "@client/config/config";
+import { FocusManager, IFocusable } from "@client/focus/focusManager";
+import { Modal } from "@client/modal/modal";
 
 export class ControlsModal extends Modal implements IFocusable {
   private controlsConfig = new ControlsConfig();

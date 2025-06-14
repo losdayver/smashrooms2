@@ -3,13 +3,19 @@
     "target": "ES2020",
     "module": "esnext",
     "moduleResolution": "bundler",
+    "baseUrl": "./",
     "outDir": "../static/scripts",
     "strict": true,
     "esModuleInterop": true,
     "strictNullChecks": false,
     "noImplicitAny": false,
     "noEmitOnError": true,
-    "typeRoots": ["../types", "../smshTypes"]
+    "paths": {
+      "@client/*": ["src/*"],
+      "@stdTypes/*": ["../types/*"],
+      "@smshTypes/*": ["../smshTypes/*"]
+    },
+    "typeRoots": ["./node_modules/@types", "../types", "../smshTypes"]
   },
   "include": ["src"]
 }
