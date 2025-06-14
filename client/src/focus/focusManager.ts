@@ -2,11 +2,11 @@ import {
   ControlsConfig,
   controlsList,
   ControlsObjType,
-} from "../config/config.js";
+} from "@client/config/config";
 import {
   gamepadEventToKeyMap,
   GamepadControlsObjType,
-} from "./gamepadLayouts.js";
+} from "@client/focus/gamepadLayouts";
 
 export class FocusManager {
   private registeredReceivers: Map<string, IFocusable> = new Map();

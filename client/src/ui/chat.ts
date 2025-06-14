@@ -1,4 +1,4 @@
-import { FocusManager, IFocusable } from "../focus/focusManager.js";
+import { FocusManager, IFocusable } from "@client/focus/focusManager";
 
 export class Chat implements IFocusable {
   private maxMessages: number;

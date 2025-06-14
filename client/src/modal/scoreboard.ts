@@ -1,8 +1,8 @@
-import { IScoreUpdateExt } from "../../../smshTypes/messages";
-import { IStageChangeExt } from "../../../types/messages";
-import { Client } from "../client/client.js";
-import { FocusManager, IFocusable } from "../focus/focusManager.js";
-import { Modal } from "./modal.js";
+import { IScoreUpdateExt } from "@smshTypes/messages";
+import { IStageChangeExt } from "@stdTypes/messages";
+import { Client } from "@client/client/client";
+import { FocusManager, IFocusable } from "@client/focus/focusManager";
+import { Modal } from "@client/modal/modal";
 
 export class ScoreBoardModal extends Modal implements IFocusable {
   constructor(container: HTMLDivElement, client: Client) {

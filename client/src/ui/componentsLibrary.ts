@@ -1,5 +1,5 @@
-import { EmptyModal } from "../modal/modal.js";
-import { Toast } from "./toast.js";
+import { EmptyModal } from "@client/modal/modal";
+import { Toast } from "@client/ui/toast";
 
 const toastContainer = document.querySelector(
   ".library-toast-container"

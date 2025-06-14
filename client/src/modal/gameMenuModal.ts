@@ -1,11 +1,11 @@
-import { AudioEventEngine, AudioTrackEngine } from "../audio/audioEngine.js";
-import { FocusManager, IFocusable } from "../focus/focusManager.js";
-import { repoRoute } from "../routes.js";
-import { AudioWidget } from "../ui/audioWidget.js";
-import { makeIconLink } from "../utils.js";
-import { commitInfoToHtml, getLastCommitInfo } from "../versioning/github.js";
-import { ControlsModal } from "./controlsModal.js";
-import { Modal } from "./modal.js";
+import { AudioEventEngine, AudioTrackEngine } from "@client/audio/audioEngine";
+import { FocusManager, IFocusable } from "@client/focus/focusManager";
+import { repoRoute } from "@client/routes";
+import { AudioWidget } from "@client/ui/audioWidget";
+import { makeIconLink } from "@client/utils";
+import { commitInfoToHtml, getLastCommitInfo } from "@client/versioning/github";
+import { ControlsModal } from "@client/modal/controlsModal";
+import { Modal } from "@client/modal/modal";
 
 export class GameMenuModal extends Modal implements IFocusable {
   constructor(

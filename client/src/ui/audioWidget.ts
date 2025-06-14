@@ -2,7 +2,7 @@ import {
   AudioEngine,
   AudioTrackEngine,
   AudioEventEngine,
-} from "../audio/audioEngine.js";
+} from "@client/audio/audioEngine";
 
 // TODO: icons, decorative buttons
 export class AudioWidget {

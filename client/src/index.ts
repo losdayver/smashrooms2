@@ -1,23 +1,23 @@
-import { IScoreUpdateExt } from "../../smshTypes/messages.js";
+import { IScoreUpdateExt } from "@smshTypes/messages";
 import {
   IConnectResponseMessageExt,
   IServerChatMessageExt,
   IServerNotificationExt,
-} from "../../types/messages.js";
+} from "@stdTypes/messages";
 import {
   AudioTrackEngine,
   AudioEventEngine,
   soundTrackMap,
-} from "./audio/audioEngine.js";
-import { Client } from "./client/client.js";
-import { EaselManager } from "./easel/easelManager.js";
-import { FocusManager } from "./focus/focusManager.js";
-import { ScoreBoardModal } from "./modal/scoreboard.js";
-import { Chat } from "./ui/chat.js";
-import { Toast } from "./ui/toast.js";
-import { pickRandom } from "./utils.js";
-import { RegModal } from "./modal/regModal.js";
-import { GameMenuModal } from "./modal/gameMenuModal.js";
+} from "@client/audio/audioEngine";
+import { Client } from "@client/client/client";
+import { EaselManager } from "@client/easel/easelManager";
+import { FocusManager } from "@client/focus/focusManager";
+import { ScoreBoardModal } from "@client/modal/scoreboard";
+import { Chat } from "@client/ui/chat";
+import { Toast } from "@client/ui/toast";
+import { pickRandom } from "@client/utils";
+import { RegModal } from "@client/modal/regModal";
+import { GameMenuModal } from "@client/modal/gameMenuModal";
 
 const initGameLayout = async () => {
   const client = new Client(`ws://${window.location.hostname}:5889`);
