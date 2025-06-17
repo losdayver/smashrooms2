@@ -5,7 +5,7 @@ import { PGQuerier } from "./db/dbQuerier";
 const pg = new PGQuerier();
 
 (async () => {
-  const res = await pg.makeQuery("qHelloWorld");
+  const res = await pg.makeQuery("qTopScoresByTag", { limit: 10 });
   console.log(res);
 })();
 
