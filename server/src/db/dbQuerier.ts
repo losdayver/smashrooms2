@@ -6,9 +6,9 @@ interface DBClient {
 }
 
 export abstract class DBQuerier<Params> {
-  getClient: () => Promise<DBClient> | DBClient;
-  getQueryText: (queryName: string) => string | string[];
-  preProcessText?: (
+  protected getClient: () => Promise<DBClient> | DBClient;
+  protected getQueryText: (queryName: string) => string | string[];
+  protected preProcessText?: (
     text: string | string[],
     params?: Params
   ) => string | string[];
