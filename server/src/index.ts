@@ -1,6 +1,6 @@
 import "module-alias/register";
 import { getWSServer } from "@server/game/server/server";
-import { PGQuerier } from "./db/dbQuerier";
+import { PGQuerier } from "./db/pgQuerier";
 
 const pg = new PGQuerier();
 
