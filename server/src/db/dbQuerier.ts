@@ -24,6 +24,8 @@ export abstract class DBQuerier<Params = any> {
       else
         for (const t of preprocessed) res.push(await client.query(t, params));
       return res;
+    } catch (e) {
+      console.error(e);
     } finally {
       client.release();
     }
