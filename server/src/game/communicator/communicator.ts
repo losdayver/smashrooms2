@@ -23,21 +23,27 @@ export class Communicator implements ICommunicator {
   };
 
   processMessage: ICommunicator["processMessage"] = (from, msg, nameTag) => {
-    if (msg.name == "connRes") {
-      this.scene.connectAction(from, nameTag);
-    } else if (msg.name == "disc") {
-      Player.score.unlist(nameTag);
-      this.scene.disconnectAction(from);
-    } else if (msg.name == "clientAct")
-      this.scene.clientAction(from, msg.data.code, nameTag, msg.data.status);
+    switch (msg.name) {
+      case "connRes":
+        this.scene.connectAction(from, nameTag);
+        break;
+      case "disc":
+        Player.score.unlist(nameTag);
+        this.scene.disconnectAction(from);
+        break;
+      case "clientAct":
+        this.scene.clientAction(from, msg.data.code, nameTag, msg.data.status);
+    }
   };
 
   processMessageWithResponse: ICommunicator["processMessageWithResponse"] =
     async (msg) => {
-      if (msg.name == "clientSceneMeta") {
-        return this.scene.getSceneMeta();
-      } else if (msg.name == "webDBQuery")
-        return await this.querier.makeQuery(msg.queryName, msg.params);
+      switch (msg.name) {
+        case "clientSceneMeta":
+          return this.scene.getSceneMeta();
+        case "webDBQuery":
+          return await this.querier.makeQuery(msg.queryName, msg.params);
+      }
     };
 
   constructor(scene: IScene, querier: DBQuerier) {

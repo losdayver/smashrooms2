@@ -61,7 +61,7 @@ export class WSSocketServer implements ISocketServer {
         let msg: IMessageExt;
         try {
           msg = JSON.parse(buffer.toString()) as IMessageExt;
-          const resolver = await this.messageResolveMap[msg.name];
+          const resolver = this.messageResolveMap[msg.name];
           if (resolver) resolver(clientSocket, msg);
           else await this.messageResolveMap["default"](clientSocket, msg);
         } catch (e) {
@@ -251,10 +251,10 @@ export class WSSocketServer implements ISocketServer {
     message: IGenericMessageExt
   ) => {
     let clientID: ClientID;
-    let currentClinet: IWSClient;
+    let currentClient: IWSClient;
     for (const [ID, client] of this.clientMap.entries())
       if (clientSocket == client.socket) {
-        currentClinet = client;
+        currentClient = client;
         clientID = ID;
         break;
       }
@@ -268,30 +268,38 @@ export class WSSocketServer implements ISocketServer {
       return;
     }
 
-    if (message.name == "clientSceneMeta") {
-      const meta = (await this.communicator.processMessageWithResponse(
-        message as IClientSceneMetaMessageExt
-      )) as IServerSceneMetaMessageExt;
-      meta.maxPlayerCount = this.maxClients ?? "infinite";
-      meta.currPlayerCount = this.clientMap.size;
-      wslogSend(clientSocket, meta);
-    } else if (message.name == "webDBQuery") {
-      const dbRows = await this.communicator.processMessageWithResponse(
-        message as IWebDBQuery
-      );
-      wslogSend(clientSocket, {
-        name: "webDBRes",
-        queryName: (message as IWebDBQuery).queryName,
-        rows: dbRows,
-      } satisfies IWebDBRes);
-    } else
-      this.communicator.processMessage(clientID, message, currentClinet?.name);
+    switch (message.name) {
+      case "clientSceneMeta":
+        const meta = (await this.communicator.processMessageWithResponse(
+          message as IClientSceneMetaMessageExt
+        )) as IServerSceneMetaMessageExt;
+        meta.maxPlayerCount = this.maxClients ?? "infinite";
+        meta.currPlayerCount = this.clientMap.size;
+        wslogSend(clientSocket, meta);
+        break;
+      case "webDBQuery":
+        const dbRows = await this.communicator.processMessageWithResponse(
+          message as IWebDBQuery
+        );
+        wslogSend(clientSocket, {
+          name: "webDBRes",
+          queryName: (message as IWebDBQuery).queryName,
+          rows: dbRows,
+        } satisfies IWebDBRes);
+        break;
+      default:
+        this.communicator.processMessage(
+          clientID,
+          message,
+          currentClient?.name
+        );
+    }
   };
 
   private messageResolveMap: Partial<
     Record<
       IMessageExt["name"] | "default",
-      (clientSocket: WebSocket, message: any) => void
+      (clientSocket: WebSocket, message: any) => void | Promise<void>
     >
   > = {
     conn: this.resolveConnectMessage,

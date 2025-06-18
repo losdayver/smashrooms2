@@ -20,7 +20,7 @@ export abstract class DBQuerier<Params = any> {
     let res: IDBRes = [];
     try {
       if (typeof preprocessed == "string")
-        res.push(await client.query(preprocessed, params));
+        res = await client.query(preprocessed, params);
       else
         for (const t of preprocessed) res.push(await client.query(t, params));
       return res;

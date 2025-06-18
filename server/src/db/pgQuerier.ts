@@ -28,7 +28,7 @@ export class PGQuerier extends DBQuerier<IPGParams> {
       let paramsArray: any[];
       if (params) paramsArray = Object.values(params);
       const res = await pgClient.query(text, paramsArray);
-      return res.rows[0] as IDBRes;
+      return res.rows as IDBRes;
     };
     return {
       query,
@@ -55,6 +55,7 @@ export class PGQuerier extends DBQuerier<IPGParams> {
     );
   }
 
+  // todo hide this inside some object for safety
   private qHelloWorld() {
     return "select 'Hello World!' value";
   }
