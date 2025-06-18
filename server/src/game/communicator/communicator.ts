@@ -4,9 +4,11 @@ import {
   ICommunicatorSubscriber,
 } from "@server/game/communicator/communicatorTypes";
 import { Player } from "@server/game/smsh/player";
+import { DBQuerier } from "@server/db/dbQuerier";
 
 export class Communicator implements ICommunicator {
   private scene: IScene;
+  private querier: DBQuerier;
   private sendMessageToSubscriber: ICommunicatorSubscriber["onReceiveMessageFromCommunicator"];
 
   subscribe: ICommunicator["subscribe"] = (subscriber) => {
@@ -30,13 +32,16 @@ export class Communicator implements ICommunicator {
       this.scene.clientAction(from, msg.data.code, nameTag, msg.data.status);
   };
 
-  processMessageSync: ICommunicator["processMessageSync"] = (msg) => {
-    if (msg.name == "clientSceneMeta") {
-      return this.scene.getSceneMeta();
-    }
-  };
+  processMessageWithResponse: ICommunicator["processMessageWithResponse"] =
+    async (msg) => {
+      if (msg.name == "clientSceneMeta") {
+        return this.scene.getSceneMeta();
+      } else if (msg.name == "webDBQuery")
+        return await this.querier.makeQuery(msg.queryName, msg.params);
+    };
 
-  constructor(scene: IScene) {
+  constructor(scene: IScene, querier: DBQuerier) {
     this.scene = scene;
+    this.querier = querier;
   }
 }

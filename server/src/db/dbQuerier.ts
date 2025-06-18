@@ -5,7 +5,7 @@ interface DBClient {
   release: () => void;
 }
 
-export abstract class DBQuerier<Params> {
+export abstract class DBQuerier<Params = any> {
   protected getClient: () => Promise<DBClient> | DBClient;
   protected getQueryText: (queryName: string) => string | string[];
   protected preProcessText?: (

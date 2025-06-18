@@ -3,6 +3,7 @@ import {
   IConnectResponseMessageExt,
   IServerChatMessageExt,
   IServerNotificationExt,
+  IWebDBRes,
 } from "@stdTypes/messages";
 import {
   AudioTrackEngine,
@@ -39,6 +40,13 @@ const initGameLayout = async () => {
   });
   client.on("score", "self", (data: IScoreUpdateExt) => {
     scoreBoardModal.updateScore(data);
+  });
+  client.on("webDBRes", "self", (data: IWebDBRes) => {
+    console.log(data);
+  });
+  client.on("connRes", "self", (data) => {
+    client.makeDBQuery("qTopScoresByTag", { limit: 10 });
+    console.log("dbRes", data);
   });
 
   const audioTrackEng = new AudioTrackEngine();

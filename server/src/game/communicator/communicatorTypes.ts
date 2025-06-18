@@ -7,6 +7,7 @@ import {
   IGenericMessageExt,
   ClientActionCodesExt,
   IClientSceneMetaMessageExt,
+  IWebDBQuery,
 } from "@stdTypes/messages";
 
 export interface ICommunicator extends ISceneSubscriber {
@@ -20,7 +21,9 @@ export interface ICommunicator extends ISceneSubscriber {
       | IClientSceneMetaMessageExt,
     clientName?: string
   ) => void;
-  processMessageSync: (msg: IClientSceneMetaMessageExt) => any;
+  processMessageWithResponse: (
+    msg: IClientSceneMetaMessageExt | IWebDBQuery
+  ) => Promise<any>;
   subscribe: (communicatorSubscriber: ICommunicatorSubscriber) => void;
 }
 

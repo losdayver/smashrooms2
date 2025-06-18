@@ -6,6 +6,7 @@ import {
   IClientSceneMetaMessageExt,
   IConnectResponseMessageExt,
   IStageChangeExt,
+  IWebDBQuery,
 } from "@stdTypes/messages";
 import { PropIDExt } from "@stdTypes/sceneTypes";
 import { ControlsObjType } from "@client/config/config";
@@ -112,6 +113,13 @@ export class Client
       name: "clientChat",
       message,
     } satisfies IClientChatMessageExt);
+
+  makeDBQuery = (queryName: string, params: any) =>
+    this.socketSend({
+      name: "webDBQuery",
+      queryName,
+      params,
+    } satisfies IWebDBQuery);
 
   private onmessage = async (message: MessageEvent<string>) => {
     let parsedMsg: SmshMessageTypeExt;
