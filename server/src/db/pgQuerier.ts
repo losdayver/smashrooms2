@@ -36,7 +36,17 @@ export class PGQuerier extends DBQuerier<IPGParams> {
     };
   };
 
-  protected getQueryText = (queryName: string) => this[queryName]?.();
+  protected getQueryText = (queryName: string) =>
+    this.queryStorage[queryName]?.();
+
+  private queryStorage = {
+    qHelloWorld() {
+      return "select 'Hello World!' value";
+    },
+    qTopScoresByTag() {
+      return "select * from top_scores_by_tag order by pk desc limit $limit";
+    },
+  };
 
   constructor(config?: PoolConfig) {
     super();
@@ -53,13 +63,5 @@ export class PGQuerier extends DBQuerier<IPGParams> {
         maxLifetimeSeconds: 60,
       }
     );
-  }
-
-  // todo hide this inside some object for safety
-  private qHelloWorld() {
-    return "select 'Hello World!' value";
-  }
-  private qTopScoresByTag() {
-    return "select * from top_scores_by_tag order by pk desc limit $limit";
   }
 }

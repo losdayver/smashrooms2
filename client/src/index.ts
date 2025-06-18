@@ -44,9 +44,9 @@ const initGameLayout = async () => {
   client.on("webDBRes", "self", (data: IWebDBRes) => {
     console.log(data);
   });
-  client.on("connRes", "self", (data) => {
+  client.on("connRes", "self", () => {
     client.makeDBQuery("qTopScoresByTag", { limit: 10 });
-    console.log("dbRes", data);
+    client.makeDBQuery("qHelloWorld");
   });
 
   const audioTrackEng = new AudioTrackEngine();

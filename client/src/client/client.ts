@@ -114,7 +114,7 @@ export class Client
       message,
     } satisfies IClientChatMessageExt);
 
-  makeDBQuery = (queryName: string, params: any) =>
+  makeDBQuery = (queryName: string, params?: any) =>
     this.socketSend({
       name: "webDBQuery",
       queryName,
