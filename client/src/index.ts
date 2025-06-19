@@ -41,12 +41,10 @@ const initGameLayout = async () => {
   client.on("score", "self", (data: IScoreUpdateExt) => {
     scoreBoardModal.updateScore(data);
   });
-  client.on("webDBRes", "self", (data: IWebDBRes) => {
-    console.log(data);
-  });
-  client.on("connRes", "self", () => {
-    client.makeDBQuery("qTopScoresByTag", { limit: 10 });
-    client.makeDBQuery("qHelloWorld");
+  client.on("connRes", "self", async () => {
+    console.log(
+      await client.queryDBPromisified("qTopScoresByTag", { limit: 10 })
+    );
   });
 
   const audioTrackEng = new AudioTrackEngine();

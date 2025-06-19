@@ -85,12 +85,14 @@ export interface IWebDBQuery {
   name: "webDBQuery";
   queryName: string;
   params: any;
+  sequence?: string;
 }
 
 export interface IWebDBRes {
   name: "webDBRes";
   queryName: string;
   rows: object[];
+  sequence?: string;
 }
 
 /** This interface represents an abstract message */

@@ -285,6 +285,7 @@ export class WSSocketServer implements ISocketServer {
           name: "webDBRes",
           queryName: (message as IWebDBQuery).queryName,
           rows: dbRows,
+          sequence: (message as IWebDBQuery).sequence,
         } satisfies IWebDBRes);
         break;
       default:
