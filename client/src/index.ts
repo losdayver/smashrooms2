@@ -39,7 +39,7 @@ const initGameLayout = async () => {
     chat.receiveMessage(data.sender, data.message);
   });
   client.on("score", "self", (data: IScoreUpdateExt) => {
-    scoreBoardModal.updateScore(data);
+    scoreBoardModal.updateLocalScore(data);
   });
   client.on("connRes", "self", async () => {
     console.log(

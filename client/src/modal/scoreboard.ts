@@ -7,13 +7,15 @@ import { Modal } from "@client/modal/modal";
 export class ScoreBoardModal extends Modal implements IFocusable {
   constructor(container: HTMLDivElement, client: Client) {
     super(container, {
-      title: "Score board",
+      title: "Leaderboard",
       noCloseButton: true,
       overlayStyle: {
         backdropFilter: "none",
       },
     });
-    client.on("stageChange", "scoreboard", (msg: IStageChangeExt) => {
+    this.client = client;
+    client.on("stageChange", "scoreboard", async (msg: IStageChangeExt) => {
+      await this.updateGlobalScore();
       if (msg.status == "showScore") {
         this.allowHide = false;
         this.focusManager.setFocus("scoreboard"); // todo hide all the modals besides the scoreboard modal
@@ -24,77 +26,115 @@ export class ScoreBoardModal extends Modal implements IFocusable {
     });
     this.board = document.createElement("div");
     this.board.style.display = "flex";
+    this.board.style.flexDirection = "column";
     this.board.style.justifyContent = "center";
+    this.board.style.alignItems = "center";
   }
+
+  client: Client;
   private focusManager: FocusManager;
   private allowHide = true;
+  private localScoreArray: ScoreObj[] = [];
+  private globalScoreArray: { tag: string; kills: number }[] = [];
 
   private board: HTMLDivElement;
-  private scoreArray: ScoreObj[] = [];
 
-  updateScore = (update: IScoreUpdateExt): void => {
-    if (update.unlist) {
-      this.scoreArray = this.scoreArray.filter(
+  updateLocalScore = (update: IScoreUpdateExt) => {
+    if (update.unlist)
+      this.localScoreArray = this.localScoreArray.filter(
         (element: ScoreObj) => element.N !== update.tag
       );
-      this.constructBoard();
-      return;
+    else {
+      let updateIndex: number = this.localScoreArray.findIndex(
+        (element: ScoreObj) => element.N === update.tag
+      );
+      if (updateIndex === -1)
+        updateIndex =
+          this.localScoreArray.push({
+            N: update.tag,
+            K: 0,
+            D: 0,
+          }) - 1;
+      if (update.K) this.localScoreArray[updateIndex].K = update.K;
+      if (update.D) this.localScoreArray[updateIndex].D = update.D;
     }
-    let updateIndex: number = this.scoreArray.findIndex(
-      (element: ScoreObj) => element.N === update.tag
-    );
-    if (updateIndex === -1)
-      updateIndex =
-        this.scoreArray.push({
-          N: update.tag,
-          K: 0,
-          D: 0,
-        }) - 1;
-    if (update.K) this.scoreArray[updateIndex].K = update.K;
-    if (update.D) this.scoreArray[updateIndex].D = update.D;
+    this.constructBoard();
+  };
+  updateGlobalScore = async () => {
+    this.globalScoreArray = (await this.client.queryDBPromisified(
+      "qTopScoresByTag",
+      { limit: 10 }
+    )) as { tag: string; kills: number }[];
     this.constructBoard();
   };
 
-  private constructBoard = (): void => {
-    this.sortScoreArrayDesc();
-    this.constructTable();
-  };
-
-  private sortScoreArrayDesc = (): void => {
-    this.scoreArray.sort((a, b) => (a.K > b.K ? -1 : 1));
-  };
-
-  private constructTable = (): void => {
+  private constructBoard = () => {
     this.board.innerHTML = "";
-    const scoreTable = document.createElement("table");
-    scoreTable.className = "smsh-table";
+    this.constructLocalTable();
+    this.constructGlobalTable();
+  };
+  private constructLocalTable = () => {
+    this.localScoreArray.sort((a, b) => (a.K > b.K ? -1 : 1));
+    const wrapper = document.createElement("div");
+    const header = document.createElement("h3");
+    header.innerText = "Leaders";
+    header.style.textAlign = "center";
+    wrapper.appendChild(header);
+    const table = document.createElement("table");
+    table.className = "smsh-table";
     const tHead = document.createElement("thead");
     tHead.innerHTML = `<tr>
       <td>Rank</td>
       <td>Player name</td>
       <td>Kills</td>
       <td>Deaths</td>
-      <td>Suicides</td>
-      <td>Ping</td>
     </tr>`;
-    scoreTable.appendChild(tHead);
+    table.appendChild(tHead);
 
     const tBody = document.createElement("tbody");
-    for (let i: number = 0; i < this.scoreArray.length; i++) {
+    for (let i: number = 0; i < this.localScoreArray.length; i++) {
       const playerRow = document.createElement("tr");
       playerRow.innerHTML = `\
         <td>${i + 1}.</td>
-        <td>${this.scoreArray[i].N}</td>
-        <td>${this.scoreArray[i].K}</td>
-        <td>${this.scoreArray[i].D}</td>
-        <td>N/A</td>
-        <td>N/A</td>
+        <td>${this.localScoreArray[i].N}</td>
+        <td>${this.localScoreArray[i].K}</td>
+        <td>${this.localScoreArray[i].D}</td>
       `;
       tBody.appendChild(playerRow);
     }
-    scoreTable.appendChild(tBody);
+    table.appendChild(tBody);
+    wrapper.appendChild(table);
+    this.board.appendChild(wrapper);
+  };
+  private constructGlobalTable = () => {
+    const wrapper = document.createElement("div");
+    const header = document.createElement("h3");
+    header.innerText = "Top players of all time";
+    header.style.textAlign = "center";
+    wrapper.appendChild(header);
+    const table = document.createElement("table");
+    table.className = "smsh-table";
+    const tHead = document.createElement("thead");
+    tHead.innerHTML = `<tr>
+      <td>Rank</td>
+      <td>Player name</td>
+      <td>Kills</td>
+    </tr>`;
+    table.appendChild(tHead);
 
-    this.board.appendChild(scoreTable);
+    const tBody = document.createElement("tbody");
+    for (let i: number = 0; i < this.localScoreArray.length; i++) {
+      const playerRow = document.createElement("tr");
+      playerRow.innerHTML = `\
+        <td>${i + 1}.</td>
+        <td>${this.globalScoreArray[i].tag}</td>
+        <td>${this.globalScoreArray[i].kills}</td>
+      `;
+      tBody.appendChild(playerRow);
+    }
+    table.appendChild(tBody);
+    wrapper.appendChild(table);
+    this.board.appendChild(wrapper);
   };
 
   onClose = () => {
@@ -102,7 +142,10 @@ export class ScoreBoardModal extends Modal implements IFocusable {
   };
 
   getFocusTag = () => "scoreboard";
-  onFocused = this.show;
+  onFocused = () => {
+    void this.updateGlobalScore();
+    this.show();
+  };
   onFocusReceiveKey: IFocusable["onFocusReceiveKey"] = (key, status) => {
     if (
       this.allowHide &&
