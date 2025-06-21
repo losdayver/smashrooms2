@@ -1,25 +1,33 @@
 export type IDBRes<T extends object = object> = T[];
 
 interface DBClient {
-  query: (text: string, params?: any) => Promise<IDBRes>;
+  query: (text: string, params?: object) => Promise<IDBRes>;
   release: () => void;
 }
+export interface IQueryConfig<Params = any> {
+  /** name of the query */
+  queryName: string;
+  /** origin of the query (client is chosen by default) */
+  target?: "client" | "server";
+  /** parameters for parametrized queries */
+  params?: Params;
+}
 
-export abstract class DBQuerier<Params = any> {
+export abstract class DBQuerier<Params extends object = object> {
   protected getClient: () => Promise<DBClient> | DBClient;
   /** returns text for a query or the result itself for complex scenarios  */
   protected getQueryText: (
-    queryName: string,
-    params?: Params
+    queryConfig: IQueryConfig<Params>
   ) => Promise<string | string[] | IDBRes> | string | string[] | IDBRes;
   protected preProcessText?: (
     text: string | string[],
     params?: Params
   ) => string | string[];
-  makeQuery = async (queryName: string, params?: Params) => {
+  makeQuery = async (queryConfig: IQueryConfig<Params>) => {
+    const { params } = queryConfig;
     let text: string | IDBRes<object> | string[];
     try {
-      text = await this.getQueryText(queryName, params);
+      text = await this.getQueryText({ target: "client", ...queryConfig });
     } catch (e) {
       console.error(e);
     }

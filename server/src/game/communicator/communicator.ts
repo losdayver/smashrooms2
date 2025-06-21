@@ -42,7 +42,10 @@ export class Communicator implements ICommunicator {
         case "clientSceneMeta":
           return this.scene.getSceneMeta();
         case "webDBQuery":
-          return await this.querier.makeQuery(msg.queryName, msg.params);
+          return await this.querier.makeQuery({
+            queryName: msg.queryName,
+            params: msg.params,
+          });
       }
     };
 

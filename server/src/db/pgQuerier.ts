@@ -1,5 +1,5 @@
 import { Pool } from "pg";
-import { DBQuerier, IDBRes } from "./dbQuerier";
+import { DBQuerier, IDBRes, IQueryConfig } from "./dbQuerier";
 import { env } from "@server/env";
 
 type IPGParams = Record<string, any>;
@@ -35,20 +35,34 @@ export class PGQuerier extends DBQuerier<IPGParams> {
     };
   };
 
-  protected getQueryText = async (queryName: string, params: IPGParams) =>
-    await queryStorage[queryName]?.(params, this);
+  protected getQueryText = async (queryConfig: IQueryConfig<IPGParams>) =>
+    await queryStorage[queryConfig.queryName]?.(queryConfig, this);
 }
 
-const queryStorage = {
-  qHelloWorld() {
-    return "select 'Hello World!' value";
+const queryStorage: Record<
+  string,
+  (
+    queryConfig: IQueryConfig<IPGParams>,
+    q: PGQuerier
+  ) => Promise<string | string[] | IDBRes> | string | string[] | IDBRes
+> = {
+  async qHelloWorld1(conf, q) {
+    const res = await q.makeQuery({
+      queryName: "qHelloWorld",
+    });
+    return res.map((row: any) => ({ ...row, value: row.value + "123" }));
   },
-  qTopScoresByTag(params: { limit: number }) {
-    if (params.limit > 20) return;
+  qTopScoresByTag(conf) {
+    if (conf.params.limit > 20) return;
     return "select * from top_scores_by_tag order by pk desc limit $limit";
   },
-  async qHelloWorld1(_, q: PGQuerier) {
-    const res = await q.makeQuery("qHelloWorld");
-    return res.map((row: any) => ({ ...row, value: row.value + "123" }));
+  qUpsertTopScore(conf) {
+    if (conf.params.target == "client") return;
+    return `
+    insert into top_scores_by_tag (tag, kills) 
+    values ($tag, $kills)
+    on conflict (tag) 
+    do update set 
+    kills = greatest(top_scores_by_tag.kills, excluded.kills)`;
   },
 } as const;
