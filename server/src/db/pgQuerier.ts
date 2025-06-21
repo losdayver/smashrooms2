@@ -54,7 +54,7 @@ const queryStorage: Record<
   },
   qTopScoresByTag(conf) {
     if (conf.params.limit > 20) return;
-    return "select * from top_scores_by_tag order by pk desc limit $limit";
+    return "select * from top_scores_by_tag order by kills desc limit $limit";
   },
   qUpsertTopScore(conf) {
     if (conf.params.target == "client") return;

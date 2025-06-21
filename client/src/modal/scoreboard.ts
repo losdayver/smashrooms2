@@ -65,6 +65,7 @@ export class ScoreBoardModal extends Modal implements IFocusable {
       "qTopScoresByTag",
       { limit: 10 }
     )) as { tag: string; kills: number }[];
+    console.log(this.globalScoreArray);
     this.constructBoard();
   };
 
@@ -74,7 +75,7 @@ export class ScoreBoardModal extends Modal implements IFocusable {
     this.constructGlobalTable();
   };
   private constructLocalTable = () => {
-    this.localScoreArray.sort((a, b) => (a.K > b.K ? -1 : 1));
+    this.localScoreArray.sort((a, b) => a.K - b.K);
     const wrapper = document.createElement("div");
     const header = document.createElement("h3");
     header.innerText = "Leaders";
@@ -123,7 +124,7 @@ export class ScoreBoardModal extends Modal implements IFocusable {
     table.appendChild(tHead);
 
     const tBody = document.createElement("tbody");
-    for (let i: number = 0; i < this.localScoreArray.length; i++) {
+    for (let i: number = 0; i < this.globalScoreArray.length; i++) {
       const playerRow = document.createElement("tr");
       playerRow.innerHTML = `\
         <td>${i + 1}.</td>
