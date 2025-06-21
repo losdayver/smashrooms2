@@ -8,14 +8,16 @@
     "paths": {
       "@server/*": ["./src/*"],
       "@stdTypes/*": ["../types/*"],
-      "@smshTypes/*": ["../smshTypes/*"]
+      "@smshTypes/*": ["../smshTypes/*"],
+      "@env/*": ["../.env/*"]
     },
     "strict": true,
     "esModuleInterop": true,
     "strictNullChecks": false,
     "noImplicitAny": false,
     "noEmitOnError": true,
-    "typeRoots": ["./node_modules/@types", "../types", "../smshTypes"]
+    "typeRoots": ["./node_modules/@types", "../types", "../smshTypes"],
+    "resolveJsonModule": true
   },
   "include": ["src"]
 }

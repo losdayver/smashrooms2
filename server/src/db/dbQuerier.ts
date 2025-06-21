@@ -9,14 +9,20 @@ export abstract class DBQuerier<Params = any> {
   protected getClient: () => Promise<DBClient> | DBClient;
   /** returns text for a query or the result itself for complex scenarios  */
   protected getQueryText: (
-    queryName: string
+    queryName: string,
+    params?: Params
   ) => Promise<string | string[] | IDBRes> | string | string[] | IDBRes;
   protected preProcessText?: (
     text: string | string[],
     params?: Params
   ) => string | string[];
   makeQuery = async (queryName: string, params?: Params) => {
-    const text = await this.getQueryText(queryName);
+    let text: string | IDBRes<object> | string[];
+    try {
+      text = await this.getQueryText(queryName, params);
+    } catch (e) {
+      console.error(e);
+    }
     if (!text) return [];
     // if instance of IDBRes is returned
     else if (typeof text == "object") return text as IDBRes;
