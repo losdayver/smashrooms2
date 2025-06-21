@@ -37,6 +37,7 @@ import {
   ISoundMessageExt,
   IStageChangeExt,
 } from "@stdTypes/messages";
+import { DBQuerier } from "@server/db/dbQuerier";
 
 type ChunkedUpdateMap = Record<`${number}_${number}`, ChunkUpdate>;
 type ChunkUpdate = {
@@ -50,6 +51,7 @@ type ChunkUpdate = {
 export class Scene implements IScene {
   sendMessageToSubscriber: ISceneSubscriber["onReceiveMessageFromScene"];
   scheduler: Scheduler;
+  querier: DBQuerier;
 
   private chunkSize: number;
   private propList: (Prop & PropBehaviours)[];
@@ -707,7 +709,8 @@ export class Scene implements IScene {
     stageNames?: string[],
     stageLoader?: IStageLoader,
     propFactoryMethod?: (scene: IScene, stage: StageExt) => void,
-    scheduler?: Scheduler
+    scheduler?: Scheduler,
+    querier?: DBQuerier
   ) {
     this.initState();
     this.stageNames = stageNames;
@@ -724,6 +727,7 @@ export class Scene implements IScene {
     this.propMap = propMap;
     this.propFactoryMethod = propFactoryMethod;
     this.scheduler = scheduler;
+    this.querier = querier;
     this.loadStage(stageNames?.[0]);
   }
 }

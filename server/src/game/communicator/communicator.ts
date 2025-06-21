@@ -4,9 +4,11 @@ import {
   ICommunicatorSubscriber,
 } from "@server/game/communicator/communicatorTypes";
 import { Player } from "@server/game/smsh/player";
+import { DBQuerier } from "@server/db/dbQuerier";
 
 export class Communicator implements ICommunicator {
   private scene: IScene;
+  private querier: DBQuerier;
   private sendMessageToSubscriber: ICommunicatorSubscriber["onReceiveMessageFromCommunicator"];
 
   subscribe: ICommunicator["subscribe"] = (subscriber) => {
@@ -21,22 +23,34 @@ export class Communicator implements ICommunicator {
   };
 
   processMessage: ICommunicator["processMessage"] = (from, msg, nameTag) => {
-    if (msg.name == "connRes") {
-      this.scene.connectAction(from, nameTag);
-    } else if (msg.name == "disc") {
-      Player.score.unlist(nameTag);
-      this.scene.disconnectAction(from);
-    } else if (msg.name == "clientAct")
-      this.scene.clientAction(from, msg.data.code, nameTag, msg.data.status);
-  };
-
-  processMessageSync: ICommunicator["processMessageSync"] = (msg) => {
-    if (msg.name == "clientSceneMeta") {
-      return this.scene.getSceneMeta();
+    switch (msg.name) {
+      case "connRes":
+        this.scene.connectAction(from, nameTag);
+        break;
+      case "disc":
+        Player.score.unlist(nameTag);
+        this.scene.disconnectAction(from);
+        break;
+      case "clientAct":
+        this.scene.clientAction(from, msg.data.code, nameTag, msg.data.status);
     }
   };
 
-  constructor(scene: IScene) {
+  processMessageWithResponse: ICommunicator["processMessageWithResponse"] =
+    async (msg) => {
+      switch (msg.name) {
+        case "clientSceneMeta":
+          return this.scene.getSceneMeta();
+        case "webDBQuery":
+          return await this.querier.makeQuery({
+            queryName: msg.queryName,
+            params: msg.params,
+          });
+      }
+    };
+
+  constructor(scene: IScene, querier: DBQuerier) {
     this.scene = scene;
+    this.querier = querier;
   }
 }

@@ -5,6 +5,7 @@ COPY server ./server/
 COPY types ./types/
 COPY smshTypes ./smshTypes/
 COPY static ./static/
+COPY .env ./.env/
 RUN chmod +x *-ws-server.bash
 RUN npm i -g typescript
 RUN ./build-ws-server.bash

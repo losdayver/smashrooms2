@@ -13,6 +13,8 @@ import {
   IClientChatMessageExt,
   IClientSceneMetaMessageExt,
   IServerSceneMetaMessageExt,
+  IWebDBQuery,
+  IWebDBRes,
 } from "@stdTypes/messages";
 import { bufferFromObj, severityLog, wslogSend } from "@server/utils";
 import { ClientID } from "@server/game/commonTypes";
@@ -55,13 +57,13 @@ export class WSSocketServer implements ISocketServer {
     const sockServer = new WebSocketServer({ port: this.port });
     this.socketServer = sockServer;
     sockServer.on("connection", (clientSocket: WebSocket) => {
-      clientSocket.on("message", (buffer: Buffer) => {
+      clientSocket.on("message", async (buffer: Buffer) => {
         let msg: IMessageExt;
         try {
           msg = JSON.parse(buffer.toString()) as IMessageExt;
           const resolver = this.messageResolveMap[msg.name];
           if (resolver) resolver(clientSocket, msg);
-          else this.messageResolveMap["default"](clientSocket, msg);
+          else await this.messageResolveMap["default"](clientSocket, msg);
         } catch (e) {
           severityLog(e as Error);
         }
@@ -244,15 +246,15 @@ export class WSSocketServer implements ISocketServer {
     this.sendToAll(stringMsg);
   };
 
-  private resolveGenericMessage = (
+  private resolveGenericMessage = async (
     clientSocket: WebSocket,
     message: IGenericMessageExt
   ) => {
     let clientID: ClientID;
-    let currentClinet: IWSClient;
+    let currentClient: IWSClient;
     for (const [ID, client] of this.clientMap.entries())
       if (clientSocket == client.socket) {
-        currentClinet = client;
+        currentClient = client;
         clientID = ID;
         break;
       }
@@ -266,21 +268,39 @@ export class WSSocketServer implements ISocketServer {
       return;
     }
 
-    if (message.name == "clientSceneMeta") {
-      const meta = this.communicator.processMessageSync(
-        message as IClientSceneMetaMessageExt
-      ) as IServerSceneMetaMessageExt;
-      meta.maxPlayerCount = this.maxClients ?? "infinite";
-      meta.currPlayerCount = this.clientMap.size;
-      wslogSend(clientSocket, meta);
-    } else
-      this.communicator.processMessage(clientID, message, currentClinet?.name);
+    switch (message.name) {
+      case "clientSceneMeta":
+        const meta = (await this.communicator.processMessageWithResponse(
+          message as IClientSceneMetaMessageExt
+        )) as IServerSceneMetaMessageExt;
+        meta.maxPlayerCount = this.maxClients ?? "infinite";
+        meta.currPlayerCount = this.clientMap.size;
+        wslogSend(clientSocket, meta);
+        break;
+      case "webDBQuery":
+        const dbRows = await this.communicator.processMessageWithResponse(
+          message as IWebDBQuery
+        );
+        wslogSend(clientSocket, {
+          name: "webDBRes",
+          queryName: (message as IWebDBQuery).queryName,
+          rows: dbRows,
+          sequence: (message as IWebDBQuery).sequence,
+        } satisfies IWebDBRes);
+        break;
+      default:
+        this.communicator.processMessage(
+          clientID,
+          message,
+          currentClient?.name
+        );
+    }
   };
 
   private messageResolveMap: Partial<
     Record<
       IMessageExt["name"] | "default",
-      (clientSocket: WebSocket, message: any) => void
+      (clientSocket: WebSocket, message: any) => void | Promise<void>
     >
   > = {
     conn: this.resolveConnectMessage,

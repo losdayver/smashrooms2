@@ -81,6 +81,20 @@ export interface IStageChangeExt {
   status: "showScore" | "reloadStage";
 }
 
+export interface IWebDBQuery {
+  name: "webDBQuery";
+  queryName: string;
+  params: any;
+  sequence?: string;
+}
+
+export interface IWebDBRes {
+  name: "webDBRes";
+  queryName: string;
+  rows: object[];
+  sequence?: string;
+}
+
 /** This interface represents an abstract message */
 export interface IGenericMessageExt {
   name: string;
@@ -100,7 +114,9 @@ export type IMessageExt =
   | IClientSceneMetaMessageExt
   | IServerNotificationExt
   | ISoundMessageExt
-  | IStageChangeExt;
+  | IStageChangeExt
+  | IWebDBQuery
+  | IWebDBRes;
 
 export interface IClientActionMessageExt extends IGenericMessageExt {
   name: "clientAct";

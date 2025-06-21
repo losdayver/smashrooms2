@@ -11,6 +11,7 @@ import { IScene } from "@server/game/scene/sceneTypes";
 import { WSSocketServer } from "@server/game/sockets/sockets";
 import { ISocketServer } from "@server/game/sockets/socketsTypes";
 import { SmshScheduler } from "@server/game/smsh/scheduler";
+import { PGQuerier } from "@server/db/pgQuerier";
 
 export class Server {
   private scene: IScene;
@@ -34,15 +35,18 @@ export class Server {
 }
 
 export const getWSServer = (port: number) => {
+  const pgQuerier = new PGQuerier();
+
   severityLog(`starting server on port ${port}`);
   const scene = new Scene(
     smshPropMap,
     ["testing", "ascend"],
     { load: getStageFS },
     smshPropFactory,
-    new SmshScheduler()
+    new SmshScheduler(),
+    pgQuerier
   );
-  const communicator = new Communicator(scene);
+  const communicator = new Communicator(scene, pgQuerier);
   const wsServer = new WSSocketServer(communicator, port, 50);
   return new Server(wsServer, communicator, scene);
 };

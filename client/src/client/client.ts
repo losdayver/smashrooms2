@@ -6,6 +6,8 @@ import {
   IClientSceneMetaMessageExt,
   IConnectResponseMessageExt,
   IStageChangeExt,
+  IWebDBQuery,
+  IWebDBRes,
 } from "@stdTypes/messages";
 import { PropIDExt } from "@stdTypes/sceneTypes";
 import { ControlsObjType } from "@client/config/config";
@@ -112,6 +114,33 @@ export class Client
       name: "clientChat",
       message,
     } satisfies IClientChatMessageExt);
+
+  private makeDBQuery = (
+    queryName: string,
+    params?: any,
+    sequence?: string
+  ) => {
+    this.socketSend({
+      name: "webDBQuery",
+      queryName,
+      params,
+      sequence,
+    } satisfies IWebDBQuery);
+  };
+
+  private querySequence = 0;
+  queryDBPromisified = async (
+    queryName: string,
+    params?: any
+  ): Promise<IWebDBRes["rows"]> => {
+    const sequence = ++this.querySequence;
+    this.makeDBQuery(queryName, params, sequence.toString());
+    return await new Promise<IWebDBRes["rows"]>((resolve) => {
+      this.on("webDBRes", `query${sequence}`, (data: IWebDBRes) => {
+        if (data.sequence == sequence.toString()) resolve(data.rows);
+      });
+    });
+  };
 
   private onmessage = async (message: MessageEvent<string>) => {
     let parsedMsg: SmshMessageTypeExt;
