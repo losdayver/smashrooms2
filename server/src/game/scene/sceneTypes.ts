@@ -10,6 +10,7 @@ import { RecursivePartial } from "@server/utils";
 import { IAnimationExt, ICollidableExt, PropIDExt } from "@stdTypes/sceneTypes";
 import { Prop } from "@server/game/scene/prop";
 import { StageExt } from "@stdTypes/stage";
+import { DBQuerier } from "@server/db/dbQuerier";
 
 export interface IScene extends ISceneActions {
   subscribe: (sceneSubscriber: ISceneSubscriber) => void;
@@ -33,8 +34,9 @@ export interface IScene extends ISceneActions {
   ) => void;
   getPropByID: (ID: Prop["ID"]) => Prop;
   queryProp: (queryFunc: (prop: Prop) => boolean) => Prop;
-  scheduler?: Scheduler;
+  readonly scheduler?: Scheduler;
   readonly tickNum: number;
+  readonly querier: DBQuerier;
 }
 
 /** This interface represents actions that are turned into scene events in event loop */

@@ -35,15 +35,18 @@ export class Server {
 }
 
 export const getWSServer = (port: number) => {
+  const pgQuerier = new PGQuerier();
+
   severityLog(`starting server on port ${port}`);
   const scene = new Scene(
     smshPropMap,
     ["testing", "ascend"],
     { load: getStageFS },
     smshPropFactory,
-    new SmshScheduler()
+    new SmshScheduler(),
+    pgQuerier
   );
-  const communicator = new Communicator(scene, new PGQuerier());
+  const communicator = new Communicator(scene, pgQuerier);
   const wsServer = new WSSocketServer(communicator, port, 50);
   return new Server(wsServer, communicator, scene);
 };

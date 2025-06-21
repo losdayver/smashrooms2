@@ -353,6 +353,12 @@ class Score {
         nameTagged: { tag: tag },
       } as any);
     this.scoreObj[tag][what]++;
+    if (what == "K")
+      void this.scene.querier.makeQuery({
+        queryName: "qUpsertTopScore",
+        params: { tag, kills: this.scoreObj[tag][what] },
+        target: "server",
+      });
     this.scene.sendArbitraryMessage(
       {
         name: "score",
