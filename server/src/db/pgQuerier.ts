@@ -2,6 +2,7 @@ import { Pool, PoolConfig } from "pg";
 import { DBQuerier, IDBRes } from "./dbQuerier";
 
 type IPGParams = Record<string, any>;
+export type IPGQueryNames = keyof typeof queryStorage;
 
 export class PGQuerier extends DBQuerier<IPGParams> {
   private pool: Pool;
@@ -36,17 +37,10 @@ export class PGQuerier extends DBQuerier<IPGParams> {
     };
   };
 
-  protected getQueryText = (queryName: string) =>
-    this.queryStorage[queryName]?.();
+  protected getQueryText = async (queryName: string) =>
+    await queryStorage[queryName]?.(this);
 
-  private queryStorage = {
-    qHelloWorld() {
-      return "select 'Hello World!' value";
-    },
-    qTopScoresByTag() {
-      return "select * from top_scores_by_tag order by pk desc limit $limit";
-    },
-  };
+  private;
 
   constructor(config?: PoolConfig) {
     super();
@@ -65,3 +59,16 @@ export class PGQuerier extends DBQuerier<IPGParams> {
     );
   }
 }
+
+const queryStorage = {
+  qHelloWorld() {
+    return "select 'Hello World!' value";
+  },
+  qTopScoresByTag() {
+    return "select * from top_scores_by_tag order by pk desc limit $limit";
+  },
+  async qHelloWorld1(q: PGQuerier) {
+    const res = await q.makeQuery("qHelloWorld");
+    return res.map((row: any) => ({ ...row, value: row.value + "123" }));
+  },
+} as const;

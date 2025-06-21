@@ -7,14 +7,19 @@ interface DBClient {
 
 export abstract class DBQuerier<Params = any> {
   protected getClient: () => Promise<DBClient> | DBClient;
-  protected getQueryText: (queryName: string) => string | string[];
+  /** returns text for a query or the result itself for complex scenarios  */
+  protected getQueryText: (
+    queryName: string
+  ) => Promise<string | string[] | IDBRes> | string | string[] | IDBRes;
   protected preProcessText?: (
     text: string | string[],
     params?: Params
   ) => string | string[];
   makeQuery = async (queryName: string, params?: Params) => {
-    const text = this.getQueryText(queryName);
+    const text = await this.getQueryText(queryName);
     if (!text) return [];
+    // if instance of IDBRes is returned
+    else if (typeof text == "object") return text as IDBRes;
     const preprocessed = this.preProcessText?.(text, params) ?? text;
     const client = await this.getClient();
     let res: IDBRes = [];
@@ -27,7 +32,7 @@ export abstract class DBQuerier<Params = any> {
     } catch (e) {
       console.error(e);
     } finally {
-      client.release();
+      client?.release();
     }
   };
 }
