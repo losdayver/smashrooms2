@@ -33,7 +33,11 @@ export class ItemSpawner extends Prop implements ItemSpawnerType {
   isEmpty = true;
 
   onTick = (tickNum: number) => {
-    if (tickNum - this.pickedOnTick > this.spawnDelay && this.isEmpty) {
+    if (
+      tickNum - this.pickedOnTick >
+        (this.spawner.spawnDelay ?? this.spawnDelay) &&
+      this.isEmpty
+    ) {
       this.isEmpty = false;
       this.scene.spawnPropAction(pickRandom(this.spawner.props), {
         positioned: {

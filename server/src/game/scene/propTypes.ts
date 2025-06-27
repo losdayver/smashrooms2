@@ -36,6 +36,7 @@ export interface IMoving {
 export interface ISpawner<T extends string = string> extends IPositionedExt {
   spawner: {
     props: T[];
+    spawnDelay?: number;
   };
 }
 

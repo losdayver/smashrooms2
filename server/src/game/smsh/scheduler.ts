@@ -8,6 +8,7 @@ export class SmshScheduler implements Scheduler {
   currentDisaster: IDisaster;
   startedOn: number;
   stage: StageExt;
+  delay = 1500;
 
   disasters: IDisaster[];
   onTick = (tickNum: number) => {
@@ -20,15 +21,17 @@ export class SmshScheduler implements Scheduler {
       }
       return;
     }
-    if (!this.currentDisaster && tickNum % 1500 == 0) {
+    if (!this.currentDisaster && tickNum % this.delay == 0) {
       this.currentDisaster = pickRandom(this.disasters);
+      this.delay = this.currentDisaster.delayAfter ?? 1500;
       this.startedOn = tickNum;
       this.scene.sendNotification(
         this.currentDisaster.message,
         "danger",
         "all"
       );
-      this.scene.produceSound("siren");
+      if (this.currentDisaster.sound !== null)
+        this.scene.produceSound(this.currentDisaster.sound ?? "siren");
       this.currentDisaster.onBegin(tickNum, this.scene);
     }
   };
@@ -63,6 +66,16 @@ const disasterMap: Record<string, IDisaster> = {
         });
       }
     },
+    onBegin: (tickNum, scene) => {},
+    onEnd: (tickNum, scene) => {},
+  },
+  instagib: {
+    name: "Immediate death",
+    message: "Immediate death!",
+    duration: 100,
+    sound: null,
+    delayAfter: 200,
+    onTick: (tickNum, scene, stage) => {},
     onBegin: (tickNum, scene) => {},
     onEnd: (tickNum, scene) => {},
   },

@@ -136,6 +136,17 @@ export class SniperBullet
   }
 }
 
+export class InstagibBullet extends SniperBullet {
+  damaging = { damage: 100 };
+  drawable = {
+    sprite: "instagibBullet",
+    facing: "right",
+    offsetX: 16,
+    offsetY: 8,
+    anim: "appear",
+  };
+}
+
 export class Plasma extends Prop implements IDrawableExt, IDamaging, IMoving {
   positioned;
   drawable = {
@@ -343,7 +354,7 @@ export class Explosion
     offsetY: -64,
     colGroupIgnoreList: [Player],
   };
-  damaging = { damage: 60 };
+  damaging = { damage: 100 };
 
   createdOnTick: number;
 

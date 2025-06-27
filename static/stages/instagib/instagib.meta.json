@@ -1,0 +1,21 @@
+{
+  "stageName": "instagib",
+  "stageSystemName": "instagib",
+  "gridSize": 32,
+  "author": "losdayver",
+  "timeLimit": 180,
+  "extra": {
+    "disasters": ["instagib"],
+    "preload": [
+      {
+        "name": "playerSpawner",
+        "behaviours": {
+          "positioned": {
+            "posX": 96,
+            "posY": 672
+          }
+        }
+      }
+    ]
+  }
+}

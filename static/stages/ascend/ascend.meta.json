@@ -99,7 +99,7 @@
             "posY": 448
           },
           "spawner": {
-            "props": ["shotgunItem", "pistolItem", "blasterItem"]
+            "props": ["shotgunItem", "pistolItem", "blasterItem", "medikitItem"]
           }
         }
       },
@@ -111,7 +111,8 @@
             "posY": 160
           },
           "spawner": {
-            "props": ["bazookaItem", "sniperItem"]
+            "props": ["bazookaItem", "sniperItem"],
+            "spawnDelay": 240
           }
         }
       },
@@ -123,7 +124,8 @@
             "posY": 192
           },
           "spawner": {
-            "props": ["bazookaItem", "sniperItem"]
+            "props": ["bazookaItem", "sniperItem"],
+            "spawnDelay": 240
           }
         }
       },
@@ -135,7 +137,7 @@
             "posY": 448
           },
           "spawner": {
-            "props": ["shotgunItem", "pistolItem", "blasterItem"]
+            "props": ["shotgunItem", "pistolItem", "blasterItem", "medikitItem"]
           }
         }
       },
@@ -147,7 +149,7 @@
             "posY": 832
           },
           "spawner": {
-            "props": ["medikitItem"]
+            "props": ["pistolItem", "blasterItem"]
           }
         }
       },
@@ -159,7 +161,7 @@
             "posY": 832
           },
           "spawner": {
-            "props": ["medikitItem"]
+            "props": ["pistolItem", "blasterItem"]
           }
         }
       }

@@ -107,7 +107,7 @@ export class Player
     },
   };
 
-  weaponPocket = new WeaponPocket(this, "fist");
+  weaponPocket = new WeaponPocket(this, "instagib");
   static score: Score;
 
   private $firing = false;
