@@ -1,17 +1,26 @@
 import { LayoutMetaExt, StageExt } from "@stdTypes/stage";
 import { getRandomBetween, pickRandom } from "@server/utils";
 import { IScene, Scheduler } from "@server/game/scene/sceneTypes";
-import { IDisaster, IStageMetaExtra } from "@server/game/smsh/props";
+import { IDisaster, IGamemode, IStageMetaExtra } from "@server/game/smsh/props";
 
 export class SmshScheduler implements Scheduler {
   scene: IScene;
   currentDisaster: IDisaster;
   startedOn: number;
   stage: StageExt;
+  gamemode: IGamemode;
   delay = 1500;
 
   disasters: IDisaster[];
   onTick = (tickNum: number) => {
+    if (this.gamemode) {
+      if (tickNum == 0) {
+        this.gamemode.onBegin?.(this.scene);
+        this.gamemode.sound && this.scene.produceSound(this.gamemode.sound);
+        this.gamemode.message &&
+          this.scene.sendNotification(this.gamemode.message, "danger", "all");
+      } else this.gamemode.onTick?.(tickNum, this.scene, this.stage);
+    }
     if (!this.disasters || tickNum == 0) return;
     if (this.currentDisaster) {
       this.currentDisaster.onTick(tickNum, this.scene, this.stage);
@@ -41,6 +50,7 @@ export class SmshScheduler implements Scheduler {
     this.startedOn = undefined;
     this.scene = scene;
     this.stage = stage;
+    this.gamemode = gamemodeMap[(stage.meta.extra as IStageMetaExtra).gamemode];
     this.disasters = (stage.meta.extra as IStageMetaExtra).disasters?.map(
       (name) => disasterMap[name]
     );
@@ -53,6 +63,7 @@ const disasterMap: Record<string, IDisaster> = {
     message: "Carpet bombing incoming!",
     duration: 100,
     onTick: (tickNum, scene, stage) => {
+      19;
       if (tickNum % 10 == 0) {
         scene.spawnPropAction("bomb", {
           positioned: {
@@ -69,14 +80,14 @@ const disasterMap: Record<string, IDisaster> = {
     onBegin: (tickNum, scene) => {},
     onEnd: (tickNum, scene) => {},
   },
+} as const;
+
+const gamemodeMap: Record<string, IGamemode> = {
   instagib: {
     name: "Immediate death",
     message: "Immediate death!",
-    duration: 100,
-    sound: null,
-    delayAfter: 200,
-    onTick: (tickNum, scene, stage) => {},
-    onBegin: (tickNum, scene) => {},
-    onEnd: (tickNum, scene) => {},
+    onPlayerSpawn: (player) => {
+      player.weaponPocket.pickWeapon("instagib");
+    },
   },
 } as const;

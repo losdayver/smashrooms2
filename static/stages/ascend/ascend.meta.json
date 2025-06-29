@@ -112,7 +112,7 @@
           },
           "spawner": {
             "props": ["bazookaItem", "sniperItem"],
-            "spawnDelay": 240
+            "spawnDelay": 350
           }
         }
       },
@@ -125,7 +125,7 @@
           },
           "spawner": {
             "props": ["bazookaItem", "sniperItem"],
-            "spawnDelay": 240
+            "spawnDelay": 350
           }
         }
       },

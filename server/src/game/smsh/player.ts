@@ -19,6 +19,7 @@ import { ItemSpawner } from "@server/game/smsh/spawners";
 import { WeaponPocket } from "@server/game/smsh/weapons";
 import { IScoreUpdateExt } from "@smshTypes/messages";
 import { stringToHash } from "@server/utils";
+import { SmshScheduler } from "./scheduler";
 
 export class Player
   extends Prop
@@ -107,7 +108,7 @@ export class Player
     },
   };
 
-  weaponPocket = new WeaponPocket(this, "instagib");
+  weaponPocket = new WeaponPocket(this, "fist");
   static score: Score;
 
   private $firing = false;
@@ -280,6 +281,7 @@ export class Player
     super(scene, behaviourPresets);
     Player.score ??= new Score(this.scene);
     this.controlled.clientID = clientID;
+    (this.scene.scheduler as SmshScheduler)?.gamemode?.onPlayerSpawn(this);
   }
 }
 

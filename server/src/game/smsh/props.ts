@@ -89,10 +89,20 @@ export interface IDisaster {
   onEnd: (tickNum: number, scene: IScene) => void;
 }
 
+export interface IGamemode {
+  name: string;
+  message: string;
+  sound?: string;
+  onTick?: (tickNum: number, scene: IScene, stage: StageExt) => void;
+  onBegin?: (scene: IScene) => void;
+  onPlayerSpawn?: (player: Player) => void;
+}
+
 export interface IStageMetaExtra {
   preload: {
     name: keyof typeof smshPropMap;
     behaviours?: RecursivePartial<PropBehaviours>;
   }[];
   disasters?: string[];
+  gamemode?: string;
 }
