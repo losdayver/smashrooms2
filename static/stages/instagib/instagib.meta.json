@@ -1,0 +1,48 @@
+{
+  "stageName": "instagib",
+  "stageSystemName": "instagib",
+  "gridSize": 32,
+  "author": "losdayver",
+  "timeLimit": 120,
+  "extra": {
+    "gamemode": "instagib",
+    "preload": [
+      {
+        "name": "playerSpawner",
+        "behaviours": {
+          "positioned": {
+            "posX": 96,
+            "posY": 704
+          }
+        }
+      },
+      {
+        "name": "playerSpawner",
+        "behaviours": {
+          "positioned": {
+            "posX": 2208,
+            "posY": 1024
+          }
+        }
+      },
+      {
+        "name": "playerSpawner",
+        "behaviours": {
+          "positioned": {
+            "posX": 576,
+            "posY": 576
+          }
+        }
+      },
+      {
+        "name": "playerSpawner",
+        "behaviours": {
+          "positioned": {
+            "posX": 2016,
+            "posY": 576
+          }
+        }
+      }
+    ]
+  }
+}

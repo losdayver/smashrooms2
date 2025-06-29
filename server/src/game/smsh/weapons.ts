@@ -187,4 +187,21 @@ export const weaponMap: Record<
       });
     },
   },
+  instagib: {
+    delay: 40,
+    onFire: (player: Player) => {
+      player.scene.spawnPropAction("instagibBullet", {
+        positioned: {
+          posX: player.positioned.posX,
+          posY: player.positioned.posY + 40,
+        },
+        drawable: {
+          facing: player.drawable.facing,
+        },
+        collidable: {
+          colGroup: player.ID,
+        },
+      });
+    },
+  },
 } as const;

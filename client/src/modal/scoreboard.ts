@@ -75,7 +75,7 @@ export class ScoreBoardModal extends Modal implements IFocusable {
     this.constructGlobalTable();
   };
   private constructLocalTable = () => {
-    this.localScoreArray.sort((a, b) => a.K - b.K);
+    this.localScoreArray.sort((a, b) => b.K - a.K);
     const wrapper = document.createElement("div");
     const header = document.createElement("h3");
     header.innerText = "Leaders";

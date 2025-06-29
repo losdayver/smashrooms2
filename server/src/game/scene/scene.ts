@@ -728,7 +728,7 @@ export class Scene implements IScene {
     this.propFactoryMethod = propFactoryMethod;
     this.scheduler = scheduler;
     this.querier = querier;
-    this.loadStage(stageNames?.[0]);
+    this.loadStage(pickRandom(stageNames));
   }
 }
 

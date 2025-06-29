@@ -42,6 +42,7 @@ export class EaselManager {
     explosion: "bazookaExplosion",
     plasma: "blaster",
     sniperBullet: "sniperBullet",
+    instagibBullet: "instagibBullet",
   } as const;
 
   private initState = () => {
@@ -341,8 +342,9 @@ export class EaselManager {
     });
     this.currentStageWidth = width; // todo maybe put this in one nice object
     this.updateEaselScale();
-    document.querySelector("body").style.backgroundImage =
-      `url(${backgroundRoute}forest.png)`;
+    document.querySelector(
+      "body"
+    ).style.backgroundImage = `url(${backgroundRoute}forest.png)`;
     this.easelDiv.appendChild(this.layoutPivot);
   };
 

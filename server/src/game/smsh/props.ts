@@ -9,6 +9,7 @@ import {
   Bullet,
   Explosion,
   Fist,
+  InstagibBullet,
   Plasma,
   Rocket,
   SniperBullet,
@@ -63,6 +64,7 @@ export const smshPropMap = {
   portal: Portal,
   bomb: Bomb,
   ghost: PlayerGhost,
+  instagibBullet: InstagibBullet,
 } as const;
 
 export const smshPropFactory: (scene: IScene, stage: StageExt) => void = (
@@ -80,9 +82,20 @@ export interface IDisaster {
   name: string;
   duration: number;
   message: string;
+  sound?: string;
+  delayAfter?: number;
   onTick: (tickNum: number, scene: IScene, stage: StageExt) => void;
   onBegin: (tickNum: number, scene: IScene) => void;
   onEnd: (tickNum: number, scene: IScene) => void;
+}
+
+export interface IGamemode {
+  name: string;
+  message: string;
+  sound?: string;
+  onTick?: (tickNum: number, scene: IScene, stage: StageExt) => void;
+  onBegin?: (scene: IScene) => void;
+  onPlayerSpawn?: (player: Player) => void;
 }
 
 export interface IStageMetaExtra {
@@ -91,4 +104,5 @@ export interface IStageMetaExtra {
     behaviours?: RecursivePartial<PropBehaviours>;
   }[];
   disasters?: string[];
+  gamemode?: string;
 }

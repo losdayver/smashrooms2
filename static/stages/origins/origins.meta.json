@@ -1,6 +1,6 @@
 {
-  "stageName": "testing",
-  "stageSystemName": "testing",
+  "stageName": "origins",
+  "stageSystemName": "origins",
   "gridSize": 32,
   "author": "losdayver",
   "timeLimit": 180,
