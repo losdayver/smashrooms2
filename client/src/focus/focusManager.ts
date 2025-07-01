@@ -36,10 +36,6 @@ export class FocusManager {
     this.currentFocusedTag = tag;
   };
 
-  private static isChromium = (): boolean => {
-    return navigator.userAgent.toLowerCase().includes("chrome");
-  };
-
   // TODO: determine gamepad layout based on its properties
 
   private keyListener = async (event: KeyboardEvent, isDown: boolean) => {
