@@ -11,9 +11,9 @@ import {
 export class FocusManager {
   private registeredReceivers: Map<string, IFocusable> = new Map();
   private currentFocusedTag: string;
-  private controlsConfig = new ControlsConfig();
-  private gamepadsMap: Map<number, Gamepad> = new Map();
-  private activeGamepadKeys = new Set<string>();
+  private controlsConfig: ControlsConfig = new ControlsConfig();
+  private static gamepadStateReadInterval: number = 10;
+  private activeGamepadKeys: Set<string> = new Set<string>();
 
   private getCurrentTag = (): IFocusable =>
     this.registeredReceivers.get(this.currentFocusedTag);
@@ -36,24 +36,7 @@ export class FocusManager {
     this.currentFocusedTag = tag;
   };
 
-  private handleGamepadConnection = (e: GamepadEvent) => {
-    this.gamepadsMap.set(e.gamepad.index, e.gamepad);
-  };
-
-  private updateStatus = () => {
-    if (navigator.userAgent.toLowerCase().includes("chrome")) {
-      this.gamepadsMap.clear();
-      navigator.getGamepads().forEach((gamepad) => {
-        this.gamepadsMap.set(gamepad?.index, gamepad);
-      });
-    }
-  };
-
   // TODO: determine gamepad layout based on its properties
-
-  private handleGamepadDisconnection = (e: GamepadEvent) => {
-    this.gamepadsMap.delete(e.gamepad.index);
-  };
 
   private keyListener = async (event: KeyboardEvent, isDown: boolean) => {
     if (event.key == "Tab") event.preventDefault();
@@ -79,58 +62,58 @@ export class FocusManager {
     }
   };
 
-  private getKeyControl = async (
-    key: string
-  ): Promise<keyof ControlsObjType> => {
+  private gamepadKeyListener = async (): Promise<void> => {
+    for (const gamepad of navigator.getGamepads()) {
+      await this.handleGamepad(gamepad);
+    }
+  };
+
+  private handleGamepad = async (gamepad: Gamepad): Promise<void> => {
+    if (gamepad === null) return;
+    for (const [gpKey, isActivated] of Object.entries(gamepadEventToKeyMap)) {
+      const keyControl = this.getKeyControl(gpKey);
+      const isPreviouslyActivated = this.activeGamepadKeys.has(gpKey);
+      if (isActivated(gamepad)) {
+        if (!isPreviouslyActivated) {
+          await this.getCurrentTag()?.onFocusReceiveKey?.(
+            keyControl,
+            "down",
+            gpKey
+          );
+          this.activeGamepadKeys.add(gpKey);
+        }
+      } else {
+        if (isPreviouslyActivated) {
+          await this.getCurrentTag()?.onFocusReceiveKey?.(
+            keyControl,
+            "up",
+            gpKey
+          );
+          this.activeGamepadKeys.delete(gpKey);
+        }
+      }
+    }
+  };
+
+  private getKeyControl = (key: string): keyof ControlsObjType => {
     for (const control of controlsList)
       if (this.controlsConfig.getValue(control).includes(key)) return control;
     return null;
   };
 
-  private gamepadKeyListener = async () => {
-    this.updateStatus();
-    for (const gamepad of navigator.getGamepads()) {
-      if (!gamepad) return requestAnimationFrame(this.gamepadKeyListener);
-      for (const [gpKey, isActivated] of Object.entries(gamepadEventToKeyMap)) {
-        const keyControl = await this.getKeyControl(gpKey);
-        const previouslyActivated = this.activeGamepadKeys.has(gpKey);
-        if (isActivated(gamepad)) {
-          if (!previouslyActivated) {
-            this.activeGamepadKeys.add(gpKey);
-            await this.getCurrentTag()?.onFocusReceiveKey?.(
-              keyControl,
-              "down",
-              gpKey
-            );
-          }
-        } else {
-          if (previouslyActivated) {
-            await this.getCurrentTag()?.onFocusReceiveKey?.(
-              keyControl,
-              "up",
-              gpKey
-            );
-            this.activeGamepadKeys.delete(gpKey);
-          }
-        }
-      }
-    }
-    requestAnimationFrame(this.gamepadKeyListener);
-  };
+  // TODO: gamepad haptics
 
-  // TODO: split gamepad logic into different class
   constructor() {
-    document.addEventListener("keydown", (e) => this.keyListener(e, true));
-    document.addEventListener("keyup", (e) => this.keyListener(e, false));
-    window.addEventListener("gamepadconnected", (e) => {
-      // alert("Gamepad is connected!");
-      this.handleGamepadConnection(e);
-    });
-    window.addEventListener("gamepaddisconnected", (e) => {
-      // alert("Gamepad is disconnected!");
-      this.handleGamepadDisconnection(e);
-    });
-    requestAnimationFrame(this.gamepadKeyListener);
+    document.addEventListener("keydown", (event: KeyboardEvent) =>
+      this.keyListener(event, true)
+    );
+    document.addEventListener("keyup", (event: KeyboardEvent) =>
+      this.keyListener(event, false)
+    );
+    setInterval(
+      () => this.gamepadKeyListener(),
+      FocusManager.gamepadStateReadInterval
+    );
   }
 }
 
