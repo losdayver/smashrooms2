@@ -20,12 +20,8 @@ const noCache = (req, res, next) => {
 app.use("/scripts", noCache, express.static(scriptsPath));
 app.use(express.static(staticRoot));
 
-app.get("/", (req, res) => {
+app.get("/*", (req, res) => {
   res.sendFile(path.join(__dirname, staticRoot, "html", "index.html"));
-});
-
-app.get("/components", (req, res) => {
-  res.sendFile(path.join(__dirname, staticRoot, "html", "components.html"));
 });
 
 app.listen(5890, "0.0.0.0", () => {
