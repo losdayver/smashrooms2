@@ -9,6 +9,7 @@ import {
   IBehaviouredPropExt,
   IDamageableExt,
   ISceneUpdatesMessageData,
+  ITile,
 } from "@stdTypes/sceneTypes";
 import { StageExt } from "@stdTypes/stage";
 import { AudioEventEngine, soundEventMap } from "@client/audio/audioEngine";
@@ -324,7 +325,7 @@ export class EaselManager {
         const char = line[x];
         if (char != " ") {
           const img = document.createElement("img") as HTMLImageElement;
-          img.src = `${layoutSpriteRoute}${layoutTileMap[char].imgSrc}`;
+          img.src = `${layoutSpriteRoute}${layoutTileImgMap[char].imgSrc}`;
           img.className = "easel__layout-tile";
           img.style.top = (y * tileSize).toString();
           img.style.left = (x * tileSize).toString();
@@ -418,7 +419,7 @@ interface ILayoutTile {
   imgSrc: string;
 }
 
-const layoutTileMap: Record<string, ILayoutTile> = {
+export const layoutTileImgMap: Partial<Record<ITile, ILayoutTile>> = {
   "#": {
     imgSrc: "bricks.png",
   },

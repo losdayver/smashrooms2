@@ -1,5 +1,5 @@
-import { editorLoader } from "./editor";
-import { gameLoader } from "./game";
+import { editorLoader } from "@client/editor/editor";
+import { gameLoader } from "@client/game";
 
 const main = async () => {
   window.addEventListener(`contextmenu`, (e) => e.preventDefault());

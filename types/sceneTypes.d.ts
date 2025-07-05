@@ -100,3 +100,14 @@ export type PropBehavioursExt = Partial<
 >;
 
 export type IBehaviouredPropExt = IPropExt & PropBehavioursExt;
+
+export type ITile =
+  | " " /** ghost */
+  | "#" /** bricks */
+  | "=" /** metalBeam */
+  | "G" /** deepGround */
+  | "g" /** grass */
+  | "l" /** leaves */
+  | "s" /** stone */
+  | "m" /** metal */
+  | "b"; /** box */

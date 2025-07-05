@@ -28,6 +28,7 @@ import {
   IAnimationExt,
   INameTaggedExt,
   IPositionedExt,
+  ITile,
   PropIDExt,
 } from "@stdTypes/sceneTypes";
 import { StageExt } from "@stdTypes/stage";
@@ -732,7 +733,7 @@ export class Scene implements IScene {
   }
 }
 
-const layoutMap: Record<string, ILayoutTile> = {
+const layoutMap: Partial<Record<ITile, ILayoutTile>> = {
   "=": {
     solidity: "semi",
   },
