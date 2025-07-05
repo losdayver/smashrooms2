@@ -1,12 +1,14 @@
+import { editorLoader } from "./editor";
 import { gameLoader } from "./game";
 
 const main = async () => {
   window.addEventListener(`contextmenu`, (e) => e.preventDefault());
 
   const route = window.location.pathname.slice(1) || "game";
-  const loaderMap: Record<string, () => Promise<unknown>> = {
+  const loaderMap: Record<string, () => Promise<unknown> | unknown> = {
     "": gameLoader,
     game: gameLoader,
+    editor: editorLoader,
     components: () => import("@client/ui/componentsLibrary"),
   } as const;
   const bodyText = await fetch("html/" + (route || "game") + ".html").then(
@@ -14,7 +16,7 @@ const main = async () => {
   );
   document.querySelector<"body">("body").innerHTML = bodyText;
   document.body.classList.add("loaded");
-  await loaderMap[route]();
+  await loaderMap[route]?.();
 };
 
 addEventListener("DOMContentLoaded", main);
