@@ -1,6 +1,7 @@
 import { layoutTileImgMap } from "@client/easel/easelManager";
 import { layoutSpriteRoute } from "@client/routes";
 import { ITile } from "@stdTypes/sceneTypes";
+import { TilePalette } from "./palette";
 
 interface IComplexTile {
   symbol: ITile;
@@ -16,6 +17,7 @@ interface ILayout {
 interface IEditorCanvasConstructorParams {
   width: number;
   height: number;
+  tilePalette: TilePalette;
 }
 
 export class EditorCanvas {
@@ -23,6 +25,7 @@ export class EditorCanvas {
     container: HTMLDivElement,
     params: IEditorCanvasConstructorParams
   ) {
+    this.tilePalette = params.tilePalette;
     this.layout = {
       height: params.height,
       width: params.width,
@@ -36,10 +39,45 @@ export class EditorCanvas {
     this.canvas = document.createElement("div");
     this.canvas.className = "editor__workplace__canvas";
     this.canvas.onclick = (ev) => this.onClick(ev.clientX, ev.clientY, "rmb");
-    this.canvas.onauxclick = (ev) =>
-      this.onClick(ev.clientX, ev.clientY, "lmb");
+    this.canvas.onauxclick = (ev) => {
+      if (ev.button == 2) this.onClick(ev.clientX, ev.clientY, "lmb");
+    };
+    window.addEventListener("mouseup", (ev) => {
+      if (ev.button === 1) this.onStopPan(ev.clientX, ev.clientY);
+    });
+    window.addEventListener("mousedown", (ev) => {
+      if (ev.button === 1) this.onStartPan(ev.clientX, ev.clientY);
+    });
+    window.addEventListener("mousemove", (ev) =>
+      this.onMouseMove(ev.clientX, ev.clientY)
+    );
     container.appendChild(this.canvas);
   }
+
+  private tilePalette: TilePalette;
+  private isPanning = false;
+  panStartPos: [number, number] = [0, 0];
+  panStopPos: [number, number] = [0, 0];
+  private onStartPan = (x: number, y: number) => {
+    if (this.isPanning) return;
+    this.isPanning = true;
+    this.panStartPos = [x, y];
+  };
+  private onStopPan = (x: number, y: number) => {
+    this.isPanning = false;
+    this.panStopPos = [
+      Number(this.canvas.style.left.replace("px", "")) ?? 0,
+      Number(this.canvas.style.top.replace("px", "")) ?? 0,
+    ];
+  };
+  private onMouseMove = (x: number, y: number) => {
+    if (this.isPanning) {
+      this.canvas.style.left =
+        String(x - this.panStartPos[0] + this.panStopPos[0]) + "px";
+      this.canvas.style.top =
+        String(y - this.panStartPos[1] + this.panStopPos[1]) + "px";
+    }
+  };
 
   private onClick = (
     xReal: number,
@@ -53,7 +91,7 @@ export class EditorCanvas {
     const yLayout = Math.floor(yRelative / this.tileSize);
     if (!this.checkLayoutBounds(xLayout, yLayout)) return;
     if (button == "rmb" && this.getTile(xLayout, yLayout) == " ")
-      this.placeTile(xLayout, yLayout, "#");
+      this.placeTile(xLayout, yLayout, this.tilePalette.getCurrentTile());
     else if (button == "lmb") this.removeTile(xLayout, yLayout);
   };
 
