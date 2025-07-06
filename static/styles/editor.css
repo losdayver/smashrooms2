@@ -41,11 +41,15 @@
   flex: 1;
 }
 
-.editor__workplace__canvas {
+.editor__workplace__editor__workplace__canvas-container__canvas {
   z-index: 1;
   position: relative;
   width: 100%;
   height: 100%;
+}
+
+.editor__workplace__editor__workplace__canvas-container__canvas__tile {
+  box-shadow: 4px 6px 9px 0px #00000087;
 }
 
 .editor__workplace__left-sidebar__prop-list {
@@ -58,6 +62,9 @@
   display: flex;
   flex-wrap: wrap;
   gap: 4px;
+}
+.editor__workplace__left-sidebar__palette__tiles-container__palette__tile {
+  box-shadow: 4px 6px 9px 0px #00000087;
 }
 
 .editor__workplace__left-sidebar__palette__tiles-container__palette__tile--selected {

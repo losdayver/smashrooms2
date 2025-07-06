@@ -73,3 +73,9 @@ export const makeIconButton = (iconBasename: string, onClick: () => void) => {
 
 export const pickRandom = (array: any[]) =>
   array[Math.floor(Math.random() * array.length)];
+
+export const minMax = (value: number, min: number, max: number) => {
+  if (value < min) return min;
+  else if (value > max) return max;
+  return value;
+};
