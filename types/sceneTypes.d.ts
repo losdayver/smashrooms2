@@ -101,7 +101,7 @@ export type PropBehavioursExt = Partial<
 
 export type IBehaviouredPropExt = IPropExt & PropBehavioursExt;
 
-export type ITile =
+export type ITileSymbols =
   | " " /** ghost */
   | "#" /** bricks */
   | "=" /** metalBeam */

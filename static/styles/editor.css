@@ -41,7 +41,7 @@
   flex: 1;
 }
 
-.editor__workplace__editor__workplace__canvas-container__canvas {
+.editor__workplace__canvas-container__canvas {
   z-index: 1;
   position: relative;
   width: 100%;
@@ -57,17 +57,18 @@
   background: white;
 }
 
-.editor__workplace__left-sidebar__palette__tiles-container__palette {
+.smsh-palette__container {
   box-sizing: border-box;
   display: flex;
   flex-wrap: wrap;
   gap: 4px;
 }
-.editor__workplace__left-sidebar__palette__tiles-container__palette__tile {
+
+.smsh-palette__container__color {
   box-shadow: 4px 6px 9px 0px #00000087;
 }
 
-.editor__workplace__left-sidebar__palette__tiles-container__palette__tile--selected {
+.smsh-palette__container__color--selected {
   box-sizing: border-box;
   outline: 4px solid slateblue;
 }

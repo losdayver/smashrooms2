@@ -1,11 +1,12 @@
-import { layoutTileImgMap } from "@client/easel/easelManager";
 import { backgroundRoute, layoutSpriteRoute } from "@client/routes";
-import { ITile } from "@stdTypes/sceneTypes";
-import { TilePalette } from "./palette";
+import { ITileSymbols } from "@stdTypes/sceneTypes";
+import { TilePalette } from "./tilePalette";
 import { minMax } from "@client/utils";
+import { ICanvasPropBehaviours } from "./types";
+import { layoutTileImgMap } from "@client/common";
 
 interface IComplexTile {
-  symbol: ITile;
+  symbol: ITileSymbols;
   domRef: HTMLDivElement | null;
 }
 
@@ -20,6 +21,10 @@ interface IEditorCanvasConstructorParams {
   height: number;
   tilePalette: TilePalette;
 }
+
+type ICanvasProp = ICanvasPropBehaviours & {
+  domRef: HTMLDivElement;
+};
 
 export class EditorCanvas {
   constructor(
@@ -39,8 +44,8 @@ export class EditorCanvas {
     };
     container.style.backgroundImage = `url(${backgroundRoute}forest.png)`;
     this.canvas = document.createElement("div");
-    this.canvas.className =
-      "editor__workplace__editor__workplace__canvas-container__canvas";
+    this.canvas.className = "editor__workplace__canvas-container__canvas";
+    this.canvas.onclick = (ev) => this.onClick(ev.clientX, ev.clientY, "lmb");
     window.addEventListener("mouseup", (ev) => {
       if (ev.button === 1) this.onStopPan(ev.clientX, ev.clientY);
       if (ev.button === 0) this.onStopPlacingTiles();
@@ -129,10 +134,16 @@ export class EditorCanvas {
     const yLayout = Math.floor(yRelative / this.tileSize / this.zoomVals[1]);
     if (!this.checkLayoutBounds(xLayout, yLayout)) return;
     if (button == "lmb") {
-      if (this.getTile(xLayout, yLayout) != this.tilePalette.getCurrentTile())
+      if (
+        this.getTile(xLayout, yLayout) != this.tilePalette.getCurrentTileKey()
+      )
         this.removeTile(xLayout, yLayout);
       if (this.getTile(xLayout, yLayout) == " ")
-        this.placeTile(xLayout, yLayout, this.tilePalette.getCurrentTile());
+        this.placeTile(
+          xLayout,
+          yLayout,
+          this.tilePalette.getCurrentTileKey() as ITileSymbols
+        );
     } else if (button == "rmb") this.removeTile(xLayout, yLayout);
   };
 
@@ -140,7 +151,7 @@ export class EditorCanvas {
   private canvas: HTMLDivElement;
   private layout: ILayout;
 
-  private constructTileDiv = (x: number, y: number, tile: ITile) => {
+  private constructTileDiv = (x: number, y: number, tile: ITileSymbols) => {
     const tileDiv = document.createElement("div");
     tileDiv.className =
       "editor__workplace__editor__workplace__canvas-container__canvas__tile";
@@ -149,7 +160,7 @@ export class EditorCanvas {
     tileDiv.style.top = (y * this.tileSize).toString();
     tileDiv.style.left = (x * this.tileSize).toString();
     const img = document.createElement("img") as HTMLImageElement;
-    img.src = `${layoutSpriteRoute}${layoutTileImgMap[tile].imgSrc}`;
+    img.src = `${layoutSpriteRoute}${layoutTileImgMap[tile].imgPath}`;
     tileDiv.appendChild(img);
     return tileDiv;
   };
@@ -157,7 +168,7 @@ export class EditorCanvas {
     x >= 0 && x < this.layout.width && y >= 0 && y < this.layout.height;
   private getComplexTile = (x: number, y: number) => this.layout.tiles[y][x];
   getTile = (x: number, y: number) => this.layout.tiles[y][x].symbol;
-  placeTile = (x: number, y: number, tile: ITile) => {
+  placeTile = (x: number, y: number, tile: ITileSymbols) => {
     const tileDiv = this.constructTileDiv(x, y, tile);
     this.canvas.appendChild(tileDiv);
     this.layout.tiles[y][x] = { symbol: tile, domRef: tileDiv };

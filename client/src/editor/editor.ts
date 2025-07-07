@@ -1,5 +1,7 @@
 import { EditorCanvas } from "@client/editor/canvas";
-import { TilePalette } from "@client/editor/palette";
+import { TilePalette } from "@client/editor/tilePalette";
+import { PropPalette } from "./propPalette";
+
 export const editorLoader = () => {
   window.addEventListener("mousedown", (event) => {
     event.preventDefault();
@@ -7,6 +9,11 @@ export const editorLoader = () => {
   const tilePalette = new TilePalette(
     document.querySelector(
       ".editor__workplace__left-sidebar__palette__tiles-container"
+    )
+  );
+  const propPalette = new PropPalette(
+    document.querySelector(
+      ".editor__workplace__left-sidebar__palette__props-container"
     )
   );
   const canvas = new EditorCanvas(
