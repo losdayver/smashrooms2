@@ -1,37 +1,41 @@
-import { backgroundRoute, layoutSpriteRoute } from "@client/routes";
+import {
+  backgroundRoute,
+  layoutSpriteRoute,
+  propSpriteRoute,
+} from "@client/routes";
 import { ITileSymbols } from "@stdTypes/sceneTypes";
 import { TilePalette } from "./tilePalette";
 import { minMax } from "@client/utils";
 import { ICanvasPropBehaviours } from "./types";
-import { layoutTileImgMap } from "@client/common";
+import { ILayoutProp, layoutPropMap, layoutTileImgMap } from "@client/common";
+import { IEditorCommunications } from "./editor";
 
 interface IComplexTile {
   symbol: ITileSymbols;
   domRef: HTMLDivElement | null;
 }
 
-interface ILayout {
+interface ICanvasLayout {
   width: number;
   height: number;
   tiles: IComplexTile[][];
 }
 
+type ICanvasProp = ILayoutProp & { domRef: HTMLDivElement };
+type ICanvasPropStorage = ICanvasProp[];
+
 interface IEditorCanvasConstructorParams {
   width: number;
   height: number;
-  tilePalette: TilePalette;
+  communications: IEditorCommunications;
 }
-
-type ICanvasProp = ICanvasPropBehaviours & {
-  domRef: HTMLDivElement;
-};
 
 export class EditorCanvas {
   constructor(
     container: HTMLDivElement,
     params: IEditorCanvasConstructorParams
   ) {
-    this.tilePalette = params.tilePalette;
+    this.communications = params.communications;
     this.layout = {
       height: params.height,
       width: params.width,
@@ -44,14 +48,17 @@ export class EditorCanvas {
     };
     container.style.backgroundImage = `url(${backgroundRoute}forest.png)`;
     this.canvas = document.createElement("div");
-    this.canvas.className = "editor__workplace__canvas-container__canvas";
+    this.canvas.className = "smsh-editor-canvas";
     this.canvas.onclick = (ev) => this.onClick(ev.clientX, ev.clientY, "lmb");
+    this.canvas.onauxclick = (ev) =>
+      ev.button == 2 && this.onClick(ev.clientX, ev.clientY, "rmb");
     window.addEventListener("mouseup", (ev) => {
-      if (ev.button === 1) this.onStopPan(ev.clientX, ev.clientY);
+      if (ev.button === 1) this.onStopPan();
       if (ev.button === 0) this.onStopPlacingTiles();
       if (ev.button === 2) this.onStopRemovingTiles();
     });
     window.addEventListener("mousedown", (ev) => {
+      this.canPlaceProp = true;
       if (ev.button === 1) this.onStartPan(ev.clientX, ev.clientY);
       if (ev.button === 0) this.onStartPlacingTiles();
       if (ev.button === 2) this.onStartRemovingTiles();
@@ -67,7 +74,7 @@ export class EditorCanvas {
     container.appendChild(this.canvas);
   }
 
-  private tilePalette: TilePalette;
+  private communications: IEditorCommunications;
   private isPanning = false;
   private panStartPos: [number, number] = [0, 0];
   private panStopPos: [number, number] = [0, 0];
@@ -76,7 +83,7 @@ export class EditorCanvas {
     this.isPanning = true;
     this.panStartPos = [x, y];
   };
-  private onStopPan = (x: number, y: number) => {
+  private onStopPan = () => {
     this.isPanning = false;
     this.panStopPos = [
       Number(this.canvas.style.left.replace("px", "")) ?? 0,
@@ -122,39 +129,53 @@ export class EditorCanvas {
         String(y - this.panStartPos[1] + this.panStopPos[1]) + "px";
     }
   };
+  private canPlaceProp = true;
   private onClick = (
     xReal: number,
     yReal: number,
     button: "lmb" | "rmb" | "mmb"
   ) => {
     const { left, top } = this.canvas.getBoundingClientRect();
-    const xRelative = xReal - left;
-    const yRelative = yReal - top;
-    const xLayout = Math.floor(xRelative / this.tileSize / this.zoomVals[0]);
-    const yLayout = Math.floor(yRelative / this.tileSize / this.zoomVals[1]);
-    if (!this.checkLayoutBounds(xLayout, yLayout)) return;
-    if (button == "lmb") {
-      if (
-        this.getTile(xLayout, yLayout) != this.tilePalette.getCurrentTileKey()
-      )
-        this.removeTile(xLayout, yLayout);
-      if (this.getTile(xLayout, yLayout) == " ")
-        this.placeTile(
-          xLayout,
-          yLayout,
-          this.tilePalette.getCurrentTileKey() as ITileSymbols
+    const xRelative = (xReal - left) / this.zoomVals[0];
+    const yRelative = (yReal - top) / this.zoomVals[1];
+    const tabLabel = this.communications.tabs.getActiveTab().label;
+    if (tabLabel == "tiles") {
+      const xLayout = Math.floor(xRelative / this.tileSize);
+      const yLayout = Math.floor(yRelative / this.tileSize);
+      if (!this.checkLayoutBounds(xLayout, yLayout)) return;
+      if (button == "lmb") {
+        if (
+          this.getTile(xLayout, yLayout) !=
+          this.communications.tilePalette.getCurrentColorKey()
+        )
+          this.removeTile(xLayout, yLayout);
+        if (this.getTile(xLayout, yLayout) == " ")
+          this.placeTile(
+            xLayout,
+            yLayout,
+            this.communications.tilePalette.getCurrentColorKey() as ITileSymbols
+          );
+      } else if (button == "rmb") this.removeTile(xLayout, yLayout);
+    } else if (tabLabel == "props" && this.canPlaceProp) {
+      if (button == "lmb") {
+        this.canPlaceProp = false;
+        this.placeProp(
+          xRelative,
+          yRelative,
+          this.communications.propPalette.getCurrentColorKey() as keyof typeof layoutPropMap
         );
-    } else if (button == "rmb") this.removeTile(xLayout, yLayout);
+      }
+    }
   };
 
   private tileSize = 32;
   private canvas: HTMLDivElement;
-  private layout: ILayout;
+  private layout: ICanvasLayout;
+  private propStorage: ICanvasPropStorage = [];
 
   private constructTileDiv = (x: number, y: number, tile: ITileSymbols) => {
     const tileDiv = document.createElement("div");
-    tileDiv.className =
-      "editor__workplace__editor__workplace__canvas-container__canvas__tile";
+    tileDiv.className = "smsh-editor-canvas__tile";
     tileDiv.style.zIndex = String(x * 1000 + y);
     tileDiv.style.position = "absolute";
     tileDiv.style.top = (y * this.tileSize).toString();
@@ -163,6 +184,29 @@ export class EditorCanvas {
     img.src = `${layoutSpriteRoute}${layoutTileImgMap[tile].imgPath}`;
     tileDiv.appendChild(img);
     return tileDiv;
+  };
+  private constructProp = (
+    x: number,
+    y: number,
+    propName: keyof typeof layoutPropMap
+  ) => {
+    const propDiv = document.createElement("div");
+    propDiv.className = "smsh-editor-canvas__prop";
+    propDiv.style.position = "absolute";
+    propDiv.style.top = String(y) + "px";
+    propDiv.style.left = String(x) + "px";
+    const img = document.createElement("img") as HTMLImageElement;
+    img.src = `${propSpriteRoute}${layoutPropMap[propName].imgPath}`;
+    propDiv.appendChild(img);
+    const prop: ICanvasProp = {
+      ...layoutPropMap[propName],
+      domRef: propDiv,
+      prop: {
+        ...layoutPropMap[propName].prop,
+        positioned: { posX: x, posY: y },
+      },
+    };
+    return prop;
   };
   private checkLayoutBounds = (x: number, y: number) =>
     x >= 0 && x < this.layout.width && y >= 0 && y < this.layout.height;
@@ -177,5 +221,11 @@ export class EditorCanvas {
     const complexTile = this.layout.tiles[y][x];
     complexTile.domRef?.remove();
     this.layout.tiles[y][x] = { domRef: null, symbol: " " };
+  };
+
+  placeProp = (x: number, y: number, propName: keyof typeof layoutPropMap) => {
+    const prop = this.constructProp(x, y, propName);
+    this.canvas.appendChild(prop.domRef);
+    this.propStorage.push(prop);
   };
 }

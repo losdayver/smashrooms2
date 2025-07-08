@@ -1,0 +1,24 @@
+.smsh-tabs {
+}
+
+.smsh-tabs__tabs-container {
+  display: flex;
+  gap: 4px;
+}
+
+.smsh-tabs__tab {
+}
+
+.smsh-tabs__tab--active {
+  background-color: cadetblue;
+}
+
+.smsh-tabs__contents-container {
+  position: relative;
+}
+
+.smsh-tabs__contents {
+  position: absolute;
+  left: 0px;
+  top: 0px;
+}

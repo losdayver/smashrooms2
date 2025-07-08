@@ -6,14 +6,11 @@ export abstract class Palette<Color extends IPaletteColor> {
   constructor(
     container: HTMLDivElement,
     colorMap: Record<string, Color>,
-    baseImgRoute: string,
-    baseClassName: string
+    baseImgRoute: string
   ) {
     this.colorMap = colorMap;
-    this.baseClassName = baseClassName;
     this.palette = document.createElement("div");
     this.palette.classList.add("smsh-palette__container");
-    this.palette.classList.add(baseClassName);
 
     let firstColorDiv: HTMLDivElement;
     let firstColor: string;
@@ -24,7 +21,6 @@ export abstract class Palette<Color extends IPaletteColor> {
       firstColor ??= color;
 
       colorDiv.classList.add("smsh-palette__container__color");
-      colorDiv.classList.add(`${this.baseClassName}__color`);
       colorDiv.onclick = () => this._selectColor(colorDiv, color);
 
       const img = document.createElement("img") as HTMLImageElement;
@@ -36,7 +32,6 @@ export abstract class Palette<Color extends IPaletteColor> {
     this._selectColor(firstColorDiv, firstColor);
   }
 
-  readonly baseClassName: string;
   private colorMap: Record<string, Color>;
   private _selectColor = (tileDiv: HTMLDivElement, color: string) => {
     if (this.selectedColorKey == color) return;
@@ -53,6 +48,6 @@ export abstract class Palette<Color extends IPaletteColor> {
   private selectedColorKey: string;
   private palette: HTMLDivElement;
 
-  getCurrentTile = () => this.selectedColor;
-  getCurrentTileKey = () => this.selectedColorKey;
+  getCurrentColor = () => this.selectedColor;
+  getCurrentColorKey = () => this.selectedColorKey;
 }

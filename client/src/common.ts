@@ -1,21 +1,27 @@
-import { ITileSymbols } from "@stdTypes/sceneTypes";
+import { ITileSymbols, PropBehavioursExt } from "@stdTypes/sceneTypes";
 
 export interface ILayoutTile {
   imgPath: string;
 }
 
-export interface IPropTile {
+export interface ILayoutProp {
   imgPath: string;
+  name: string;
+  prop: PropBehavioursExt;
 }
 
-export const layoutPropImgMap: Partial<Record<string, ILayoutTile>> = {
+export const layoutPropMap: Partial<Record<string, ILayoutProp>> = {
   player: {
     imgPath: "playerIdle.gif",
+    name: "playerSpawner",
+    prop: {},
   },
   bomb: {
     imgPath: "bomb.gif",
+    name: "bomb",
+    prop: {},
   },
-};
+} as const;
 
 export const layoutTileImgMap: Partial<Record<ITileSymbols, ILayoutTile>> = {
   "#": {
@@ -42,4 +48,4 @@ export const layoutTileImgMap: Partial<Record<ITileSymbols, ILayoutTile>> = {
   b: {
     imgPath: "box.png",
   },
-};
+} as const;

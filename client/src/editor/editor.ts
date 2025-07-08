@@ -1,28 +1,41 @@
 import { EditorCanvas } from "@client/editor/canvas";
 import { TilePalette } from "@client/editor/tilePalette";
 import { PropPalette } from "./propPalette";
+import { Tabs } from "@client/ui/tabs";
+
+export interface IEditorCommunications {
+  tilePalette: TilePalette;
+  propPalette: PropPalette;
+  canvas: EditorCanvas;
+  tabs: Tabs<["tiles", "props"]>;
+}
 
 export const editorLoader = () => {
   window.addEventListener("mousedown", (event) => {
     event.preventDefault();
   });
-  const tilePalette = new TilePalette(
-    document.querySelector(
-      ".editor__workplace__left-sidebar__palette__tiles-container"
-    )
+  const tabs = new Tabs<["tiles", "props"]>(
+    document.querySelector(".editor__workplace__left-sidebar__tabs"),
+    {
+      labels: ["tiles", "props"],
+    }
   );
-  const propPalette = new PropPalette(
-    document.querySelector(
-      ".editor__workplace__left-sidebar__palette__props-container"
-    )
-  );
+  const contents = tabs.getTabs().map((el) => el.contentsRef);
+  const tilePalette = new TilePalette(contents[0]);
+  const propPalette = new PropPalette(contents[1]);
+  const communications: Partial<IEditorCommunications> = {
+    tilePalette,
+    propPalette,
+    tabs,
+  };
   const canvas = new EditorCanvas(
     document.querySelector(".editor__workplace__canvas-container"),
     {
       width: 200,
       height: 200,
-      tilePalette,
+      communications: communications as IEditorCommunications,
     }
   );
+  communications.canvas = canvas;
   canvas.placeTile(5, 5, "#");
 };
