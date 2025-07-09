@@ -8,3 +8,10 @@
 .smsh-editor-canvas__tile {
   box-shadow: 4px 6px 9px 0px #00000087;
 }
+
+.smsh-editor-canvas__prop {
+}
+
+.smsh-editor-canvas__prop--selected {
+  outline: 2px solid red;
+}
