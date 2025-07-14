@@ -2,6 +2,7 @@ import { EditorCanvas } from "@client/editor/canvas";
 import { TilePalette } from "@client/editor/tilePalette";
 import { PropPalette } from "./propPalette";
 import { Tabs } from "@client/ui/tabs";
+import { FocusManager } from "@client/focus/focusManager";
 
 export interface IEditorCommunications {
   tilePalette: TilePalette;
@@ -11,6 +12,8 @@ export interface IEditorCommunications {
 }
 
 export const editorLoader = () => {
+  const focusManager = new FocusManager();
+
   window.addEventListener("mousedown", (event) => {
     event.preventDefault();
   });
@@ -37,5 +40,6 @@ export const editorLoader = () => {
     }
   );
   communications.canvas = canvas;
-  canvas.placeTile(5, 5, "#");
+  focusManager.register(canvas);
+  focusManager.setFocus(canvas.getFocusTag());
 };

@@ -49,7 +49,6 @@ export class FocusManager {
             isDown ? "down" : "up",
             event.code
           );
-          return;
         }
       }
       await this.getCurrentTag()?.onFocusReceiveKey?.(

@@ -4,11 +4,11 @@ import {
   propSpriteRoute,
 } from "@client/routes";
 import { ITileSymbols } from "@stdTypes/sceneTypes";
-import { TilePalette } from "./tilePalette";
-import { minMax } from "@client/utils";
-import { ICanvasPropBehaviours } from "./types";
+import { getDivElPos, minMax } from "@client/utils";
 import { ILayoutProp, layoutPropMap, layoutTileImgMap } from "@client/common";
 import { IEditorCommunications } from "./editor";
+import { FocusManager, IFocusable } from "@client/focus/focusManager";
+import { ControlsObjType } from "@client/config/config";
 
 interface IComplexTile {
   symbol: ITileSymbols;
@@ -23,6 +23,7 @@ interface ICanvasLayout {
 
 type ICanvasProp = ILayoutProp & {
   domRef: HTMLDivElement;
+  dragStartedPos: [number, number];
   selected: boolean;
 };
 type ICanvasPropStorage = ICanvasProp[];
@@ -33,7 +34,13 @@ interface IEditorCanvasConstructorParams {
   communications: IEditorCommunications;
 }
 
-export class EditorCanvas {
+const mouseBtnMap = {
+  0: "lmb",
+  1: "mmb",
+  2: "rmb",
+} as const;
+
+export class EditorCanvas implements IFocusable {
   constructor(
     container: HTMLDivElement,
     params: IEditorCanvasConstructorParams
@@ -53,15 +60,20 @@ export class EditorCanvas {
     this.canvas = document.createElement("div");
     this.canvas.className = "smsh-editor-canvas";
     this.canvas.onclick = (ev) =>
-      this.onClick(ev.clientX, ev.clientY, "lmb", "click");
+      this.unifiedMouseAction(ev.clientX, ev.clientY, "lmb", "click");
     this.canvas.onauxclick = (ev) =>
-      ev.button == 2 && this.onClick(ev.clientX, ev.clientY, "rmb", "click");
+      ev.button == 2 &&
+      this.unifiedMouseAction(ev.clientX, ev.clientY, "rmb", "click");
     window.addEventListener("mouseup", (ev) => {
       if (ev.button === 1) this.onStopPan();
       if (ev.button === 0) this.onStopPlacingTiles();
       if (ev.button === 2) this.onStopRemovingTiles();
-      this.isDragingProp = false;
-      this.draggingPropOffset = [0, 0];
+      this.unifiedMouseAction(
+        ev.clientX,
+        ev.clientY,
+        mouseBtnMap[ev.button],
+        "release"
+      );
     });
     window.addEventListener("mousedown", (ev) => {
       this.canPlaceProp = true;
@@ -79,6 +91,37 @@ export class EditorCanvas {
 
     container.appendChild(this.canvas);
   }
+
+  private isAltActionEnabled = false;
+  getFocusTag = () => "canvas";
+  onFocusReceiveKey = (
+    key: keyof ControlsObjType,
+    status: "down" | "up",
+    realKeyCode: string
+  ) => {
+    if (this.getTargetMode() == "props") {
+      if (status == "up") {
+        if (key == "altAction") {
+          this.isAltActionEnabled = false;
+          this.canvas.style.cursor = "default";
+        }
+      } else if (status == "down") {
+        if (key == "delete") {
+          const propsToDelete = this.propStorage.filter(
+            (prop) => prop.selected
+          );
+          propsToDelete.forEach((prop) => this.deleteProp(prop.domRef));
+        } else if (key == "altAction") {
+          this.isAltActionEnabled = true;
+          this.canvas.style.cursor = "not-allowed";
+        } else if (key == "back") this.unselectAllProps();
+      }
+    }
+  };
+  onFocused?: () => void | Promise<void>;
+  onUnfocused?: () => void | Promise<void>;
+  onFocusRegistered?: (focusManager: FocusManager) => void | Promise<void>;
+  onFocusUnregistered?: () => void | Promise<void>;
 
   private communications: IEditorCommunications;
   private isPanning = false;
@@ -126,8 +169,8 @@ export class EditorCanvas {
   };
 
   private onMouseMove = (x: number, y: number) => {
-    if (this.isPlacingTiles) this.onClick(x, y, "lmb", "drag");
-    else if (this.isRemovingTiles) this.onClick(x, y, "rmb", "drag");
+    if (this.isPlacingTiles) this.unifiedMouseAction(x, y, "lmb", "drag");
+    else if (this.isRemovingTiles) this.unifiedMouseAction(x, y, "rmb", "drag");
     else if (this.isPanning) {
       this.canvas.style.left =
         String(x - this.panStartPos[0] + this.panStopPos[0]) + "px";
@@ -135,14 +178,18 @@ export class EditorCanvas {
         String(y - this.panStartPos[1] + this.panStopPos[1]) + "px";
     }
   };
+
+  private gridSize = 32;
+  private gridSnap = true;
+  private dragStarted = false;
   private canPlaceProp = true;
   private isDragingProp = false;
-  private draggingPropOffset = [0, 0];
-  private onClick = (
+  private cursorDragStartPos = [0, 0];
+  private unifiedMouseAction = (
     xReal: number,
     yReal: number,
     button: "lmb" | "rmb" | "mmb",
-    clickVariant: "click" | "drag"
+    clickVariant: "click" | "drag" | "release"
   ) => {
     const { left, top } = this.canvas.getBoundingClientRect();
     const xRelative = (xReal - left) / this.zoomVals[0];
@@ -165,36 +212,68 @@ export class EditorCanvas {
             this.communications.tilePalette.getCurrentColorKey() as ITileSymbols
           );
       } else if (button == "rmb") this.removeTile(xLayout, yLayout);
-    } else if (target == "props" && this.canPlaceProp) {
+    } else if (target == "props") {
       const propUnderCursor = this.getPropUnderCursor(xReal, yReal);
-      if (button == "lmb" && clickVariant == "click" && !this.isDragingProp) {
-        if (propUnderCursor) return;
-        this.canPlaceProp = false;
-        this.placeProp(
-          xRelative,
-          yRelative,
-          this.communications.propPalette.getCurrentColorKey() as keyof typeof layoutPropMap
-        );
-      } else if (button == "lmb" && clickVariant == "drag") {
-        const selectedProp = this.propStorage.find((prop) => prop.selected);
-        if (
-          !selectedProp ||
-          (selectedProp?.domRef != propUnderCursor?.domRef &&
-            !this.isDragingProp)
-        )
+      if (
+        button == "lmb" &&
+        clickVariant == "click" &&
+        !this.isDragingProp &&
+        this.canPlaceProp
+      ) {
+        if (this.isAltActionEnabled) {
+          this.canPlaceProp = false;
+          let pos = [xRelative, yRelative];
+          if (this.gridSnap)
+            pos = pos.map(
+              (val) => Math.round(val / this.gridSize) * this.gridSize
+            );
+          const prop = this.placeProp(
+            pos[0],
+            pos[1],
+            this.communications.propPalette.getCurrentColorKey() as keyof typeof layoutPropMap
+          );
+          this.unselectAllProps();
+          this.selectProp(prop.domRef);
+        } else if (propUnderCursor) {
+          this.selectProp(propUnderCursor.domRef);
           return;
-        if (!this.isDragingProp) {
-          this.draggingPropOffset = [
-            selectedProp.prop.positioned.posX - xRelative,
-            selectedProp.prop.positioned.posY - yRelative,
-          ];
         }
-        this.isDragingProp = true;
-        selectedProp.prop.positioned = { posX: xRelative, posY: yRelative };
-        selectedProp.domRef.style.left =
-          String(xRelative + this.draggingPropOffset[0]) + "px";
-        selectedProp.domRef.style.top =
-          String(yRelative + this.draggingPropOffset[1]) + "px";
+      } else if (button == "rmb" && clickVariant == "drag") {
+        const selectedProps = this.propStorage.filter((prop) => prop.selected);
+        if (!selectedProps.length) return;
+        let loopDragStarted = true;
+        if (!this.dragStarted) {
+          loopDragStarted = false;
+          this.dragStarted = true;
+          this.canvas.style.cursor = "move";
+          this.cursorDragStartPos = [xRelative, yRelative];
+        }
+        for (const selectedProp of selectedProps) {
+          if (!loopDragStarted) {
+            selectedProp.dragStartedPos = getDivElPos(selectedProp.domRef);
+          }
+          let divPos = [
+            selectedProp.dragStartedPos[0] -
+              this.cursorDragStartPos[0] +
+              xRelative,
+            selectedProp.dragStartedPos[1] -
+              this.cursorDragStartPos[1] +
+              yRelative,
+          ];
+          if (this.gridSnap)
+            divPos = divPos.map(
+              (val) => Math.round(val / this.gridSize) * this.gridSize
+            );
+          selectedProp.domRef.style.left = String(divPos[0]) + "px";
+          selectedProp.domRef.style.top = String(divPos[1]) + "px";
+          selectedProp.prop.positioned = { posX: xRelative, posY: yRelative };
+        }
+      }
+    }
+    if (clickVariant == "release") {
+      if (button == "rmb") {
+        this.canvas.style.cursor = "default";
+        this.dragStarted = false;
       }
     }
   };
@@ -235,16 +314,6 @@ export class EditorCanvas {
     propDiv.style.position = "absolute";
     propDiv.style.top = String(y) + "px";
     propDiv.style.left = String(x) + "px";
-    propDiv.onclick = (ev) => {
-      if (this.getTargetMode() == "tiles") return;
-      ev.stopPropagation();
-      this.selectProp(propDiv);
-    };
-    propDiv.onauxclick = (ev) => {
-      if (this.getTargetMode() == "tiles" || ev.button == 1) return;
-      ev.stopPropagation();
-      this.deleteProp(propDiv);
-    };
     const img = document.createElement("img") as HTMLImageElement;
     img.src = `${propSpriteRoute}${layoutPropMap[propName].imgPath}`;
     propDiv.appendChild(img);
@@ -255,6 +324,7 @@ export class EditorCanvas {
         ...layoutPropMap[propName].prop,
         positioned: { posX: x, posY: y },
       },
+      dragStartedPos: [0, 0],
       selected: false,
     };
     return prop;
@@ -282,18 +352,26 @@ export class EditorCanvas {
     const prop = this.constructProp(x, y, propName);
     this.canvas.appendChild(prop.domRef);
     this.propStorage.push(prop);
+    return prop;
   };
   selectProp = (domRef: HTMLDivElement) => {
     const propToSelect = this.propStorage.find((prop) => prop.domRef == domRef);
     if (!propToSelect) return;
-    const wasSelected = propToSelect.selected;
+    if (propToSelect.selected) {
+      propToSelect.domRef.classList.remove(
+        "smsh-editor-canvas__prop--selected"
+      );
+      propToSelect.selected = false;
+      return;
+    }
+    propToSelect.domRef.classList.add("smsh-editor-canvas__prop--selected");
+    propToSelect.selected = true;
+  };
+  unselectAllProps = () => {
     this.propStorage.forEach((prop) => {
       prop.selected = false;
       prop.domRef.classList.remove("smsh-editor-canvas__prop--selected");
     });
-    if (wasSelected) return;
-    propToSelect.domRef.classList.add("smsh-editor-canvas__prop--selected");
-    propToSelect.selected = true;
   };
   deleteProp = (domRef: HTMLDivElement) => {
     const propIndex = this.propStorage.findIndex(

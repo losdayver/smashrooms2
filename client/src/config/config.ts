@@ -74,6 +74,9 @@ export const defaultControlsObj: ControlsObjType = {
   revive: ["KeyR", "Circle"],
   swap: ["KeyQ", "Triangle"],
   select: ["Tab"],
+  // editor
+  altAction: ["ShiftLeft", "ShiftRight"],
+  delete: ["Delete"],
 };
 
 export const controlsList = [
@@ -88,6 +91,9 @@ export const controlsList = [
   "revive",
   "swap",
   "select",
+  // editor
+  "altAction",
+  "delete",
 ] as const;
 
 export type ControlsObjType = Record<(typeof controlsList)[number], string[]>;

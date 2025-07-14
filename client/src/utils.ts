@@ -79,3 +79,8 @@ export const minMax = (value: number, min: number, max: number) => {
   else if (value > max) return max;
   return value;
 };
+
+export const getDivElPos = (el: HTMLElement): [number, number] => [
+  Number(el.style.left?.replace("px", "")) ?? 0,
+  Number(el.style.top?.replace("px", "")) ?? 0,
+];
