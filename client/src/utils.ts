@@ -62,12 +62,20 @@ export const makeIconLink = (
   return a;
 };
 
-export const makeIconButton = (iconBasename: string, onClick: () => void) => {
+export const makeIconButton = (
+  iconBasename: string,
+  onClick: () => void,
+  size?: [number, number]
+) => {
   const d = document;
   const img = d.createElement("img");
   img.className = "smsh-button";
   img.setAttribute("src", `${iconRoute}${iconBasename}`);
   img.onclick = onClick;
+  if (size) {
+    img.style.width = size[0] + "px";
+    img.style.height = size[1] + "px";
+  }
   return img;
 };
 

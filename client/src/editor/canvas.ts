@@ -4,7 +4,7 @@ import {
   propSpriteRoute,
 } from "@client/routes";
 import { ITileSymbols } from "@stdTypes/sceneTypes";
-import { getDivElPos, minMax } from "@client/utils";
+import { getDivElPos, makeIconButton, minMax } from "@client/utils";
 import { ILayoutProp, layoutPropMap, layoutTileImgMap } from "@client/common";
 import { IEditorCommunications } from "./editor";
 import { FocusManager, IFocusable } from "@client/focus/focusManager";
@@ -15,7 +15,7 @@ interface IComplexTile {
   domRef: HTMLDivElement | null;
 }
 
-interface ICanvasLayout {
+interface ICanvasTileLayout {
   width: number;
   height: number;
   tiles: IComplexTile[][];
@@ -23,6 +23,7 @@ interface ICanvasLayout {
 
 type ICanvasProp = ILayoutProp & {
   domRef: HTMLDivElement;
+  controlsDomRef: HTMLDivElement;
   dragStartedPos: [number, number];
   selected: boolean;
 };
@@ -76,7 +77,6 @@ export class EditorCanvas implements IFocusable {
       );
     });
     window.addEventListener("mousedown", (ev) => {
-      this.canPlaceProp = true;
       if (ev.button === 1) this.onStartPan(ev.clientX, ev.clientY);
       if (ev.button === 0) this.onStartPlacingTiles();
       if (ev.button === 2) this.onStartRemovingTiles();
@@ -113,7 +113,7 @@ export class EditorCanvas implements IFocusable {
           propsToDelete.forEach((prop) => this.deleteProp(prop.domRef));
         } else if (key == "altAction") {
           this.isAltActionEnabled = true;
-          this.canvas.style.cursor = "not-allowed";
+          this.canvas.style.cursor = "pointer";
         } else if (key == "back") this.unselectAllProps();
       }
     }
@@ -182,7 +182,6 @@ export class EditorCanvas implements IFocusable {
   private gridSize = 32;
   private gridSnap = true;
   private dragStarted = false;
-  private canPlaceProp = true;
   private isDragingProp = false;
   private cursorDragStartPos = [0, 0];
   private unifiedMouseAction = (
@@ -214,14 +213,8 @@ export class EditorCanvas implements IFocusable {
       } else if (button == "rmb") this.removeTile(xLayout, yLayout);
     } else if (target == "props") {
       const propUnderCursor = this.getPropUnderCursor(xReal, yReal);
-      if (
-        button == "lmb" &&
-        clickVariant == "click" &&
-        !this.isDragingProp &&
-        this.canPlaceProp
-      ) {
-        if (this.isAltActionEnabled) {
-          this.canPlaceProp = false;
+      if (button == "lmb" && clickVariant == "click" && !this.isDragingProp) {
+        if (this.isAltActionEnabled && !propUnderCursor) {
           let pos = [xRelative, yRelative];
           if (this.gridSnap)
             pos = pos.map(
@@ -289,14 +282,13 @@ export class EditorCanvas implements IFocusable {
 
   private tileSize = 32;
   private canvas: HTMLDivElement;
-  private layout: ICanvasLayout;
+  private layout: ICanvasTileLayout;
   private propStorage: ICanvasPropStorage = [];
 
   private constructTileDiv = (x: number, y: number, tile: ITileSymbols) => {
     const tileDiv = document.createElement("div");
     tileDiv.className = "smsh-editor-canvas__tile";
-    tileDiv.style.zIndex = String(x * 1000 + y);
-    tileDiv.style.position = "absolute";
+    tileDiv.style.zIndex = String(x * 10000 + y);
     tileDiv.style.top = (y * this.tileSize).toString();
     tileDiv.style.left = (x * this.tileSize).toString();
     const img = document.createElement("img") as HTMLImageElement;
@@ -317,6 +309,20 @@ export class EditorCanvas implements IFocusable {
     const img = document.createElement("img") as HTMLImageElement;
     img.src = `${propSpriteRoute}${layoutPropMap[propName].imgPath}`;
     propDiv.appendChild(img);
+    const controlsDiv = document.createElement("div");
+    const deleteBtn = makeIconButton(
+      "cross.png",
+      () => {
+        this.deleteProp(propDiv);
+      },
+      [30, 20]
+    );
+    const editBtn = makeIconButton("edit.png", () => {}, [30, 20]);
+    deleteBtn.innerText = "D";
+    controlsDiv.append(editBtn, deleteBtn);
+    controlsDiv.classList.add("smsh-editor-canvas__prop__controls");
+    controlsDiv.style.visibility = "hidden";
+    propDiv.append(controlsDiv);
     const prop: ICanvasProp = {
       ...layoutPropMap[propName],
       domRef: propDiv,
@@ -326,6 +332,7 @@ export class EditorCanvas implements IFocusable {
       },
       dragStartedPos: [0, 0],
       selected: false,
+      controlsDomRef: controlsDiv,
     };
     return prop;
   };
@@ -356,21 +363,32 @@ export class EditorCanvas implements IFocusable {
   };
   selectProp = (domRef: HTMLDivElement) => {
     const propToSelect = this.propStorage.find((prop) => prop.domRef == domRef);
+    if (!this.isAltActionEnabled)
+      this.propStorage.forEach((prop) => {
+        if (prop.domRef != domRef) {
+          prop.domRef.classList.remove("smsh-editor-canvas__prop--selected");
+          prop.selected = false;
+          prop.controlsDomRef.style.visibility = "hidden";
+        }
+      });
     if (!propToSelect) return;
     if (propToSelect.selected) {
       propToSelect.domRef.classList.remove(
         "smsh-editor-canvas__prop--selected"
       );
       propToSelect.selected = false;
+      propToSelect.controlsDomRef.style.visibility = "hidden";
       return;
     }
     propToSelect.domRef.classList.add("smsh-editor-canvas__prop--selected");
     propToSelect.selected = true;
+    propToSelect.controlsDomRef.style.visibility = "visible";
   };
   unselectAllProps = () => {
     this.propStorage.forEach((prop) => {
       prop.selected = false;
       prop.domRef.classList.remove("smsh-editor-canvas__prop--selected");
+      prop.controlsDomRef.style.visibility = "hidden";
     });
   };
   deleteProp = (domRef: HTMLDivElement) => {
@@ -379,8 +397,8 @@ export class EditorCanvas implements IFocusable {
     );
     domRef.remove();
     this.propStorage = [
-      ...this.propStorage.splice(0, propIndex),
-      ...this.propStorage.splice(propIndex),
+      ...this.propStorage.slice(0, propIndex),
+      ...this.propStorage.slice(propIndex),
     ];
   };
 }
