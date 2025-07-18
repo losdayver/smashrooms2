@@ -14,6 +14,10 @@ export abstract class Modal {
   };
   private isInit = false;
 
+  destroy = () => {
+    this.overlay.remove();
+  };
+
   show = () => {
     if (!this.isInit) {
       this.init();
@@ -23,12 +27,13 @@ export abstract class Modal {
     this.overlay.classList.remove("modal__overlay--hidden");
   };
   hide = () => {
-    this.onClose();
+    if (this.onClose() === false) return;
     this.modal.classList.add("modal--hidden");
     this.overlay.classList.add("modal__overlay--hidden");
   };
 
-  protected onClose = () => void 0;
+  /** return false if want to block close attempt */
+  protected onClose: () => void | false = () => void 0;
 
   constructor(container: HTMLDivElement, props: IModalProps) {
     this.container = container;

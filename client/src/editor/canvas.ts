@@ -3,12 +3,13 @@ import {
   layoutSpriteRoute,
   propSpriteRoute,
 } from "@client/routes";
-import { ITileSymbols } from "@stdTypes/sceneTypes";
+import { ITileSymbols, PropBehavioursExt } from "@stdTypes/sceneTypes";
 import { getDivElPos, makeIconButton, minMax } from "@client/utils";
 import { ILayoutProp, layoutPropMap, layoutTileImgMap } from "@client/common";
 import { IEditorCommunications } from "./editor";
 import { FocusManager, IFocusable } from "@client/focus/focusManager";
 import { ControlsObjType } from "@client/config/config";
+import { JsonEditorModal } from "@client/modal/jsonEditorModal";
 
 interface IComplexTile {
   symbol: ITileSymbols;
@@ -22,6 +23,7 @@ interface ICanvasTileLayout {
 }
 
 type ICanvasProp = ILayoutProp & {
+  behavioursRef: { ref: PropBehavioursExt };
   domRef: HTMLDivElement;
   controlsDomRef: HTMLDivElement;
   dragStartedPos: [number, number];
@@ -62,13 +64,16 @@ export class EditorCanvas implements IFocusable {
     this.canvas.className = "smsh-editor-canvas";
     this.canvas.onclick = (ev) =>
       this.unifiedMouseAction(ev.clientX, ev.clientY, "lmb", "click");
-    this.canvas.onauxclick = (ev) =>
+    this.canvas.onauxclick = (ev) => {
+      if (!this.focused) return;
       ev.button == 2 &&
-      this.unifiedMouseAction(ev.clientX, ev.clientY, "rmb", "click");
-    window.addEventListener("mouseup", (ev) => {
+        this.unifiedMouseAction(ev.clientX, ev.clientY, "rmb", "click");
+    };
+    this.canvas.addEventListener("mouseup", (ev) => {
+      if (!this.focused) return;
       if (ev.button === 1) this.onStopPan();
-      if (ev.button === 0) this.onStopPlacingTiles();
-      if (ev.button === 2) this.onStopRemovingTiles();
+      else if (ev.button === 0) this.onStopPlacingTiles();
+      else if (ev.button === 2) this.onStopRemovingTiles();
       this.unifiedMouseAction(
         ev.clientX,
         ev.clientY,
@@ -76,15 +81,19 @@ export class EditorCanvas implements IFocusable {
         "release"
       );
     });
-    window.addEventListener("mousedown", (ev) => {
+    this.canvas.addEventListener("mousedown", (ev) => {
+      ev.preventDefault();
+      if (!this.focused) return;
       if (ev.button === 1) this.onStartPan(ev.clientX, ev.clientY);
-      if (ev.button === 0) this.onStartPlacingTiles();
-      if (ev.button === 2) this.onStartRemovingTiles();
+      else if (ev.button === 0) this.onStartPlacingTiles();
+      else if (ev.button === 2) this.onStartRemovingTiles();
     });
-    window.addEventListener("mousemove", (ev) =>
-      this.onMouseMove(ev.clientX, ev.clientY)
-    );
-    addEventListener("wheel", (ev) => {
+    this.canvas.addEventListener("mousemove", (ev) => {
+      if (!this.focused) return;
+      this.onMouseMove(ev.clientX, ev.clientY);
+    });
+    this.canvas.addEventListener("wheel", (ev) => {
+      if (!this.focused) return;
       if (ev.deltaY < 0) this.zoom("in");
       else this.zoom("out");
     });
@@ -118,8 +127,13 @@ export class EditorCanvas implements IFocusable {
       }
     }
   };
-  onFocused?: () => void | Promise<void>;
-  onUnfocused?: () => void | Promise<void>;
+  focused = false;
+  onFocused = () => {
+    this.focused = true;
+  };
+  onUnfocused = () => {
+    this.focused = false;
+  };
   onFocusRegistered?: (focusManager: FocusManager) => void | Promise<void>;
   onFocusUnregistered?: () => void | Promise<void>;
 
@@ -309,6 +323,7 @@ export class EditorCanvas implements IFocusable {
     const img = document.createElement("img") as HTMLImageElement;
     img.src = `${propSpriteRoute}${layoutPropMap[propName].imgPath}`;
     propDiv.appendChild(img);
+    const behavioursRef = { ref: {} };
     const controlsDiv = document.createElement("div");
     const deleteBtn = makeIconButton(
       "cross.png",
@@ -317,7 +332,21 @@ export class EditorCanvas implements IFocusable {
       },
       [30, 20]
     );
-    const editBtn = makeIconButton("edit.png", () => {}, [30, 20]);
+    const editBtn = makeIconButton(
+      "edit.png",
+      () => {
+        const modal = new JsonEditorModal(
+          document.querySelector(".modal-container"),
+          this.communications.focusManager,
+          this.communications.toast,
+          behavioursRef
+        );
+        this.communications.focusManager.register(modal);
+        this.communications.focusManager.setFocus(modal.getFocusTag());
+        modal.show();
+      },
+      [30, 20]
+    );
     deleteBtn.innerText = "D";
     controlsDiv.append(editBtn, deleteBtn);
     controlsDiv.classList.add("smsh-editor-canvas__prop__controls");
@@ -333,6 +362,7 @@ export class EditorCanvas implements IFocusable {
       dragStartedPos: [0, 0],
       selected: false,
       controlsDomRef: controlsDiv,
+      behavioursRef,
     };
     return prop;
   };
