@@ -4,6 +4,7 @@ import { PropPalette } from "./propPalette";
 import { Tabs } from "@client/ui/tabs";
 import { FocusManager } from "@client/focus/focusManager";
 import { Toast } from "@client/ui/toast";
+import { Toolbar } from "./toolbar";
 
 export interface IEditorCommunications {
   tilePalette: TilePalette;
@@ -37,12 +38,17 @@ export const editorLoader = () => {
   const canvas = new EditorCanvas(
     document.querySelector(".editor__workplace__canvas-container"),
     {
-      width: 200,
-      height: 200,
+      width: 50,
+      height: 30,
       communications: communications as IEditorCommunications,
     }
   );
   communications.canvas = canvas;
   focusManager.register(canvas);
   focusManager.setFocus(canvas.getFocusTag());
+
+  const toolbar = new Toolbar(
+    document.querySelector(".editor__toolbar"),
+    communications as IEditorCommunications
+  );
 };

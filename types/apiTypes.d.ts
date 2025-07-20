@@ -1,8 +1,8 @@
-interface IEditorUploadIncomingBody {
+export interface IEditorUploadIncomingBody {
   /** BASE64 encoded */ layoutData: string;
   /** BASE64 encoded */ meta: string;
 }
 
-interface IEditorUploadOutgoingBody {
+export interface IEditorUploadOutgoingBody {
   /** params string for connection to testing env */ testingUrlParams: string;
 }

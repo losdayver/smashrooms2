@@ -7,19 +7,19 @@ export interface ILayoutTile {
 export interface ILayoutProp {
   imgPath: string;
   name: string;
-  prop: PropBehavioursExt;
+  beahaviours: PropBehavioursExt;
 }
 
 export const layoutPropMap: Partial<Record<string, ILayoutProp>> = {
   player: {
     imgPath: "playerIdle.gif",
     name: "playerSpawner",
-    prop: {},
+    beahaviours: {},
   },
   bomb: {
     imgPath: "bomb.gif",
     name: "bomb",
-    prop: {},
+    beahaviours: {},
   },
 } as const;
 

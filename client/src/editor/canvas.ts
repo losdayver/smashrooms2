@@ -10,6 +10,7 @@ import { IEditorCommunications } from "./editor";
 import { FocusManager, IFocusable } from "@client/focus/focusManager";
 import { ControlsObjType } from "@client/config/config";
 import { JsonEditorModal } from "@client/modal/jsonEditorModal";
+import { ISmshStageMetaExtra, StageExt } from "@stdTypes/stage";
 
 interface IComplexTile {
   symbol: ITileSymbols;
@@ -273,7 +274,10 @@ export class EditorCanvas implements IFocusable {
             );
           selectedProp.domRef.style.left = String(divPos[0]) + "px";
           selectedProp.domRef.style.top = String(divPos[1]) + "px";
-          selectedProp.prop.positioned = { posX: xRelative, posY: yRelative };
+          selectedProp.beahaviours.positioned = {
+            posX: xRelative,
+            posY: yRelative,
+          };
         }
       }
     }
@@ -355,8 +359,8 @@ export class EditorCanvas implements IFocusable {
     const prop: ICanvasProp = {
       ...layoutPropMap[propName],
       domRef: propDiv,
-      prop: {
-        ...layoutPropMap[propName].prop,
+      beahaviours: {
+        ...layoutPropMap[propName].beahaviours,
         positioned: { posX: x, posY: y },
       },
       dragStartedPos: [0, 0],
@@ -430,5 +434,25 @@ export class EditorCanvas implements IFocusable {
       ...this.propStorage.slice(0, propIndex),
       ...this.propStorage.slice(propIndex),
     ];
+  };
+
+  extractLayoutData = (): StageExt["layoutData"] => {
+    return new Array(this.layout.height)
+      .fill(0)
+      .map((_, index) =>
+        this.layout.tiles[index].map((tile) => tile.symbol).join("")
+      )
+      .join("\n");
+  };
+  extractStageMetaExtra = (): ISmshStageMetaExtra => {
+    return {
+      preload: this.propStorage.map((prop) => ({
+        name: prop.name,
+        behaviours: {
+          positioned: prop.beahaviours.positioned,
+          ...prop.behavioursRef.ref,
+        },
+      })),
+    };
   };
 }

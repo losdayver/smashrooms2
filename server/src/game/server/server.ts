@@ -15,6 +15,10 @@ import { SmshScheduler } from "@server/game/smsh/scheduler";
 import { PGQuerier } from "@server/db/pgQuerier";
 import express from "express";
 import { env } from "@server/env";
+import {
+  IEditorUploadIncomingBody,
+  IEditorUploadOutgoingBody,
+} from "@stdTypes/apiTypes";
 
 export class Server {
   private scene: IScene;
@@ -82,7 +86,31 @@ export const startApi = () => {
   if (env.editorConfig?.allow) {
     let editorWSServer: Server;
 
+    api.options("/{*any}", (req, res) => {
+      res.header("Access-Control-Allow-Origin", "*");
+      res.header(
+        "Access-Control-Allow-Methods",
+        "GET, POST, PUT, DELETE, OPTIONS"
+      );
+      res.header(
+        "Access-Control-Allow-Headers",
+        "Origin, X-Requested-With, Content-Type, Accept, Authorization"
+      );
+      res.header("Access-Control-Allow-Credentials", "true");
+      res.send();
+    });
     api.post("/editor/upload", async (req, res) => {
+      res.header("Access-Control-Allow-Origin", "*");
+      res.header(
+        "Access-Control-Allow-Methods",
+        "GET, POST, PUT, DELETE, OPTIONS"
+      );
+      res.header(
+        "Access-Control-Allow-Headers",
+        "Origin, X-Requested-With, Content-Type, Accept, Authorization"
+      );
+      res.header("Access-Control-Allow-Credentials", "true");
+
       if (editorWSServer) editorWSServer.stop();
 
       const base64Decode = (text: string) =>
