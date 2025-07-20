@@ -32,7 +32,7 @@ import {
   PropIDExt,
 } from "@stdTypes/sceneTypes";
 import { StageExt } from "@stdTypes/stage";
-import { ClientID } from "@server/game/commonTypes";
+import { ClientID, IDestructible } from "@server/game/commonTypes";
 import {
   IServerNotificationExt,
   ISoundMessageExt,
@@ -731,8 +731,12 @@ export class Scene implements IScene {
     this.querier = querier;
     this.loadStage(pickRandom(stageNames));
   }
+  destructor() {
+    clearTimeout(this.stageTimerID);
+  }
 }
 
+// todo this is implementation dependant, needs to be moved out of this file
 const layoutMap: Partial<Record<ITileSymbols, ILayoutTile>> = {
   "=": {
     solidity: "semi",
