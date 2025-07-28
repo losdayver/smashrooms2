@@ -194,7 +194,7 @@ export class EditorCanvas implements IFocusable {
     }
   };
 
-  private gridSize = 32;
+  private gridSize = 16;
   private gridSnap = true;
   private dragStarted = false;
   private isDragingProp = false;
@@ -270,13 +270,13 @@ export class EditorCanvas implements IFocusable {
           ];
           if (this.gridSnap)
             divPos = divPos.map(
-              (val) => Math.round(val / this.gridSize) * this.gridSize
+              (val) => Math.floor(val / this.gridSize) * this.gridSize
             );
           selectedProp.domRef.style.left = String(divPos[0]) + "px";
           selectedProp.domRef.style.top = String(divPos[1]) + "px";
           selectedProp.beahaviours.positioned = {
-            posX: xRelative,
-            posY: yRelative,
+            posX: divPos[0],
+            posY: divPos[1],
           };
         }
       }
@@ -324,10 +324,16 @@ export class EditorCanvas implements IFocusable {
     propDiv.style.position = "absolute";
     propDiv.style.top = String(y) + "px";
     propDiv.style.left = String(x) + "px";
+    if (layoutPropMap[propName].offset)
+      propDiv.style.transform = `translate(${layoutPropMap[propName].offset
+        .map((val) => val + "px")
+        .join(", ")})`;
     const img = document.createElement("img") as HTMLImageElement;
     img.src = `${propSpriteRoute}${layoutPropMap[propName].imgPath}`;
     propDiv.appendChild(img);
-    const behavioursRef = { ref: {} };
+    const behavioursRef = {
+      ref: JSON.parse(JSON.stringify(layoutPropMap[propName].beahaviours)),
+    };
     const controlsDiv = document.createElement("div");
     const deleteBtn = makeIconButton(
       "cross.png",
@@ -430,10 +436,9 @@ export class EditorCanvas implements IFocusable {
       (prop) => prop.domRef == domRef
     );
     domRef.remove();
-    this.propStorage = [
-      ...this.propStorage.slice(0, propIndex),
-      ...this.propStorage.slice(propIndex),
-    ];
+    this.propStorage = this.propStorage.filter(
+      (_, index) => index != propIndex
+    );
   };
 
   extractLayoutData = (): StageExt["layoutData"] => {
@@ -449,7 +454,10 @@ export class EditorCanvas implements IFocusable {
       preload: this.propStorage.map((prop) => ({
         name: prop.name,
         behaviours: {
-          positioned: prop.beahaviours.positioned,
+          positioned: {
+            posX: Math.floor(prop.beahaviours.positioned.posX),
+            posY: Math.floor(prop.beahaviours.positioned.posY),
+          },
           ...prop.behavioursRef.ref,
         },
       })),

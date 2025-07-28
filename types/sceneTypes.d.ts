@@ -89,6 +89,12 @@ export interface IHasMasterExt {
   };
 }
 
+export interface IPortalExt {
+  portal: {
+    portalID?: string;
+  };
+}
+
 export type PropBehavioursExt = Partial<
   IPositionedExt &
     IControlledExt &
@@ -96,7 +102,8 @@ export type PropBehavioursExt = Partial<
     ICollidableExt &
     IDamageableExt &
     IDamagingExt &
-    INameTaggedExt
+    INameTaggedExt &
+    IPortalExt
 >;
 
 export type IBehaviouredPropExt = IPropExt & PropBehavioursExt;
