@@ -4,6 +4,7 @@ import {
   IEditorUploadIncomingBody,
   IEditorUploadOutgoingBody,
 } from "@stdTypes/apiTypes";
+import { EditorCanvas } from "./canvas";
 
 export class Toolbar {
   constructor(
@@ -11,11 +12,14 @@ export class Toolbar {
     communications: IEditorCommunications
   ) {
     const testBtn = document.createElement("button");
-    testBtn.className = "smsh-button";
+    const loadBtn = document.createElement("button");
+    loadBtn.className = testBtn.className = "smsh-button";
     testBtn.onclick = this.playTest;
+    loadBtn.onclick = this.loadStage;
     testBtn.innerText = "run";
+    loadBtn.innerText = "load from server";
     this.communications = communications;
-    container.append(testBtn);
+    container.append(testBtn, loadBtn);
   }
 
   private communications: IEditorCommunications;
@@ -50,6 +54,45 @@ export class Toolbar {
       `http://${window.location.host}${parsedRes.testingUrlParams}`,
       "_blank"
     );
-    console.log(parsedRes);
+  };
+
+  loadStage = async () => {
+    const layout = atob(
+      await fetch(
+        `http://${window.location.hostname}:5900/editor/load/layout/editor_test`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "text/plain",
+          },
+        }
+      ).then((res) => res.text())
+    );
+    const meta = JSON.parse(
+      atob(
+        await fetch(
+          `http://${window.location.hostname}:5900/editor/load/meta/editor_test`,
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "text/plain",
+            },
+          }
+        ).then((res) => res.text())
+      )
+    );
+
+    this.communications.canvas.destructor();
+    const canvas = new EditorCanvas(
+      document.querySelector(".editor__workplace__canvas-container"),
+      {
+        layout,
+        meta,
+        communications: this.communications,
+      }
+    );
+    this.communications.canvas = canvas;
+    this.communications.focusManager.register(canvas);
+    this.communications.focusManager.setFocus(canvas.getFocusTag());
   };
 }

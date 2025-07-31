@@ -1,4 +1,9 @@
-import { ITileSymbols, PropBehavioursExt } from "@stdTypes/sceneTypes";
+import {
+  IPortalExt,
+  ISpawnerExt,
+  ITileSymbols,
+  PropBehavioursExt,
+} from "@stdTypes/sceneTypes";
 
 export interface ILayoutTile {
   imgPath: string;
@@ -12,7 +17,7 @@ export interface ILayoutProp {
 }
 
 export const layoutPropMap: Partial<Record<string, ILayoutProp>> = {
-  player: {
+  playerSpawner: {
     imgPath: "playerIdle.gif",
     name: "playerSpawner",
     beahaviours: {},
@@ -30,7 +35,18 @@ export const layoutPropMap: Partial<Record<string, ILayoutProp>> = {
       portal: {
         portalID: "1",
       },
-    },
+    } satisfies IPortalExt,
+    offset: [-16, 0],
+  },
+  itemSpawner: {
+    imgPath: "itemSpawner.gif",
+    name: "itemSpawner",
+    beahaviours: {
+      spawner: {
+        props: ["shotgunItem", "pistolItem", "blasterItem", "medikitItem"],
+        spawnDelay: 120,
+      },
+    } satisfies ISpawnerExt,
     offset: [-16, 0],
   },
 } as const;
@@ -61,3 +77,7 @@ export const layoutTileImgMap: Partial<Record<ITileSymbols, ILayoutTile>> = {
     imgPath: "box.png",
   },
 } as const;
+
+export interface IDestructible {
+  destructor: () => void;
+}

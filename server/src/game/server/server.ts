@@ -79,38 +79,63 @@ export const getStageFS = (name: string): StageExt => ({
   ) as LayoutMetaExt,
 });
 
+const corsMiddleware = (req, res, next) => {
+  res.header("Access-Control-Allow-Origin", "*");
+  res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+  res.header(
+    "Access-Control-Allow-Headers",
+    "Origin, X-Requested-With, Content-Type, Accept, Authorization"
+  );
+  res.header("Access-Control-Allow-Credentials", "true");
+
+  if (req.method === "OPTIONS") {
+    return res.sendStatus(200);
+  }
+
+  next();
+};
+
 export const startApi = () => {
   const api = express();
   api.use(express.json());
+  api.use(corsMiddleware);
 
   if (env.editorConfig?.allow) {
     let editorWSServer: Server;
 
-    api.options("/{*any}", (req, res) => {
-      res.header("Access-Control-Allow-Origin", "*");
-      res.header(
-        "Access-Control-Allow-Methods",
-        "GET, POST, PUT, DELETE, OPTIONS"
-      );
-      res.header(
-        "Access-Control-Allow-Headers",
-        "Origin, X-Requested-With, Content-Type, Accept, Authorization"
-      );
-      res.header("Access-Control-Allow-Credentials", "true");
-      res.send();
+    api.get("/editor/load/layout/:stageName", async (req, res) => {
+      const stageName = req.params.stageName;
+      if (!stageName) res.send(404);
+      let layoutData: Buffer;
+      try {
+        layoutData = await fsp.readFile(
+          path.join(config.stagesRoute, stageName, `${stageName}.layout`)
+        );
+      } catch (e) {
+        console.error(e);
+        res.send(404);
+        return;
+      }
+      res.setHeader("Content-Type", "text/plain");
+      res.send(layoutData.toString("base64"));
+    });
+    api.get("/editor/load/meta/:stageName", async (req, res) => {
+      const stageName = req.params.stageName;
+      if (!stageName) res.send(404);
+      let metaData: Buffer;
+      try {
+        metaData = await fsp.readFile(
+          path.join(config.stagesRoute, stageName, `${stageName}.meta.json`)
+        );
+      } catch (e) {
+        console.error(e);
+        res.send(404);
+        return;
+      }
+      res.setHeader("Content-Type", "text/plain");
+      res.send(metaData.toString("base64"));
     });
     api.post("/editor/upload", async (req, res) => {
-      res.header("Access-Control-Allow-Origin", "*");
-      res.header(
-        "Access-Control-Allow-Methods",
-        "GET, POST, PUT, DELETE, OPTIONS"
-      );
-      res.header(
-        "Access-Control-Allow-Headers",
-        "Origin, X-Requested-With, Content-Type, Accept, Authorization"
-      );
-      res.header("Access-Control-Allow-Credentials", "true");
-
       if (editorWSServer) editorWSServer.stop();
 
       const base64Decode = (text: string) =>

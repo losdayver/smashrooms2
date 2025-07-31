@@ -5,12 +5,17 @@ import {
 } from "@client/routes";
 import { ITileSymbols, PropBehavioursExt } from "@stdTypes/sceneTypes";
 import { getDivElPos, makeIconButton, minMax } from "@client/utils";
-import { ILayoutProp, layoutPropMap, layoutTileImgMap } from "@client/common";
+import {
+  IDestructible,
+  ILayoutProp,
+  layoutPropMap,
+  layoutTileImgMap,
+} from "@client/common";
 import { IEditorCommunications } from "./editor";
-import { FocusManager, IFocusable } from "@client/focus/focusManager";
+import { IFocusable } from "@client/focus/focusManager";
 import { ControlsObjType } from "@client/config/config";
 import { JsonEditorModal } from "@client/modal/jsonEditorModal";
-import { ISmshStageMetaExtra, StageExt } from "@stdTypes/stage";
+import { ISmshStageMetaExtra, LayoutMetaExt, StageExt } from "@stdTypes/stage";
 
 interface IComplexTile {
   symbol: ITileSymbols;
@@ -33,44 +38,36 @@ type ICanvasProp = ILayoutProp & {
 type ICanvasPropStorage = ICanvasProp[];
 
 interface IEditorCanvasConstructorParams {
-  width: number;
-  height: number;
+  width?: number;
+  height?: number;
+  meta?: LayoutMetaExt;
+  layout?: string;
   communications: IEditorCommunications;
 }
 
-const mouseBtnMap = {
-  0: "lmb",
-  1: "mmb",
-  2: "rmb",
-} as const;
-
-export class EditorCanvas implements IFocusable {
+export class EditorCanvas implements IFocusable, IDestructible {
   constructor(
     container: HTMLDivElement,
     params: IEditorCanvasConstructorParams
   ) {
+    this.container = container;
     this.communications = params.communications;
-    this.layout = {
-      height: params.height,
-      width: params.width,
-      tiles: Array.from({ length: params.height }, () =>
-        Array(params.width).fill({
-          symbol: " ",
-          domRef: null,
-        })
-      ),
-    };
     container.style.backgroundImage = `url(${backgroundRoute}forest.png)`;
     this.canvas = document.createElement("div");
     this.canvas.className = "smsh-editor-canvas";
-    this.canvas.onclick = (ev) =>
+
+    const actionWrapper = document.createElement("div");
+    actionWrapper.style.width = "100%";
+    actionWrapper.style.height = "100%";
+
+    actionWrapper.onclick = (ev) =>
       this.unifiedMouseAction(ev.clientX, ev.clientY, "lmb", "click");
     this.canvas.onauxclick = (ev) => {
       if (!this.focused) return;
       ev.button == 2 &&
         this.unifiedMouseAction(ev.clientX, ev.clientY, "rmb", "click");
     };
-    this.canvas.addEventListener("mouseup", (ev) => {
+    actionWrapper.addEventListener("mouseup", (ev) => {
       if (!this.focused) return;
       if (ev.button === 1) this.onStopPan();
       else if (ev.button === 0) this.onStopPlacingTiles();
@@ -78,70 +75,103 @@ export class EditorCanvas implements IFocusable {
       this.unifiedMouseAction(
         ev.clientX,
         ev.clientY,
-        mouseBtnMap[ev.button],
+        this.mouseBtnMap[ev.button],
         "release"
       );
     });
-    this.canvas.addEventListener("mousedown", (ev) => {
+    actionWrapper.addEventListener("mousedown", (ev) => {
       ev.preventDefault();
       if (!this.focused) return;
       if (ev.button === 1) this.onStartPan(ev.clientX, ev.clientY);
       else if (ev.button === 0) this.onStartPlacingTiles();
       else if (ev.button === 2) this.onStartRemovingTiles();
     });
-    this.canvas.addEventListener("mousemove", (ev) => {
+    actionWrapper.addEventListener("mousemove", (ev) => {
       if (!this.focused) return;
       this.onMouseMove(ev.clientX, ev.clientY);
     });
-    this.canvas.addEventListener("wheel", (ev) => {
+    actionWrapper.addEventListener("wheel", (ev) => {
       if (!this.focused) return;
       if (ev.deltaY < 0) this.zoom("in");
       else this.zoom("out");
     });
 
-    container.appendChild(this.canvas);
+    if (params.layout) {
+      const layout = params.layout.split(/\r\n|\r|\n/);
+      this.layout = {
+        height: layout.length,
+        width: layout[0].length,
+        tiles: layout.map((line, y) =>
+          Array.from(line).map((symbol, x) => {
+            const tileDiv =
+              symbol == " "
+                ? null
+                : this.constructTileDiv(x, y, symbol as ITileSymbols);
+            tileDiv && this.canvas.appendChild(tileDiv);
+            return {
+              symbol: symbol as ITileSymbols,
+              domRef: tileDiv,
+            };
+          })
+        ),
+      };
+    } else {
+      this.layout = {
+        height: params.height,
+        width: params.width,
+        tiles: Array.from({ length: params.height }, () =>
+          Array(params.width).fill({
+            symbol: " ",
+            domRef: null,
+          })
+        ),
+      };
+    }
+
+    if (params.meta?.extra.preload) {
+      const preload = params.meta?.extra.preload;
+      preload.forEach((prop) => {
+        this.placeProp(
+          prop.behaviours.positioned.posX,
+          prop.behaviours.positioned.posY,
+          prop.name,
+          prop.behaviours
+        );
+      });
+    }
+
+    actionWrapper.appendChild(this.canvas);
+    container.appendChild(actionWrapper);
+  }
+  // IDestructible
+  destructor() {
+    this.communications.focusManager.unregister(this);
+    Array.from(this.container.children).forEach((child) => child.remove());
   }
 
+  private container: HTMLDivElement;
+  private canvas: HTMLDivElement;
+  private layout: ICanvasTileLayout;
   private isAltActionEnabled = false;
-  getFocusTag = () => "canvas";
-  onFocusReceiveKey = (
-    key: keyof ControlsObjType,
-    status: "down" | "up",
-    realKeyCode: string
-  ) => {
-    if (this.getTargetMode() == "props") {
-      if (status == "up") {
-        if (key == "altAction") {
-          this.isAltActionEnabled = false;
-          this.canvas.style.cursor = "default";
-        }
-      } else if (status == "down") {
-        if (key == "delete") {
-          const propsToDelete = this.propStorage.filter(
-            (prop) => prop.selected
-          );
-          propsToDelete.forEach((prop) => this.deleteProp(prop.domRef));
-        } else if (key == "altAction") {
-          this.isAltActionEnabled = true;
-          this.canvas.style.cursor = "pointer";
-        } else if (key == "back") this.unselectAllProps();
-      }
-    }
-  };
-  focused = false;
-  onFocused = () => {
-    this.focused = true;
-  };
-  onUnfocused = () => {
-    this.focused = false;
-  };
-  onFocusRegistered?: (focusManager: FocusManager) => void | Promise<void>;
-  onFocusUnregistered?: () => void | Promise<void>;
-
+  private tileSize = 32;
+  private propStorage: ICanvasPropStorage = [];
   private communications: IEditorCommunications;
   private isPanning = false;
   private panStartPos: [number, number] = [0, 0];
   private panStopPos: [number, number] = [0, 0];
+  private gridSize = 16;
+  private gridSnap = true;
+  private dragStarted = false;
+  private isDragingProp = false;
+  private cursorDragStartPos = [0, 0];
+  private focused = false;
+  private zoomVals: [number, number] = [1, 1];
+  private mouseBtnMap = {
+    0: "lmb",
+    1: "mmb",
+    2: "rmb",
+  };
+
   private onStartPan = (x: number, y: number) => {
     if (this.isPanning) return;
     this.isPanning = true;
@@ -154,8 +184,6 @@ export class EditorCanvas implements IFocusable {
       Number(this.canvas.style.top.replace("px", "")) ?? 0,
     ];
   };
-
-  private zoomVals: [number, number] = [1, 1];
   private zoom = (target: "in" | "out") => {
     const value = target == "in" ? 0.1 : -0.1;
     this.zoomVals = [
@@ -164,7 +192,6 @@ export class EditorCanvas implements IFocusable {
     ];
     this.canvas.style.transform = `scale(${this.zoomVals[0]},${this.zoomVals[1]})`;
   };
-
   private isPlacingTiles = false;
   private onStartPlacingTiles = () => {
     if (this.isPlacingTiles) return;
@@ -173,7 +200,6 @@ export class EditorCanvas implements IFocusable {
   private onStopPlacingTiles = () => {
     this.isPlacingTiles = false;
   };
-
   private isRemovingTiles = false;
   private onStartRemovingTiles = () => {
     if (this.isRemovingTiles) return;
@@ -182,7 +208,6 @@ export class EditorCanvas implements IFocusable {
   private onStopRemovingTiles = () => {
     this.isRemovingTiles = false;
   };
-
   private onMouseMove = (x: number, y: number) => {
     if (this.isPlacingTiles) this.unifiedMouseAction(x, y, "lmb", "drag");
     else if (this.isRemovingTiles) this.unifiedMouseAction(x, y, "rmb", "drag");
@@ -193,12 +218,6 @@ export class EditorCanvas implements IFocusable {
         String(y - this.panStartPos[1] + this.panStopPos[1]) + "px";
     }
   };
-
-  private gridSize = 16;
-  private gridSnap = true;
-  private dragStarted = false;
-  private isDragingProp = false;
-  private cursorDragStartPos = [0, 0];
   private unifiedMouseAction = (
     xReal: number,
     yReal: number,
@@ -288,7 +307,6 @@ export class EditorCanvas implements IFocusable {
       }
     }
   };
-
   private getPropUnderCursor = (x: number, y: number) => {
     return this.propStorage.find((prop) => {
       const rect = prop.domRef.getBoundingClientRect();
@@ -297,12 +315,6 @@ export class EditorCanvas implements IFocusable {
       );
     });
   };
-
-  private tileSize = 32;
-  private canvas: HTMLDivElement;
-  private layout: ICanvasTileLayout;
-  private propStorage: ICanvasPropStorage = [];
-
   private constructTileDiv = (x: number, y: number, tile: ITileSymbols) => {
     const tileDiv = document.createElement("div");
     tileDiv.className = "smsh-editor-canvas__tile";
@@ -317,7 +329,8 @@ export class EditorCanvas implements IFocusable {
   private constructProp = (
     x: number,
     y: number,
-    propName: keyof typeof layoutPropMap
+    propName: keyof typeof layoutPropMap,
+    behaviours?: PropBehavioursExt
   ) => {
     const propDiv = document.createElement("div");
     propDiv.className = "smsh-editor-canvas__prop";
@@ -332,7 +345,9 @@ export class EditorCanvas implements IFocusable {
     img.src = `${propSpriteRoute}${layoutPropMap[propName].imgPath}`;
     propDiv.appendChild(img);
     const behavioursRef = {
-      ref: JSON.parse(JSON.stringify(layoutPropMap[propName].beahaviours)),
+      ref:
+        behaviours ??
+        JSON.parse(JSON.stringify(layoutPropMap[propName].beahaviours)),
     };
     const controlsDiv = document.createElement("div");
     const deleteBtn = makeIconButton(
@@ -380,9 +395,36 @@ export class EditorCanvas implements IFocusable {
     x >= 0 && x < this.layout.width && y >= 0 && y < this.layout.height;
   private getComplexTile = (x: number, y: number) => this.layout.tiles[y][x];
 
+  // IFocusable
+  getFocusTag = () => "canvas";
+  onFocusReceiveKey = (key: keyof ControlsObjType, status: "down" | "up") => {
+    if (this.getTargetMode() == "props") {
+      if (status == "up") {
+        if (key == "altAction") {
+          this.isAltActionEnabled = false;
+          this.canvas.style.cursor = "default";
+        }
+      } else if (status == "down") {
+        if (key == "delete") {
+          const propsToDelete = this.propStorage.filter(
+            (prop) => prop.selected
+          );
+          propsToDelete.forEach((prop) => this.deleteProp(prop.domRef));
+        } else if (key == "altAction") {
+          this.isAltActionEnabled = true;
+          this.canvas.style.cursor = "pointer";
+        } else if (key == "back") this.unselectAllProps();
+      }
+    }
+  };
+  onFocused = () => {
+    this.focused = true;
+  };
+  onUnfocused = () => {
+    this.focused = false;
+  };
   getTargetMode = (): "props" | "tiles" =>
     this.communications.tabs.getActiveTab().label as "props" | "tiles";
-
   getTile = (x: number, y: number) => this.layout.tiles[y][x].symbol;
   placeTile = (x: number, y: number, tile: ITileSymbols) => {
     const tileDiv = this.constructTileDiv(x, y, tile);
@@ -394,9 +436,13 @@ export class EditorCanvas implements IFocusable {
     complexTile.domRef?.remove();
     this.layout.tiles[y][x] = { domRef: null, symbol: " " };
   };
-
-  placeProp = (x: number, y: number, propName: keyof typeof layoutPropMap) => {
-    const prop = this.constructProp(x, y, propName);
+  placeProp = (
+    x: number,
+    y: number,
+    propName: keyof typeof layoutPropMap,
+    behaviours?: PropBehavioursExt
+  ) => {
+    const prop = this.constructProp(x, y, propName, behaviours);
     this.canvas.appendChild(prop.domRef);
     this.propStorage.push(prop);
     return prop;
@@ -440,7 +486,6 @@ export class EditorCanvas implements IFocusable {
       (_, index) => index != propIndex
     );
   };
-
   extractLayoutData = (): StageExt["layoutData"] => {
     return new Array(this.layout.height)
       .fill(0)

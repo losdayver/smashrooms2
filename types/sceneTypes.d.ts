@@ -95,6 +95,13 @@ export interface IPortalExt {
   };
 }
 
+export interface ISpawnerExt {
+  spawner: {
+    props: string[];
+    spawnDelay?: number;
+  };
+}
+
 export type PropBehavioursExt = Partial<
   IPositionedExt &
     IControlledExt &
@@ -103,7 +110,8 @@ export type PropBehavioursExt = Partial<
     IDamageableExt &
     IDamagingExt &
     INameTaggedExt &
-    IPortalExt
+    IPortalExt &
+    ISpawnerExt
 >;
 
 export type IBehaviouredPropExt = IPropExt & PropBehavioursExt;
