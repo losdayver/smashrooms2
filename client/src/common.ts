@@ -23,11 +23,6 @@ export const layoutPropMap: Partial<Record<string, ILayoutProp>> = {
     beahaviours: {},
     offset: [-16, 0],
   },
-  bomb: {
-    imgPath: "bomb.gif",
-    name: "bomb",
-    beahaviours: {},
-  },
   portal: {
     imgPath: "portal.gif",
     name: "portal",
@@ -52,30 +47,16 @@ export const layoutPropMap: Partial<Record<string, ILayoutProp>> = {
 } as const;
 
 export const layoutTileImgMap: Partial<Record<ITileSymbols, ILayoutTile>> = {
-  "#": {
-    imgPath: "bricks.png",
-  },
-  "=": {
-    imgPath: "metalBeam.png",
-  },
-  G: {
-    imgPath: "deepGround.png",
-  },
-  g: {
-    imgPath: "grass.png",
-  },
-  l: {
-    imgPath: "leaves.png",
-  },
-  s: {
-    imgPath: "stone.png",
-  },
-  m: {
-    imgPath: "metal.png",
-  },
-  b: {
-    imgPath: "box.png",
-  },
+  "#": { imgPath: "bricks.png" },
+  "=": { imgPath: "metalBeam.png" },
+  G: { imgPath: "deepGround.png" },
+  g: { imgPath: "grass.png" },
+  l: { imgPath: "leaves.png" },
+  s: { imgPath: "stone.png" },
+  m: { imgPath: "metal.png" },
+  b: { imgPath: "box.png" },
+  B: { imgPath: "boxBroken1.png" },
+  D: { imgPath: "boxBroken2.png" },
 } as const;
 
 export interface IDestructible {

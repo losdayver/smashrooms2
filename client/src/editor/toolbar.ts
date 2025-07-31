@@ -13,17 +13,50 @@ export class Toolbar {
   ) {
     const testBtn = document.createElement("button");
     const loadBtn = document.createElement("button");
-    loadBtn.className = testBtn.className = "smsh-button";
+    const saveBtn = document.createElement("button");
+    loadBtn.className = saveBtn.className = testBtn.className = "smsh-button";
     testBtn.onclick = this.playTest;
     loadBtn.onclick = this.loadStage;
+    saveBtn.onclick = this.saveStage;
     testBtn.innerText = "run";
     loadBtn.innerText = "load from server";
+    saveBtn.innerText = "save stage";
     this.communications = communications;
-    container.append(testBtn, loadBtn);
+    container.append(testBtn, loadBtn, saveBtn);
   }
 
   private communications: IEditorCommunications;
 
+  saveStage = async () => {
+    const extra = this.communications.canvas.extractStageMetaExtra();
+    const layoutData = this.communications.canvas.extractLayoutData();
+    const meta: LayoutMetaExt = {
+      gridSize: 32,
+      timeLimit: 200,
+      author: "system",
+      stageName: "editor_test",
+      stageSystemName: "editor_test",
+      extra,
+    };
+    const payload: IEditorUploadIncomingBody = {
+      meta: btoa(JSON.stringify(meta)),
+      layoutData: btoa(layoutData),
+    };
+    const res = await fetch(
+      `http://${window.location.hostname}:5900/editor/save`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      }
+    );
+    this.communications.toast.notify(
+      res.ok ? "staged saved" : "failed to save",
+      res.ok ? "info" : "danger"
+    );
+  };
   playTest = async () => {
     const extra = this.communications.canvas.extractStageMetaExtra();
     const layoutData = this.communications.canvas.extractLayoutData();
@@ -55,19 +88,17 @@ export class Toolbar {
       "_blank"
     );
   };
-
   loadStage = async () => {
-    const layout = atob(
-      await fetch(
-        `http://${window.location.hostname}:5900/editor/load/layout/editor_test`,
-        {
-          method: "GET",
-          headers: {
-            "Content-Type": "text/plain",
-          },
-        }
-      ).then((res) => res.text())
-    );
+    const layoutText = await fetch(
+      `http://${window.location.hostname}:5900/editor/load/layout/editor_test`,
+      {
+        method: "GET",
+        headers: {
+          "Content-Type": "text/plain",
+        },
+      }
+    ).then((res) => res.text());
+    const layout = atob(layoutText);
     const meta = JSON.parse(
       atob(
         await fetch(

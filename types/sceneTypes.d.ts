@@ -86,6 +86,7 @@ export interface INameTaggedExt extends IDrawableExt {
 export interface IHasMasterExt {
   hasMaster: {
     master: IPropExt;
+    onDestroySlave?: () => void;
   };
 }
 
@@ -125,4 +126,7 @@ export type ITileSymbols =
   | "l" /** leaves */
   | "s" /** stone */
   | "m" /** metal */
-  | "b"; /** box */
+  | "b" /** box */
+  | "B" /** box broken 1 */
+  | "D" /** box broken 2 */
+  | "C"; /** reinforced concrete */

@@ -451,11 +451,13 @@ export class Scene implements IScene {
 
   private destroyPropHandler = (data: IDestroyPropEvent["data"]) => {
     for (let i = 0; i < this.propList.length; i++) {
-      if (this.propList[i].ID == data.ID) {
+      const prop = this.propList[i];
+      if (prop.ID == data.ID) {
         this.$mutateChunkedUpdates(
           { delete: [data.ID] },
-          this.propList[i] as Prop & IPositionedExt
+          prop as Prop & IPositionedExt
         );
+        prop.hasMaster?.onDestroySlave?.();
         this.propList.splice(i, 1);
         return;
       }

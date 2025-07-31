@@ -1,5 +1,4 @@
 import fs from "fs";
-import fsp from "node:fs/promises";
 import path from "path";
 import { LayoutMetaExt, StageExt } from "@stdTypes/stage";
 import { config } from "@server/config";
@@ -13,13 +12,6 @@ import { WSSocketServer } from "@server/game/sockets/sockets";
 import { ISocketServer } from "@server/game/sockets/socketsTypes";
 import { SmshScheduler } from "@server/game/smsh/scheduler";
 import { PGQuerier } from "@server/db/pgQuerier";
-import express from "express";
-import { env } from "@server/env";
-import {
-  IEditorUploadIncomingBody,
-  IEditorUploadOutgoingBody,
-} from "@stdTypes/apiTypes";
-
 export class Server {
   private scene: IScene;
   private communicator: ICommunicator;
@@ -57,7 +49,7 @@ export const getWSServer = (
   severityLog(`starting server on port ${port}`);
   const scene = new Scene(
     smshPropMap,
-    custom?.stages ?? ["instagib", "ascend", "origins"],
+    custom?.stages ?? [/*"instagib", "ascend",*/ "origins"],
     custom?.stageLoader ?? { load: getStageFS },
     smshPropFactory,
     new SmshScheduler(),
@@ -78,109 +70,3 @@ export const getStageFS = (name: string): StageExt => ({
       .toString()
   ) as LayoutMetaExt,
 });
-
-const corsMiddleware = (req, res, next) => {
-  res.header("Access-Control-Allow-Origin", "*");
-  res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
-  res.header(
-    "Access-Control-Allow-Headers",
-    "Origin, X-Requested-With, Content-Type, Accept, Authorization"
-  );
-  res.header("Access-Control-Allow-Credentials", "true");
-
-  if (req.method === "OPTIONS") {
-    return res.sendStatus(200);
-  }
-
-  next();
-};
-
-export const startApi = () => {
-  const api = express();
-  api.use(express.json());
-  api.use(corsMiddleware);
-
-  if (env.editorConfig?.allow) {
-    let editorWSServer: Server;
-
-    api.get("/editor/load/layout/:stageName", async (req, res) => {
-      const stageName = req.params.stageName;
-      if (!stageName) res.send(404);
-      let layoutData: Buffer;
-      try {
-        layoutData = await fsp.readFile(
-          path.join(config.stagesRoute, stageName, `${stageName}.layout`)
-        );
-      } catch (e) {
-        console.error(e);
-        res.send(404);
-        return;
-      }
-      res.setHeader("Content-Type", "text/plain");
-      res.send(layoutData.toString("base64"));
-    });
-    api.get("/editor/load/meta/:stageName", async (req, res) => {
-      const stageName = req.params.stageName;
-      if (!stageName) res.send(404);
-      let metaData: Buffer;
-      try {
-        metaData = await fsp.readFile(
-          path.join(config.stagesRoute, stageName, `${stageName}.meta.json`)
-        );
-      } catch (e) {
-        console.error(e);
-        res.send(404);
-        return;
-      }
-      res.setHeader("Content-Type", "text/plain");
-      res.send(metaData.toString("base64"));
-    });
-    api.post("/editor/upload", async (req, res) => {
-      if (editorWSServer) editorWSServer.stop();
-
-      const base64Decode = (text: string) =>
-        Buffer.from(text, "base64").toString("utf8");
-
-      const data = req.body as IEditorUploadIncomingBody;
-      const metaString = base64Decode(data.meta);
-      const layoutDataString = base64Decode(data.layoutData);
-      const stage: StageExt = {
-        layoutData: base64Decode(data.layoutData) as StageExt["layoutData"],
-        meta: JSON.parse(metaString) as StageExt["meta"],
-      };
-      const stageName = stage.meta.stageSystemName;
-
-      const stagePath = path.resolve(
-        config.stagesRoute,
-        stage.meta.stageSystemName
-      );
-      try {
-        await fsp.rm(stagePath, { recursive: true, force: true });
-        await fsp.mkdir(stagePath, { recursive: true });
-      } catch {}
-      await fsp.mkdir(stage.meta.stageSystemName, { recursive: true });
-      await Promise.all([
-        fsp.writeFile(
-          path.join(stagePath, `${stageName}.layout`),
-          layoutDataString
-        ),
-        fsp.writeFile(
-          path.join(stagePath, `${stageName}.meta.json`),
-          metaString
-        ),
-      ]);
-
-      editorWSServer = getWSServer(env.editorConfig.testingServerPort, {
-        stages: [stage.meta.stageSystemName],
-        stageLoader: { load: () => stage },
-      });
-      editorWSServer.start();
-      res.send({
-        testingUrlParams: `?wsPort=${env.editorConfig.testingServerPort}`,
-      } satisfies IEditorUploadOutgoingBody);
-    });
-  }
-  api.listen(5900, "0.0.0.0", () => {
-    console.log(`api server listening on port ${5900}!`);
-  });
-};

@@ -259,8 +259,10 @@ export class EditorCanvas implements IFocusable, IDestructible {
             pos[1],
             this.communications.propPalette.getCurrentColorKey() as keyof typeof layoutPropMap
           );
-          this.unselectAllProps();
-          this.selectProp(prop.domRef);
+          if (prop) {
+            this.unselectAllProps();
+            this.selectProp(prop.domRef);
+          }
         } else if (propUnderCursor) {
           this.selectProp(propUnderCursor.domRef);
           return;
@@ -337,17 +339,19 @@ export class EditorCanvas implements IFocusable, IDestructible {
     propDiv.style.position = "absolute";
     propDiv.style.top = String(y) + "px";
     propDiv.style.left = String(x) + "px";
-    if (layoutPropMap[propName].offset)
-      propDiv.style.transform = `translate(${layoutPropMap[propName].offset
+    const propMeta = Object.values(layoutPropMap).find(
+      (prop) => prop.name == propName
+    );
+    if (!propMeta) return false;
+    if (propMeta.offset)
+      propDiv.style.transform = `translate(${propMeta.offset
         .map((val) => val + "px")
         .join(", ")})`;
     const img = document.createElement("img") as HTMLImageElement;
-    img.src = `${propSpriteRoute}${layoutPropMap[propName].imgPath}`;
+    img.src = `${propSpriteRoute}${propMeta.imgPath}`;
     propDiv.appendChild(img);
     const behavioursRef = {
-      ref:
-        behaviours ??
-        JSON.parse(JSON.stringify(layoutPropMap[propName].beahaviours)),
+      ref: behaviours ?? JSON.parse(JSON.stringify(propMeta.beahaviours)),
     };
     const controlsDiv = document.createElement("div");
     const deleteBtn = makeIconButton(
@@ -443,6 +447,7 @@ export class EditorCanvas implements IFocusable, IDestructible {
     behaviours?: PropBehavioursExt
   ) => {
     const prop = this.constructProp(x, y, propName, behaviours);
+    if (!prop) return false;
     this.canvas.appendChild(prop.domRef);
     this.propStorage.push(prop);
     return prop;
@@ -499,11 +504,11 @@ export class EditorCanvas implements IFocusable, IDestructible {
       preload: this.propStorage.map((prop) => ({
         name: prop.name,
         behaviours: {
+          ...prop.behavioursRef.ref,
           positioned: {
             posX: Math.floor(prop.beahaviours.positioned.posX),
             posY: Math.floor(prop.beahaviours.positioned.posY),
           },
-          ...prop.behavioursRef.ref,
         },
       })),
     };

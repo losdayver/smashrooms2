@@ -7,6 +7,7 @@ import { smshPropMap } from "@server/game/smsh/props";
 export class PlayerSpawner extends Prop implements ItemSpawnerType {
   spawner: ItemSpawnerType["spawner"] = {
     props: ["player"],
+    spawnDelay: 60,
   };
   positioned;
 
@@ -28,16 +29,16 @@ export class ItemSpawner extends Prop implements ItemSpawnerType {
   };
   positioned;
 
-  spawnDelay = 60;
-  pickedOnTick = 0;
+  destroyedOnTick = 0;
   isEmpty = true;
 
+  // todo fix spawners
   onTick = (tickNum: number) => {
     if (
-      tickNum - this.pickedOnTick >
-        (this.spawner.spawnDelay ?? this.spawnDelay) &&
+      tickNum - this.destroyedOnTick > this.spawner.spawnDelay &&
       this.isEmpty
     ) {
+      console.log(tickNum - this.destroyedOnTick);
       this.isEmpty = false;
       this.scene.spawnPropAction(pickRandom(this.spawner.props), {
         positioned: {
@@ -46,6 +47,10 @@ export class ItemSpawner extends Prop implements ItemSpawnerType {
         },
         hasMaster: {
           master: this,
+          onDestroySlave: () => {
+            this.isEmpty = true;
+            this.destroyedOnTick = tickNum;
+          },
         },
       });
     }
