@@ -19,13 +19,14 @@ export class Toolbar {
     loadBtn.onclick = this.loadStage;
     saveBtn.onclick = this.saveStage;
     testBtn.innerText = "run";
-    loadBtn.innerText = "load from server";
+    loadBtn.innerText = "load stage";
     saveBtn.innerText = "save stage";
     this.communications = communications;
     container.append(testBtn, loadBtn, saveBtn);
   }
 
   private communications: IEditorCommunications;
+  private stageName = "ascend_testing";
 
   saveStage = async () => {
     const extra = this.communications.canvas.extractStageMetaExtra();
@@ -34,8 +35,8 @@ export class Toolbar {
       gridSize: 32,
       timeLimit: 200,
       author: "system",
-      stageName: "editor_test",
-      stageSystemName: "editor_test",
+      stageName: this.stageName,
+      stageSystemName: this.stageName,
       extra,
     };
     const payload: IEditorUploadIncomingBody = {
@@ -64,8 +65,8 @@ export class Toolbar {
       gridSize: 32,
       timeLimit: 200,
       author: "system",
-      stageName: "editor_test",
-      stageSystemName: "editor_test",
+      stageName: this.stageName,
+      stageSystemName: this.stageName,
       extra,
     };
     const payload: IEditorUploadIncomingBody = {
@@ -90,7 +91,7 @@ export class Toolbar {
   };
   loadStage = async () => {
     const layoutText = await fetch(
-      `http://${window.location.hostname}:5900/editor/load/layout/editor_test`,
+      `http://${window.location.hostname}:5900/editor/load/layout/${this.stageName}`,
       {
         method: "GET",
         headers: {
@@ -102,7 +103,7 @@ export class Toolbar {
     const meta = JSON.parse(
       atob(
         await fetch(
-          `http://${window.location.hostname}:5900/editor/load/meta/editor_test`,
+          `http://${window.location.hostname}:5900/editor/load/meta/${this.stageName}`,
           {
             method: "GET",
             headers: {

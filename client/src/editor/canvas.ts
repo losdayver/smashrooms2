@@ -131,11 +131,12 @@ export class EditorCanvas implements IFocusable, IDestructible {
     if (params.meta?.extra.preload) {
       const preload = params.meta?.extra.preload;
       preload.forEach((prop) => {
+        const { positioned, ...behaviours } = prop.behaviours ?? {};
         this.placeProp(
           prop.behaviours.positioned.posX,
           prop.behaviours.positioned.posY,
           prop.name,
-          prop.behaviours
+          behaviours
         );
       });
     }
