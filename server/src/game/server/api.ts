@@ -57,7 +57,6 @@ const saveStage = async (stageBody: IEditorUploadIncomingBody) => {
     layoutData: base64Decode(data.layoutData) as StageExt["layoutData"],
     meta: JSON.parse(metaString) as StageExt["meta"],
   };
-  console.log(metaString);
   const stageName = stage.meta.stageSystemName;
   const stagePath = path.resolve(
     config.stagesRoute,

@@ -65,7 +65,6 @@ export class ScoreBoardModal extends Modal implements IFocusable {
       "qTopScoresByTag",
       { limit: 10 }
     )) as { tag: string; kills: number }[];
-    console.log(this.globalScoreArray);
     this.constructBoard();
   };
 

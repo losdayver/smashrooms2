@@ -49,7 +49,7 @@ export const getWSServer = (
   severityLog(`starting server on port ${port}`);
   const scene = new Scene(
     smshPropMap,
-    custom?.stages ?? [/*"instagib", "ascend",*/ "origins"],
+    custom?.stages ?? ["instagib", "ascend", "origins"],
     custom?.stageLoader ?? { load: getStageFS },
     smshPropFactory,
     new SmshScheduler(),
