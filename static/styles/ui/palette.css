@@ -11,5 +11,5 @@
 
 .smsh-palette__container__color--selected {
   box-sizing: border-box;
-  outline: 4px solid slateblue;
+  outline: 0.2em solid #2f3133;
 }

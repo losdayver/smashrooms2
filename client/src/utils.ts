@@ -92,3 +92,9 @@ export const getDivElPos = (el: HTMLElement): [number, number] => [
   Number(el.style.left?.replace("px", "")) ?? 0,
   Number(el.style.top?.replace("px", "")) ?? 0,
 ];
+
+export const getResolver = () => {
+  let resolve: (value: void | PromiseLike<void>) => void = () => {};
+  let promise: Promise<void> = new Promise((res) => (resolve = res));
+  return { resolve, promise };
+};

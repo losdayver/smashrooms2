@@ -21,7 +21,7 @@ export class Tabs<Keys extends string[]> {
 
     props.labels.forEach((label) => {
       const tab = document.createElement("div");
-      tab.className = "smsh-tabs__tab";
+      tab.classList.add("smsh-tabs__tab", "smsh-button");
       tab.innerText = label;
       tab.onclick = () => this.selectTab(label);
       this.tabsContainer.appendChild(tab);

@@ -371,8 +371,6 @@ export class EditorCanvas implements IFocusable, IDestructible {
           this.communications.toast,
           behavioursRef
         );
-        this.communications.focusManager.register(modal);
-        this.communications.focusManager.setFocus(modal.getFocusTag());
         modal.show();
       },
       [30, 20]

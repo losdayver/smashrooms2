@@ -57,6 +57,7 @@ const saveStage = async (stageBody: IEditorUploadIncomingBody) => {
     layoutData: base64Decode(data.layoutData) as StageExt["layoutData"],
     meta: JSON.parse(metaString) as StageExt["meta"],
   };
+  console.log(metaString);
   const stageName = stage.meta.stageSystemName;
   const stagePath = path.resolve(
     config.stagesRoute,
@@ -86,6 +87,15 @@ export const startApi = () => {
 
   if (env.editorConfig?.allow) {
     let editorWSServer: Server;
+    api.get("/editor/stageNames", async (_, res) => {
+      const folders = await fsp
+        .readdir(config.stagesRoute, { withFileTypes: true })
+        .then((files) =>
+          files.filter((d) => d.isDirectory()).map((d) => d.name)
+        );
+      res.setHeader("Content-Type", "application/json");
+      res.send(folders);
+    });
     api.get("/editor/load/layout/:stageName", async (req, res) => {
       res.setHeader("Content-Type", "text/plain");
       res.send(await getStageBase64(req.params.stageName, "layout"));

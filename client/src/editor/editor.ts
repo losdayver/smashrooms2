@@ -13,17 +13,26 @@ export interface IEditorCommunications {
   tabs: Tabs<["tiles", "props"]>;
   focusManager: FocusManager;
   toast: Toast;
+  statusBar: {
+    stageName: HTMLDivElement;
+  };
 }
 
 export const editorLoader = () => {
+  const stageName = document.createElement("div");
+  stageName.innerText = "not selected";
+  const statusDiv = document.querySelector(".editor__statusbar");
+  statusDiv.append(stageName);
+  const statusBar = {
+    stageName,
+  };
+
   const focusManager = new FocusManager();
   const toast = new Toast(document.querySelector(".toast-container"));
 
   const tabs = new Tabs<["tiles", "props"]>(
     document.querySelector(".editor__workplace__left-sidebar__tabs"),
-    {
-      labels: ["tiles", "props"],
-    }
+    { labels: ["tiles", "props"] }
   );
   const contents = tabs.getTabs().map((el) => el.contentsRef);
   const tilePalette = new TilePalette(contents[0]);
@@ -34,18 +43,8 @@ export const editorLoader = () => {
     tabs,
     focusManager,
     toast,
+    statusBar,
   };
-  const canvas = new EditorCanvas(
-    document.querySelector(".editor__workplace__canvas-container"),
-    {
-      width: 50,
-      height: 30,
-      communications: communications as IEditorCommunications,
-    }
-  );
-  communications.canvas = canvas;
-  focusManager.register(canvas);
-  focusManager.setFocus(canvas.getFocusTag());
 
   const toolbar = new Toolbar(
     document.querySelector(".editor__toolbar"),

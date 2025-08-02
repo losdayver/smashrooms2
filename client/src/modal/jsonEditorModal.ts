@@ -1,52 +1,39 @@
-import { AudioEventEngine, AudioTrackEngine } from "@client/audio/audioEngine";
-import { FocusManager, IFocusable } from "@client/focus/focusManager";
-import { Modal } from "@client/modal/modal";
+import { FocusManager } from "@client/focus/focusManager";
+import { FocusableModal } from "@client/modal/modal";
 import { Toast } from "@client/ui/toast";
 
-export class JsonEditorModal extends Modal implements IFocusable {
+export class JsonEditorModal extends FocusableModal {
   constructor(
     container: HTMLDivElement,
     focusManager: FocusManager,
     toast: Toast,
-    targetObjRef: { ref: object }
+    targetObjRef: { ref: object },
+    onClose?: () => void
   ) {
     super(container, {
-      title: "Prop editor",
+      title: "Object editor",
       width: 550,
+      focusManager,
     });
-    this.focusManager = focusManager;
     this.toast = toast;
     this.targetObjRef = targetObjRef;
+    this.callbackOnClose = onClose;
   }
-  private focusManager: FocusManager;
   private toast: Toast;
   private targetObjRef: { ref: object };
   private textArea: HTMLTextAreaElement;
+  private callbackOnClose: () => void;
 
   onClose = (): false => {
     try {
       const obj = JSON.parse(this.textArea.value);
       this.targetObjRef.ref = obj;
+      this.callbackOnClose?.();
     } catch (e) {
       this.showFormatError();
       console.error(e);
       return false;
     }
-    this.focusManager.setFocus("canvas");
-    this.destroy();
-  };
-
-  getFocusTag = () => "jsonEditor";
-  onFocused = this.show;
-
-  onFocusReceiveKey: IFocusable["onFocusReceiveKey"] = (key, status) => {
-    if (status == "down") {
-      if (key == "back") this.hide();
-    }
-  };
-
-  onFocusRegistered = (focusManager: FocusManager) => {
-    this.focusManager = focusManager;
   };
 
   private formatTextArea = () => {

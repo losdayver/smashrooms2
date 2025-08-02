@@ -1,0 +1,7 @@
+.smsh-collection {
+  display: "flex";
+  flex-direction: column;
+}
+
+.smsh-collection__item {
+}
