@@ -1,10 +1,11 @@
-import { EditorCanvas } from "@client/editor/canvas";
+import { EditorCanvas, ICanvasProp } from "@client/editor/canvas";
 import { TilePalette } from "@client/editor/tilePalette";
 import { PropPalette } from "./propPalette";
 import { Tabs } from "@client/ui/tabs";
 import { FocusManager } from "@client/focus/focusManager";
 import { Toast } from "@client/ui/toast";
 import { Toolbar } from "./toolbar";
+import { Collection } from "@client/ui/collection";
 
 export interface IEditorCommunications {
   tilePalette: TilePalette;
@@ -16,9 +17,14 @@ export interface IEditorCommunications {
   statusBar: {
     stageName: HTMLDivElement;
   };
+  propColleciton: Collection<ICanvasProp>;
 }
 
 export const editorLoader = () => {
+  const propColleciton = new Collection(
+    document.querySelector(".editor__workplace__left-sidebar__prop-list")
+  );
+
   const stageName = document.createElement("div");
   stageName.innerText = "not selected";
   const statusDiv = document.querySelector(".editor__statusbar");
@@ -44,6 +50,7 @@ export const editorLoader = () => {
     focusManager,
     toast,
     statusBar,
+    propColleciton,
   };
 
   const toolbar = new Toolbar(

@@ -57,6 +57,7 @@ export const layoutTileImgMap: Partial<Record<ITileSymbols, ILayoutTile>> = {
   b: { imgPath: "box.png" },
   B: { imgPath: "boxBroken1.png" },
   D: { imgPath: "boxBroken2.png" },
+  C: { imgPath: "reinforcedConcrete.png" },
 } as const;
 
 export interface IDestructible {

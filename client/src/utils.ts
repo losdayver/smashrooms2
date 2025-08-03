@@ -64,7 +64,7 @@ export const makeIconLink = (
 
 export const makeIconButton = (
   iconBasename: string,
-  onClick: () => void,
+  onClick: (ev: MouseEvent) => void,
   size?: [number, number]
 ) => {
   const d = document;

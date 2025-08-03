@@ -9,7 +9,7 @@ export class CollectionModal<T = any> extends FocusableModal {
     collection: ICollectionItem<T>[]
   ) {
     super(container, {
-      title: "Prop editor",
+      title: "Select item",
       width: 550,
       focusManager,
     });

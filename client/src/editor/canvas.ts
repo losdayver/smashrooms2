@@ -28,7 +28,7 @@ interface ICanvasTileLayout {
   tiles: IComplexTile[][];
 }
 
-type ICanvasProp = ILayoutProp & {
+export type ICanvasProp = ILayoutProp & {
   behavioursRef: { ref: PropBehavioursExt };
   domRef: HTMLDivElement;
   controlsDomRef: HTMLDivElement;
@@ -148,6 +148,7 @@ export class EditorCanvas implements IFocusable, IDestructible {
   destructor() {
     this.communications.focusManager.unregister(this);
     Array.from(this.container.children).forEach((child) => child.remove());
+    this.communications.propColleciton.removeAll();
   }
 
   private container: HTMLDivElement;
@@ -234,18 +235,31 @@ export class EditorCanvas implements IFocusable, IDestructible {
       const yLayout = Math.floor(yRelative / this.tileSize);
       if (!this.checkLayoutBounds(xLayout, yLayout)) return;
       if (button == "lmb") {
-        if (
-          this.getTile(xLayout, yLayout) !=
-          this.communications.tilePalette.getCurrentColorKey()
-        )
-          this.removeTile(xLayout, yLayout);
-        if (this.getTile(xLayout, yLayout) == " ")
-          this.placeTile(
-            xLayout,
-            yLayout,
-            this.communications.tilePalette.getCurrentColorKey() as ITileSymbols
+        if (this.getTile(xLayout, yLayout) == " ") {
+          if (!this.isAltActionEnabled)
+            this.placeTile(
+              xLayout,
+              yLayout,
+              this.communications.tilePalette.getCurrentColorKey() as ITileSymbols
+            );
+          else
+            [-1, 0, 1].forEach((y) =>
+              [-1, 0, 1].forEach((x) =>
+                this.placeTile(
+                  x + xLayout,
+                  y + yLayout,
+                  this.communications.tilePalette.getCurrentColorKey() as ITileSymbols
+                )
+              )
+            );
+        }
+      } else if (button == "rmb") {
+        if (!this.isAltActionEnabled) this.removeTile(xLayout, yLayout);
+        else
+          [-1, 0, 1].forEach((y) =>
+            [-1, 0, 1].forEach((x) => this.removeTile(x + xLayout, y + yLayout))
           );
-      } else if (button == "rmb") this.removeTile(xLayout, yLayout);
+      }
     } else if (target == "props") {
       const propUnderCursor = this.getPropUnderCursor(xReal, yReal);
       if (button == "lmb" && clickVariant == "click" && !this.isDragingProp) {
@@ -357,24 +371,23 @@ export class EditorCanvas implements IFocusable, IDestructible {
     const controlsDiv = document.createElement("div");
     const deleteBtn = makeIconButton(
       "cross.png",
-      () => {
+      (ev: MouseEvent) => {
+        ev.stopPropagation();
         this.deleteProp(propDiv);
       },
       [30, 20]
     );
-    const editBtn = makeIconButton(
-      "edit.png",
-      () => {
-        const modal = new JsonEditorModal(
-          document.querySelector(".modal-container"),
-          this.communications.focusManager,
-          this.communications.toast,
-          behavioursRef
-        );
-        modal.show();
-      },
-      [30, 20]
-    );
+    const editBtnCallback = (ev: MouseEvent) => {
+      ev.stopPropagation();
+      const modal = new JsonEditorModal(
+        document.querySelector(".modal-container"),
+        this.communications.focusManager,
+        this.communications.toast,
+        behavioursRef
+      );
+      modal.show();
+    };
+    const editBtn = makeIconButton("edit.png", editBtnCallback, [30, 20]);
     deleteBtn.innerText = "D";
     controlsDiv.append(editBtn, deleteBtn);
     controlsDiv.classList.add("smsh-editor-canvas__prop__controls");
@@ -392,6 +405,21 @@ export class EditorCanvas implements IFocusable, IDestructible {
       controlsDomRef: controlsDiv,
       behavioursRef,
     };
+    const itemDiv = document.createElement("div");
+    const itemName = document.createElement("div");
+    const itemBtns = document.createElement("div");
+    const itemEditBtn = editBtn.cloneNode() as HTMLButtonElement;
+    itemEditBtn.onclick = editBtnCallback;
+    itemBtns.append(/*deleteBtn.cloneNode(), */ itemEditBtn);
+    itemName.innerText = prop.name;
+    itemDiv.append(itemName, itemBtns);
+    itemDiv.style.display = "flex";
+    itemDiv.style.justifyContent = "space-between";
+    this.communications.propColleciton.addItem({
+      contents: itemDiv,
+      data: prop,
+      onClick: () => this.selectProp(propDiv),
+    });
     return prop;
   };
   private checkLayoutBounds = (x: number, y: number) =>
@@ -401,22 +429,24 @@ export class EditorCanvas implements IFocusable, IDestructible {
   // IFocusable
   getFocusTag = () => "canvas";
   onFocusReceiveKey = (key: keyof ControlsObjType, status: "down" | "up") => {
-    if (this.getTargetMode() == "props") {
-      if (status == "up") {
-        if (key == "altAction") {
-          this.isAltActionEnabled = false;
-          this.canvas.style.cursor = "default";
-        }
-      } else if (status == "down") {
+    if (status == "up") {
+      if (key == "altAction") {
+        this.isAltActionEnabled = false;
+        this.canvas.style.cursor = "default";
+      }
+    } else {
+      if (key == "altAction") {
+        this.isAltActionEnabled = true;
+        this.canvas.style.cursor = "pointer";
+      } else if (key == "back") this.unselectAllProps();
+
+      if (this.getTargetMode() == "props") {
         if (key == "delete") {
           const propsToDelete = this.propStorage.filter(
             (prop) => prop.selected
           );
           propsToDelete.forEach((prop) => this.deleteProp(prop.domRef));
-        } else if (key == "altAction") {
-          this.isAltActionEnabled = true;
-          this.canvas.style.cursor = "pointer";
-        } else if (key == "back") this.unselectAllProps();
+        }
       }
     }
   };
@@ -430,6 +460,12 @@ export class EditorCanvas implements IFocusable, IDestructible {
     this.communications.tabs.getActiveTab().label as "props" | "tiles";
   getTile = (x: number, y: number) => this.layout.tiles[y][x].symbol;
   placeTile = (x: number, y: number, tile: ITileSymbols) => {
+    if (x < 0 || y < 0 || x >= this.layout.width || y >= this.layout.height)
+      return;
+    const currentTile = this.getTile(x, y);
+    if (currentTile != this.communications.tilePalette.getCurrentColorKey())
+      this.removeTile(x, y);
+    else if (currentTile) return;
     const tileDiv = this.constructTileDiv(x, y, tile);
     this.canvas.appendChild(tileDiv);
     this.layout.tiles[y][x] = { symbol: tile, domRef: tileDiv };
@@ -457,6 +493,9 @@ export class EditorCanvas implements IFocusable, IDestructible {
       this.propStorage.forEach((prop) => {
         if (prop.domRef != domRef) {
           prop.domRef.classList.remove("smsh-editor-canvas__prop--selected");
+          this.communications.propColleciton.unselectItem(
+            (item) => item.data.domRef == prop.domRef
+          );
           prop.selected = false;
           prop.controlsDomRef.style.visibility = "hidden";
         }
@@ -466,11 +505,17 @@ export class EditorCanvas implements IFocusable, IDestructible {
       propToSelect.domRef.classList.remove(
         "smsh-editor-canvas__prop--selected"
       );
+      this.communications.propColleciton.unselectItem(
+        (item) => item.data.domRef == propToSelect.domRef
+      );
       propToSelect.selected = false;
       propToSelect.controlsDomRef.style.visibility = "hidden";
       return;
     }
     propToSelect.domRef.classList.add("smsh-editor-canvas__prop--selected");
+    this.communications.propColleciton.selectItem(
+      (item) => item.data.domRef == propToSelect.domRef
+    );
     propToSelect.selected = true;
     propToSelect.controlsDomRef.style.visibility = "visible";
   };
@@ -480,8 +525,12 @@ export class EditorCanvas implements IFocusable, IDestructible {
       prop.domRef.classList.remove("smsh-editor-canvas__prop--selected");
       prop.controlsDomRef.style.visibility = "hidden";
     });
+    this.communications.propColleciton.unselectAll();
   };
   deleteProp = (domRef: HTMLDivElement) => {
+    this.communications.propColleciton.removeItem(
+      (item) => item.data.domRef == domRef
+    );
     const propIndex = this.propStorage.findIndex(
       (prop) => prop.domRef == domRef
     );

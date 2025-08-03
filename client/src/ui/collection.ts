@@ -1,5 +1,5 @@
 export interface ICollectionItem<T = any> {
-  title: string;
+  contents: string | HTMLElement;
   data?: T;
   onClick?: (data: T) => void;
 }
@@ -24,10 +24,33 @@ export class Collection<T = any> {
   addItem = (item: ICollectionItem) => {
     const domRef = document.createElement("div");
     domRef.classList.add("smsh-collection__item", "smsh-button");
-    domRef.innerText = item.title;
+    if (typeof item.contents == "string") domRef.innerText = item.contents;
+    else domRef.append(item.contents);
     domRef.onclick = () => item.onClick?.(item.data);
     const domItem = { domRef, ...item };
     this.collection.push(domItem);
     this.collectionDiv.appendChild(domRef);
+  };
+  removeItem = (searchFunc: (item: ICollectionItem<T>) => boolean) => {
+    const item = this.collection.find(searchFunc);
+    this.collection = this.collection.filter((item1) => item1 != item);
+    item?.domRef.remove();
+  };
+  selectItem = (searchFunc: (item: ICollectionItem<T>) => boolean) => {
+    const item = this.collection.find(searchFunc);
+    item?.domRef.classList.add("smsh-collection__item--selected");
+  };
+  unselectItem = (searchFunc: (item: ICollectionItem<T>) => boolean) => {
+    const item = this.collection.find(searchFunc);
+    item?.domRef.classList.remove("smsh-collection__item--selected");
+  };
+  unselectAll = () => {
+    this.collection.forEach((item) =>
+      item?.domRef.classList.remove("smsh-collection__item--selected")
+    );
+  };
+  removeAll = () => {
+    this.collection.forEach((item) => item.domRef.remove());
+    this.collection = [];
   };
 }

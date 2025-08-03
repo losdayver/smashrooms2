@@ -116,7 +116,7 @@ export class Toolbar {
       document.querySelector(".modal-container"),
       this.communications.focusManager,
       stageNames.map((stageName) => ({
-        title: stageName,
+        contents: stageName,
         data: { stageName: stageName },
         onClick,
       }))
