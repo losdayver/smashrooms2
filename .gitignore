@@ -6,6 +6,6 @@ package-lock.json
 dist/
 
 /static/scripts/*
-/static/stages/*
+/static/stages/*testing
 
 .env/
