@@ -50,6 +50,7 @@
   flex: 1;
   border: 0.2em solid #2f3133;
   border-right: none;
+  background-size: cover;
 }
 
 .editor__workplace__left-sidebar__prop-list {
