@@ -13,6 +13,7 @@ export class RegModal extends Modal {
   private client: Client;
   private infoContainer: HTMLDivElement;
   private form: HTMLFormElement;
+  private formIsInit: boolean = false;
   private versionInfoContainer: HTMLDivElement;
 
   constructor(
@@ -36,7 +37,7 @@ export class RegModal extends Modal {
       "regModal",
       (data: IServerSceneMetaMessageExt) => {
         this.updateServerInfo(data);
-        this.initForm();
+        if (!this.formIsInit) this.initForm();
       }
     );
 
@@ -97,6 +98,7 @@ export class RegModal extends Modal {
       this.onSubmit(input.value);
     });
     this.form.classList.add("smsh-form");
+    this.formIsInit = true;
   };
 
   private updateServerInfo = async (data: IServerSceneMetaMessageExt) => {
