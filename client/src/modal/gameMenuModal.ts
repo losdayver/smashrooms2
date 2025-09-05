@@ -2,8 +2,8 @@ import { AudioEventEngine, AudioTrackEngine } from "@client/audio/audioEngine";
 import { FocusManager, IFocusable } from "@client/focus/focusManager";
 import { repoRoute } from "@client/routes";
 import { AudioWidget } from "@client/ui/audioWidget";
-import { makeIconLink } from "@client/utils";
-import { commitInfoToHtml, getLastCommitInfo } from "@client/versioning/github";
+import { makeIconLink } from "@client/ui/utils";
+// import { commitInfoToHtml, getLastCommitInfo } from "@client/versioning/github";
 import { ControlsModal } from "@client/modal/controlsModal";
 import { Modal } from "@client/modal/modal";
 

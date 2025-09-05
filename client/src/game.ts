@@ -20,14 +20,14 @@ import { RegModal } from "@client/modal/regModal";
 import { GameMenuModal } from "@client/modal/gameMenuModal";
 
 export const gameLoader = async () => {
-  let wsURL: URL;
-  if (window.location.protocol === "https:") {
-    wsURL = new URL(`wss://${window.location.hostname}:5889`);
-  } else {
-    wsURL = new URL(`ws://${window.location.hostname}:5889`);
-  }
-
-  const client = new Client(wsURL);
+  let wsURLPrefix: string;
+  // TODO: what if I connect to different host?
+  window.location.protocol === "https:"
+    ? (wsURLPrefix = "wss")
+    : (wsURLPrefix = "ws");
+  const client = new Client(
+    new URL(`${wsURLPrefix}://${window.location.hostname}:5889`)
+  );
 
   const chat = new Chat(
     document.querySelector(".chat-container"),

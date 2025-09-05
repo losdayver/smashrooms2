@@ -5,7 +5,10 @@ export interface ILastCommitInfo {
   message: string;
   date: Date;
 }
-export const getLastCommitInfo = async (): Promise<ILastCommitInfo | false> => {
+
+export const getLastGitHubCommitInfo = async (): Promise<
+  ILastCommitInfo | false
+> => {
   const json = await fetch(
     githubApiBaseURL + "commits?sha=master&per_page=1"
   ).then((res) => res.json());

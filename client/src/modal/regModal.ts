@@ -1,12 +1,19 @@
 import { IServerSceneMetaMessageExt } from "@stdTypes/messages";
 import { Client } from "@client/client/client";
-import { makeIconButton } from "@client/utils";
-// import { commitInfoToHtml, getLastCommitInfo } from "@client/versioning/github";
+import { makeIconButton } from "@client/ui/utils";
+import {
+  commitInfoToHtml,
+  getLastGitHubCommitInfo,
+} from "@client/versioning/utils";
 import { Modal } from "@client/modal/modal";
 
 export class RegModal extends Modal {
   private onSubmit: (clientName: string) => void;
   private client: Client;
+  private infoContainer: HTMLDivElement;
+  private form: HTMLFormElement;
+  private versionInfoContainer: HTMLDivElement;
+
   constructor(
     container: HTMLDivElement,
     onSubmit: (clientName: string) => void,
@@ -27,68 +34,85 @@ export class RegModal extends Modal {
       "serverSceneMeta",
       "regModal",
       (data: IServerSceneMetaMessageExt) => {
+        console.debug("Got scene data: ", data);
         this.updateServerInfo(data);
+        this.initForm();
       }
     );
   }
 
-  private infoContainer: HTMLDivElement;
-  private gitHubInfoContainer: HTMLDivElement;
+  protected getContent = (): HTMLElement => {
+    this.infoContainer = document.createElement("div");
+    this.infoContainer.style.margin = "1.5em";
+    this.infoContainer.style.display = "flex";
+    this.infoContainer.style.flexFlow = "column";
+    this.infoContainer.style.alignItems = "center";
+    this.infoContainer.style.gap = "0.5em";
+    this.versionInfoContainer = document.createElement("div");
+    this.versionInfoContainer.classList.add("github-container");
+    this.form = document.createElement("form");
+    this.initLoader();
+    const content = document.createElement("div");
+    content.append(this.infoContainer, this.form, this.versionInfoContainer);
+    return content;
+  };
 
-  protected getContent = () => {
-    const label = document.createElement("label");
+  private initLoader = (): void => {
+    const spinner = document.createElement("div");
+    spinner.classList.add("spinner");
+    const loadingMsg = document.createElement("p");
+    loadingMsg.innerText = "Loading stage info...";
+    loadingMsg.style.fontSize = "17px";
+    this.infoContainer.append(spinner, loadingMsg);
+  };
 
+  private initForm = (): void => {
     const input = document.createElement("input");
     input.classList.add("smsh-input");
     input.type = "text";
 
+    const label = document.createElement("label");
     label.append("Enter player name:", input);
 
-    const submit = document.createElement("input");
-    submit.classList.add("smsh-button");
-    submit.type = "submit";
-    submit.value = "Connect";
+    const submitBtn = document.createElement("input");
+    submitBtn.classList.add("smsh-button");
+    submitBtn.type = "submit";
+    submitBtn.value = "Connect";
 
-    const form = document.createElement("form");
-
-    this.infoContainer = document.createElement("div");
-    this.gitHubInfoContainer = document.createElement("div");
-
-    form.append(this.infoContainer, label, submit, this.gitHubInfoContainer);
-
-    form.addEventListener("submit", (event) => {
+    this.form.append(label, submitBtn);
+    this.form.addEventListener("submit", (event: SubmitEvent) => {
       event.preventDefault();
       this.onSubmit(input.value);
     });
-    form.classList.add("shmsh-form");
-
-    return form;
+    this.form.classList.add("smsh-form");
   };
 
   private updateServerInfo = async (data: IServerSceneMetaMessageExt) => {
-    const d = document;
     const getP = (title: string, contents: any) => {
-      const p = d.createElement("p");
-      const b = d.createElement("b");
+      const p = document.createElement("p");
+      const b = document.createElement("b");
       b.innerText = contents ?? "";
       p.append(title, ": ", b);
       p.style.textAlign = "center";
       return p;
     };
-    const reload = makeIconButton("reload.png", this.client.getSceneMeta);
-    reload.style.position = "absolute";
-    reload.style.top = "8";
-    reload.style.left = "8";
+
+    this.infoContainer.style.display = "block";
     this.infoContainer.innerHTML = "";
+
+    const reloadBtn = makeIconButton("reload.png", this.client.getSceneMeta);
+    reloadBtn.style.position = "absolute";
+    reloadBtn.style.top = "8";
+    reloadBtn.style.left = "8";
     this.infoContainer.append(
-      reload,
+      reloadBtn,
       getP("Stage name", data.stageName),
       getP("Author", data.stageAuthor),
       getP("Players", `${data.currPlayerCount}/${data.maxPlayerCount}`)
     );
-    // const gihubInfo = await getLastCommitInfo();
-    // gihubInfo &&
-    //   (this.gitHubInfoContainer.innerHTML =
-    //     "<b>Last github pull: </b>" + commitInfoToHtml(gihubInfo));
+    const versionInfo = await getLastGitHubCommitInfo();
+    versionInfo &&
+      (this.versionInfoContainer.innerHTML =
+        "<b>Last github pull: </b>" + commitInfoToHtml(versionInfo));
   };
 }
