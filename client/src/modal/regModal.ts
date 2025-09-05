@@ -86,6 +86,7 @@ export class RegModal extends Modal {
 
     const label = document.createElement("label");
     label.append("Enter player name:", input);
+    // TODO: spacing between label and input
 
     const submitBtn = document.createElement("input");
     submitBtn.classList.add("smsh-button");
@@ -98,6 +99,9 @@ export class RegModal extends Modal {
       this.onSubmit(input.value);
     });
     this.form.classList.add("smsh-form");
+    this.form.style.display = "flex";
+    this.form.style.justifyContent = "center";
+    this.form.style.gap = "0.5em";
     this.formIsInit = true;
   };
 
