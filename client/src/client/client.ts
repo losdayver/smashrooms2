@@ -30,8 +30,8 @@ export class Client
   private socket: WebSocket;
   private ID: PropIDExt;
   private connURL: URL;
-  private errorIsEmitted: boolean = false;
-  readonly isRegistered = false;
+  private errorEmitted: boolean = false;
+  readonly isRegistered: boolean = false;
 
   private signalEmitter = new SignalEmitter<ClientEventEmitterType>();
   on = (
@@ -43,7 +43,9 @@ export class Client
     this.signalEmitter.off(eventName, callbackID);
 
   private focusManager: FocusManager;
+
   getFocusTag = () => "client";
+
   onFocusReceiveKey: IFocusable["onFocusReceiveKey"] = (key, status) => {
     if (status == "down") {
       this.controlsHandler(key, true);
@@ -54,6 +56,7 @@ export class Client
       this.controlsHandler(key, false);
     }
   };
+
   private controlsHandler = (
     key: keyof ControlsObjType,
     isPressed: boolean
@@ -80,19 +83,19 @@ export class Client
     this.socket.onopen = () => this.signalEmitter.emit("socketOpen");
     this.socket.onclose = (event: CloseEvent) => {
       if (!event.wasClean) {
-        if (!this.errorIsEmitted) this.emitError("socketError");
+        if (!this.errorEmitted) this.emitError("socketError");
       }
       this.signalEmitter.emit("socketClose");
     };
     this.socket.onerror = () => {
-      if (!this.errorIsEmitted) this.emitError("socketConnectionError");
+      if (!this.errorEmitted) this.emitError("socketConnectionError");
     };
     this.socket.onmessage = this.onmessage;
   };
 
   private emitError = (error: ClientErrorEventEmitterType) => {
     this.signalEmitter.emit(error);
-    this.errorIsEmitted = true;
+    this.errorEmitted = true;
   };
 
   private socketSend = <T extends object>(data: T) =>
