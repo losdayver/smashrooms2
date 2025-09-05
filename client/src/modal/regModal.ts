@@ -6,6 +6,7 @@ import {
   getLastGitHubCommitInfo,
 } from "@client/versioning/utils";
 import { Modal } from "@client/modal/modal";
+import { iconRoute } from "@client/routes";
 
 export class RegModal extends Modal {
   private onSubmit: (clientName: string) => void;
@@ -34,16 +35,27 @@ export class RegModal extends Modal {
       "serverSceneMeta",
       "regModal",
       (data: IServerSceneMetaMessageExt) => {
-        console.debug("Got scene data: ", data);
         this.updateServerInfo(data);
         this.initForm();
       }
     );
+
+    // TODO: handle unsuccessful getSceneMetas on clicking reload button after ws server is down
+    client.on("socketConnectionError", "regModal", () => {
+      this.infoContainer.innerHTML = "";
+      const errorImg = document.createElement("img");
+      errorImg.src = `${iconRoute}cross.png`;
+      errorImg.width = 64;
+      errorImg.alt = "Error icon";
+      const errorMsg = document.createElement("p");
+      errorMsg.innerText = "Error: connection refused!";
+      this.infoContainer.append(errorImg, errorMsg);
+    });
   }
 
   protected getContent = (): HTMLElement => {
     this.infoContainer = document.createElement("div");
-    this.infoContainer.style.margin = "1.5em";
+    this.infoContainer.style.margin = "1.5em 1.5em 0 1.5em";
     this.infoContainer.style.display = "flex";
     this.infoContainer.style.flexFlow = "column";
     this.infoContainer.style.alignItems = "center";

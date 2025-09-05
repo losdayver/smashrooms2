@@ -386,7 +386,6 @@ export class EaselManager {
         this.constructStage(stage);
       }
     );
-    // ???
     client.on("socketError", "easel", () => {
       const errorImg = document.createElement("img");
       errorImg.src = "img/icons/networkError.png";

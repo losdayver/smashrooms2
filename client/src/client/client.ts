@@ -20,7 +20,9 @@ type ClientEventEmitterType =
   | SmshMessageTypeExt["name"]
   | "socketOpen"
   | "socketClose"
-  | "socketError";
+  | ClientErrorEventEmitterType;
+
+type ClientErrorEventEmitterType = "socketError" | "socketConnectionError";
 
 export class Client
   implements ISignalEmitterPublicInterface<ClientEventEmitterType>, IFocusable
@@ -28,8 +30,7 @@ export class Client
   private socket: WebSocket;
   private ID: PropIDExt;
   private connURL: URL;
-  private errorIsEmitted: boolean;
-
+  private errorIsEmitted: boolean = false;
   readonly isRegistered = false;
 
   private signalEmitter = new SignalEmitter<ClientEventEmitterType>();
@@ -79,19 +80,18 @@ export class Client
     this.socket.onopen = () => this.signalEmitter.emit("socketOpen");
     this.socket.onclose = (event: CloseEvent) => {
       if (!event.wasClean) {
-        if (!this.errorIsEmitted) this.emitError();
+        if (!this.errorIsEmitted) this.emitError("socketError");
       }
       this.signalEmitter.emit("socketClose");
     };
     this.socket.onerror = () => {
-      if (!this.errorIsEmitted) this.emitError();
+      if (!this.errorIsEmitted) this.emitError("socketConnectionError");
     };
     this.socket.onmessage = this.onmessage;
-    this.errorIsEmitted = false;
   };
 
-  private emitError = () => {
-    this.signalEmitter.emit("socketError");
+  private emitError = (error: ClientErrorEventEmitterType) => {
+    this.signalEmitter.emit(error);
     this.errorIsEmitted = true;
   };
 
