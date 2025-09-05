@@ -1,7 +1,7 @@
 import { IServerSceneMetaMessageExt } from "@stdTypes/messages";
 import { Client } from "@client/client/client";
 import { makeIconButton } from "@client/utils";
-import { commitInfoToHtml, getLastCommitInfo } from "@client/versioning/github";
+// import { commitInfoToHtml, getLastCommitInfo } from "@client/versioning/github";
 import { Modal } from "@client/modal/modal";
 
 export class RegModal extends Modal {
@@ -86,9 +86,9 @@ export class RegModal extends Modal {
       getP("Author", data.stageAuthor),
       getP("Players", `${data.currPlayerCount}/${data.maxPlayerCount}`)
     );
-    const gihubInfo = await getLastCommitInfo();
-    gihubInfo &&
-      (this.gitHubInfoContainer.innerHTML =
-        "<b>Last github pull: </b>" + commitInfoToHtml(gihubInfo));
+    // const gihubInfo = await getLastCommitInfo();
+    // gihubInfo &&
+    //   (this.gitHubInfoContainer.innerHTML =
+    //     "<b>Last github pull: </b>" + commitInfoToHtml(gihubInfo));
   };
 }

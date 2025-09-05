@@ -19,14 +19,16 @@ import { IScoreUpdateExt, SmshMessageTypeExt } from "@smshTypes/messages";
 type ClientEventEmitterType =
   | SmshMessageTypeExt["name"]
   | "socketOpen"
-  | "socketClose";
+  | "socketClose"
+  | "socketError";
 
 export class Client
   implements ISignalEmitterPublicInterface<ClientEventEmitterType>, IFocusable
 {
   private socket: WebSocket;
   private ID: PropIDExt;
-  private connString: string;
+  private connURL: URL;
+  private errorIsEmitted: boolean;
 
   readonly isRegistered = false;
 
@@ -73,10 +75,24 @@ export class Client
   };
 
   private initSocket = () => {
-    this.socket = new WebSocket(this.connString);
+    this.socket = new WebSocket(this.connURL);
     this.socket.onopen = () => this.signalEmitter.emit("socketOpen");
-    this.socket.onclose = () => this.signalEmitter.emit("socketClose");
+    this.socket.onclose = (event: CloseEvent) => {
+      if (!event.wasClean) {
+        if (!this.errorIsEmitted) this.emitError();
+      }
+      this.signalEmitter.emit("socketClose");
+    };
+    this.socket.onerror = () => {
+      if (!this.errorIsEmitted) this.emitError();
+    };
     this.socket.onmessage = this.onmessage;
+    this.errorIsEmitted = false;
+  };
+
+  private emitError = () => {
+    this.signalEmitter.emit("socketError");
+    this.errorIsEmitted = true;
   };
 
   private socketSend = <T extends object>(data: T) =>
@@ -152,16 +168,16 @@ export class Client
     this.signalEmitter.emit(parsedMsg.name, parsedMsg);
   };
 
-  constructor(connString: string) {
-    this.connString = connString;
+  constructor(connURL: URL) {
+    this.connURL = connURL;
     this.initSocket();
     this.on("connRes", "self", (data: IConnectResponseMessageExt) => {
       (this.isRegistered as any) = data.status == "allowed";
     });
-    this.on("socketClose", "self", () => {
-      this.initSocket();
-      (this.isRegistered as any) = false;
-    });
+    // this.on("socketClose", "self", () => {
+    //   this.initSocket();
+    //   (this.isRegistered as any) = false;
+    // });
     this.on("stageChange", "self", (msg: IStageChangeExt) => {
       if (msg.status == "reloadStage")
         this.sendInput("reviveSilent", "pressed");

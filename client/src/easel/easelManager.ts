@@ -342,9 +342,8 @@ export class EaselManager {
     });
     this.currentStageWidth = width; // todo maybe put this in one nice object
     this.updateEaselScale();
-    document.querySelector(
-      "body"
-    ).style.backgroundImage = `url(${backgroundRoute}forest.png)`;
+    document.querySelector("body").style.backgroundImage =
+      `url(${backgroundRoute}forest.png)`;
     this.easelDiv.appendChild(this.layoutPivot);
   };
 
@@ -387,6 +386,15 @@ export class EaselManager {
         this.constructStage(stage);
       }
     );
+    // ???
+    client.on("socketError", "easel", () => {
+      const errorImg = document.createElement("img");
+      errorImg.src = "img/icons/networkError.png";
+      errorImg.alt = "Network error occured!";
+      errorImg.classList.add("network-error");
+      document.body.appendChild(errorImg);
+    });
+
     this.easelDiv.style.setProperty(
       "--easel__prop-sprite--border-color",
       EaselManager.defaultNicknameHighlightColor

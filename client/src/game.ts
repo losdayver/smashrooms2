@@ -20,7 +20,14 @@ import { RegModal } from "@client/modal/regModal";
 import { GameMenuModal } from "@client/modal/gameMenuModal";
 
 export const gameLoader = async () => {
-  const client = new Client(`ws://${window.location.hostname}:5889`);
+  let wsURL: URL;
+  if (window.location.protocol === "https:") {
+    wsURL = new URL(`wss://${window.location.hostname}:5889`);
+  } else {
+    wsURL = new URL(`ws://${window.location.hostname}:5889`);
+  }
+
+  const client = new Client(wsURL);
 
   const chat = new Chat(
     document.querySelector(".chat-container"),
