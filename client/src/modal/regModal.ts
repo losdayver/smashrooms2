@@ -12,6 +12,7 @@ export class RegModal extends Modal {
   private onSubmit: (clientName: string) => void;
   private client: Client;
   private infoContainer: HTMLDivElement;
+  private sceneMetaContainerIsInit: boolean = false;
   private form: HTMLFormElement;
   private formIsInit: boolean = false;
   private versionInfoContainer: HTMLDivElement;
@@ -36,7 +37,8 @@ export class RegModal extends Modal {
       "serverSceneMeta",
       "regModal",
       (data: IServerSceneMetaMessageExt) => {
-        this.updateServerInfo(data);
+        if (!this.sceneMetaContainerIsInit) this.initSceneMetaContainer();
+        this.updateSceneMetaInfo(data);
         if (!this.formIsInit) this.initForm();
       }
     );
@@ -49,7 +51,7 @@ export class RegModal extends Modal {
       errorImg.width = 64;
       errorImg.alt = "Error icon";
       const errorMsg = document.createElement("p");
-      errorMsg.innerText = "Error: connection refused!";
+      errorMsg.innerText = "Connection refused!";
       this.infoContainer.append(errorImg, errorMsg);
     });
   }
@@ -107,32 +109,44 @@ export class RegModal extends Modal {
     this.formIsInit = true;
   };
 
-  private updateServerInfo = async (data: IServerSceneMetaMessageExt) => {
-    const getP = (title: string, contents: any) => {
+  private initSceneMetaContainer = async (): Promise<void> => {
+    const getP = (title: string, className: string) => {
       const p = document.createElement("p");
       const b = document.createElement("b");
-      b.innerText = contents ?? "";
+      b.classList.add(className);
+      b.innerText = "";
       p.append(title, ": ", b);
       p.style.textAlign = "center";
       return p;
     };
 
-    this.infoContainer.style.display = "block";
     this.infoContainer.innerHTML = "";
+    this.infoContainer.style.display = "block";
 
     const reloadBtn = makeIconButton("reload.png", this.client.getSceneMeta);
     reloadBtn.style.position = "absolute";
     reloadBtn.style.top = "8";
     reloadBtn.style.left = "8";
+
     this.infoContainer.append(
       reloadBtn,
-      getP("Stage name", data.stageName),
-      getP("Author", data.stageAuthor),
-      getP("Players", `${data.currPlayerCount}/${data.maxPlayerCount}`)
+      getP("Stage name", "stage-name"),
+      getP("Author", "stage-author"),
+      getP("Players", "stage-players")
     );
     const versionInfo = await getLastGitHubCommitInfo();
     versionInfo &&
       (this.versionInfoContainer.innerHTML =
         "<b>Last github pull: </b>" + commitInfoToHtml(versionInfo));
+    this.sceneMetaContainerIsInit = true;
+  };
+
+  private updateSceneMetaInfo = (data: IServerSceneMetaMessageExt): void => {
+    (document.querySelector(".stage-name") as HTMLElement).innerText =
+      data.stageName;
+    (document.querySelector(".stage-author") as HTMLElement).innerText =
+      data.stageAuthor;
+    (document.querySelector(".stage-players") as HTMLElement).innerText =
+      `${data.currPlayerCount}/${data.maxPlayerCount}`;
   };
 }
