@@ -15,6 +15,7 @@ import { AudioEventEngine, soundEventMap } from "@client/audio/audioEngine";
 import { Client } from "@client/client/client";
 import {
   backgroundRoute,
+  iconRoute,
   layoutSpriteRoute,
   propSpriteRoute,
   stagesRoute,
@@ -388,7 +389,7 @@ export class EaselManager {
     );
     client.on("socketError", "easel", () => {
       const errorImg = document.createElement("img");
-      errorImg.src = "img/icons/networkError.png";
+      errorImg.src = `${iconRoute}networkError.png`;
       errorImg.alt = "Network error occured!";
       errorImg.classList.add("network-error");
       document.body.appendChild(errorImg);
