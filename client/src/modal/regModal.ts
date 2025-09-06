@@ -47,8 +47,8 @@ export class RegModal extends Modal {
     client.on("socketConnectionError", "regModal", () => {
       this.infoContainer.innerHTML = "";
       const errorImg = document.createElement("img");
-      errorImg.src = `${iconRoute}cross.png`;
-      errorImg.width = 64;
+      errorImg.src = `${iconRoute}refusal.png`;
+      errorImg.width = 96;
       errorImg.alt = "Error icon";
       const errorMsg = document.createElement("p");
       errorMsg.innerText = "Connection refused!";
