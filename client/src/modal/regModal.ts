@@ -63,7 +63,9 @@ export class RegModal extends Modal {
     this.infoContainer.style.gap = "0.5em";
     this.versionInfoContainer = document.createElement("div");
     this.versionInfoContainer.classList.add("github-container");
+    this.versionInfoContainer.style.textAlign = "center";
     this.form = document.createElement("form");
+
     this.initLoader();
     const content = document.createElement("div");
     content.append(this.infoContainer, this.form, this.versionInfoContainer);
