@@ -2,7 +2,7 @@ import {
   AudioConfig,
   AudioSettingObjType,
   AudioSetting,
-} from "@client/config/config";
+} from "@client/config/audio";
 import { soundTrackRoute, soundEventRoute } from "@client/routes";
 import { SignalEmitter, ISignalEmitterPublicInterface } from "@client/utils";
 

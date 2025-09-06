@@ -10,7 +10,7 @@ import {
   IWebDBRes,
 } from "@stdTypes/messages";
 import { PropIDExt } from "@stdTypes/sceneTypes";
-import { ControlsObjType } from "@client/config/config";
+import { ControlsObjType } from "@client/config/controls";
 import { FocusManager, IFocusable } from "@client/focus/focusManager";
 import { SignalEmitter, ISignalEmitterPublicInterface } from "@client/utils";
 import { ClientActionCodesExt } from "@stdTypes/messages";
