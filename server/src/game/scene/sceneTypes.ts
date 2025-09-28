@@ -1,4 +1,4 @@
-import { ClientID } from "@server/game/commonTypes";
+import { ClientID, IDestructible } from "@server/game/commonTypes";
 import {
   ClientActionStatusExt,
   IGenericMessageExt,
@@ -12,7 +12,7 @@ import { Prop } from "@server/game/scene/prop";
 import { StageExt } from "@stdTypes/stage";
 import { DBQuerier } from "@server/db/dbQuerier";
 
-export interface IScene extends ISceneActions {
+export interface IScene extends ISceneActions, IDestructible {
   subscribe: (sceneSubscriber: ISceneSubscriber) => void;
   tick: () => void;
   getSceneMeta: () => Omit<

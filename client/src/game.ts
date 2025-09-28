@@ -18,9 +18,14 @@ import { Toast } from "@client/ui/toast";
 import { pickRandom } from "@client/utils";
 import { RegModal } from "@client/modal/regModal";
 import { GameMenuModal } from "@client/modal/gameMenuModal";
+import { urlParams } from "@client/url";
 
 export const gameLoader = async () => {
-  const client = new Client(`ws://${window.location.hostname}:5889`);
+  const client = new Client(
+    `ws://${urlParams?.wsHost ?? window.location.hostname}:${
+      urlParams.wsPort ?? 5889
+    }`
+  );
 
   const chat = new Chat(
     document.querySelector(".chat-container"),

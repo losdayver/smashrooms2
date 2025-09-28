@@ -1,0 +1,15 @@
+.smsh-palette__container {
+  box-sizing: border-box;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.smsh-palette__container__color {
+  box-shadow: 4px 6px 9px 0px #00000087;
+}
+
+.smsh-palette__container__color--selected {
+  box-sizing: border-box;
+  outline: 0.2em solid #2f3133;
+}

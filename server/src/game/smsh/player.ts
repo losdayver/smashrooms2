@@ -84,12 +84,7 @@ export class Player
         });
         this.scene.animatePropAction(this.ID, "hit");
       } else if (prop instanceof ItemProp && !prop.isPickedUp) {
-        if (prop.hasMaster) {
-          (prop.hasMaster.master as ItemSpawner).pickedOnTick =
-            this.scene.tickNum;
-          (prop.hasMaster.master as ItemSpawner).isEmpty = true;
-        }
-        prop.isPickedUp = true; // todo fix double
+        prop.isPickedUp = true;
         prop.modifyPlayer(this);
         this.scene.destroyPropAction(prop.ID);
       }

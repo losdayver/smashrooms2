@@ -1,14 +1,6 @@
-import {
-  IDrawableExt,
-  IPositionedExt,
-  ISpriteOverlay,
-} from "@stdTypes/sceneTypes";
+import { IDrawableExt, IPositionedExt } from "@stdTypes/sceneTypes";
 import { Prop } from "@server/game/scene/prop";
-import {
-  ICollidable,
-  IPortal,
-  PropBehaviours,
-} from "@server/game/scene/propTypes";
+import { ICollidable, IPortal } from "@server/game/scene/propTypes";
 
 export class Portal extends Prop implements ICollidable, IDrawableExt, IPortal {
   portal;
@@ -26,7 +18,10 @@ export class Portal extends Prop implements ICollidable, IDrawableExt, IPortal {
     offsetY: 0,
     onCollide: (prop) => {
       if (prop.prohibitTeleport?.prohibit) return;
-      if (this.portal.linkedPortal.interactedWithLastTick.has(prop.ID)) {
+      if (
+        this.portal.linkedPortal.interactedWithLastTick.has(prop.ID) ||
+        this.portal.linkedPortal.interactedWith.has(prop.ID)
+      ) {
         this.portal.linkedPortal.interactedWith.add(prop.ID);
         return;
       }

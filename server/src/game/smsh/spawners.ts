@@ -25,17 +25,17 @@ export class ItemSpawner extends Prop implements ItemSpawnerType {
       "blasterItem",
       "sniperItem",
     ],
+    spawnDelay: 120,
   };
   positioned;
 
-  spawnDelay = 60;
-  pickedOnTick = 0;
+  destroyedOnTick = 0;
   isEmpty = true;
 
+  // todo fix spawners
   onTick = (tickNum: number) => {
     if (
-      tickNum - this.pickedOnTick >
-        (this.spawner.spawnDelay ?? this.spawnDelay) &&
+      tickNum - this.destroyedOnTick > this.spawner.spawnDelay &&
       this.isEmpty
     ) {
       this.isEmpty = false;
@@ -46,6 +46,10 @@ export class ItemSpawner extends Prop implements ItemSpawnerType {
         },
         hasMaster: {
           master: this,
+          onDestroySlave: () => {
+            this.isEmpty = true;
+            this.destroyedOnTick = this.scene.tickNum;
+          },
         },
       });
     }
