@@ -1,12 +1,12 @@
 FROM node:22
 WORKDIR /app
-COPY *-static-server.bash ./
+COPY ./scripts/*-static-server.sh ./scripts/
 COPY client ./client/
 COPY static ./static/
 COPY staticServer ./staticServer/
 COPY types ./types/
 COPY smshTypes ./smshTypes/
-RUN chmod +x *-static-server.bash
-RUN ./build-static-server.bash
+RUN chmod +x ./scripts/*-static-server.sh
+RUN ./scripts/build-static-server.sh
 EXPOSE 5890
 CMD ["bash", "run-static-server.bash"]

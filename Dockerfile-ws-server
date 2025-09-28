@@ -1,13 +1,13 @@
 FROM node:22
 WORKDIR /app
-COPY *-ws-server.bash ./
+COPY ./scripts/*-ws-server.sh ./scripts/
 COPY server ./server/
 COPY types ./types/
 COPY smshTypes ./smshTypes/
 COPY static ./static/
 COPY .env ./.env/
-RUN chmod +x *-ws-server.bash
+RUN chmod +x ./scripts/*-ws-server.sh
 RUN npm i -g typescript
-RUN ./build-ws-server.bash
+RUN ./build-ws-server.sh
 EXPOSE 5889
 CMD ["bash", "run-ws-server.bash"]
