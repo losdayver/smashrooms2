@@ -13,9 +13,9 @@ import {
 } from "@client/common";
 import { IEditorCommunications } from "./editor";
 import { IFocusable } from "@client/focus/focusManager";
-import { ControlsObjType } from "@client/config/config";
 import { JsonEditorModal } from "@client/modal/jsonEditorModal";
 import { ISmshStageMetaExtra, LayoutMetaExt, StageExt } from "@stdTypes/stage";
+import { ControlsObjType } from "@client/config/controls";
 
 interface IComplexTile {
   symbol: ITileSymbols;

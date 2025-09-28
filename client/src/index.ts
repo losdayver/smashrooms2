@@ -1,6 +1,6 @@
 import { editorLoader } from "@client/editor/editor";
 import { gameLoader } from "@client/game";
-import { urlParams } from "./url";
+import { urlParams } from "@client/url";
 urlParams;
 
 const main = async () => {

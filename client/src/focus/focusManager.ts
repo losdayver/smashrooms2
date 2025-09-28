@@ -2,7 +2,7 @@ import {
   ControlsConfig,
   controlsList,
   ControlsObjType,
-} from "@client/config/config";
+} from "@client/config/controls";
 import { gamepadEventToKeyMap } from "@client/focus/gamepadLayouts";
 
 export interface IFocusable {

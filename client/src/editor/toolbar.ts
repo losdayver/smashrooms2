@@ -4,7 +4,7 @@ import {
   IEditorUploadIncomingBody,
   IEditorUploadOutgoingBody,
 } from "@stdTypes/apiTypes";
-import { EditorCanvas } from "./canvas";
+import { EditorCanvas } from "@client/editor/canvas";
 import { CollectionModal } from "@client/modal/collectionModal";
 import { JsonEditorModal } from "@client/modal/jsonEditorModal";
 import { getResolver } from "@client/utils";

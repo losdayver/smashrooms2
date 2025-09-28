@@ -29,7 +29,7 @@ export class Client
 {
   private socket: WebSocket;
   private ID: PropIDExt;
-  private connURL: URL;
+  private connURL: string;
   private errorEmitted: boolean = false;
   readonly isRegistered: boolean = false;
 
@@ -171,7 +171,7 @@ export class Client
     this.signalEmitter.emit(parsedMsg.name, parsedMsg);
   };
 
-  constructor(connURL: URL) {
+  constructor(connURL: string) {
     this.connURL = connURL;
     this.initSocket();
     this.on("connRes", "self", (data: IConnectResponseMessageExt) => {
