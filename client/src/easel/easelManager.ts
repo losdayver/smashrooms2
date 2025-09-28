@@ -15,6 +15,7 @@ import { AudioEventEngine, soundEventMap } from "@client/audio/audioEngine";
 import { Client } from "@client/client/client";
 import {
   backgroundRoute,
+  iconRoute,
   layoutSpriteRoute,
   propSpriteRoute,
   stagesRoute,
@@ -388,6 +389,7 @@ export class EaselManager {
         this.constructStage(stage);
       }
     );
+
     this.easelDiv.style.setProperty(
       "--easel__prop-sprite--border-color",
       EaselManager.defaultNicknameHighlightColor

@@ -3,7 +3,7 @@ import {
   controlsList,
   ControlsObjType,
   defaultControlsObj,
-} from "@client/config/config";
+} from "@client/config/controls";
 import { FocusManager, IFocusable } from "@client/focus/focusManager";
 import { Modal } from "@client/modal/modal";
 

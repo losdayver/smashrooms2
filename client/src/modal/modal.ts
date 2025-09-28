@@ -126,7 +126,7 @@ export abstract class FocusableModal
     const originalOnClose = this._onClose;
     this._onClose = () => {
       const closeRes = originalOnClose();
-      if (closeRes == false) return;
+      if (closeRes == false) return false;
       this.focusManager.setFocus(this.lastFocusedTag);
       this.focusManager.unregister(this);
       this.destructor();

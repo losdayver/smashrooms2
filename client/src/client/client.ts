@@ -10,25 +10,29 @@ import {
   IWebDBRes,
 } from "@stdTypes/messages";
 import { PropIDExt } from "@stdTypes/sceneTypes";
-import { ControlsObjType } from "@client/config/config";
+import { ControlsObjType } from "@client/config/controls";
 import { FocusManager, IFocusable } from "@client/focus/focusManager";
 import { SignalEmitter, ISignalEmitterPublicInterface } from "@client/utils";
 import { ClientActionCodesExt } from "@stdTypes/messages";
 import { SmshMessageTypeExt } from "@smshTypes/messages";
+import { iconRoute } from "@client/routes";
 
 type ClientEventEmitterType =
   | SmshMessageTypeExt["name"]
   | "socketOpen"
-  | "socketClose";
+  | "socketClose"
+  | ClientErrorEventEmitterType;
+
+type ClientErrorEventEmitterType = "socketError" | "socketConnectionError";
 
 export class Client
   implements ISignalEmitterPublicInterface<ClientEventEmitterType>, IFocusable
 {
   private socket: WebSocket;
   private ID: PropIDExt;
-  private connString: string;
-
-  readonly isRegistered = false;
+  private connURL: string;
+  private errorEmitted: boolean = false;
+  readonly isRegistered: boolean = false;
 
   private signalEmitter = new SignalEmitter<ClientEventEmitterType>();
   on = (
@@ -40,7 +44,9 @@ export class Client
     this.signalEmitter.off(eventName, callbackID);
 
   private focusManager: FocusManager;
+
   getFocusTag = () => "client";
+
   onFocusReceiveKey: IFocusable["onFocusReceiveKey"] = (key, status) => {
     if (status == "down") {
       this.controlsHandler(key, true);
@@ -51,6 +57,7 @@ export class Client
       this.controlsHandler(key, false);
     }
   };
+
   private controlsHandler = (
     key: keyof ControlsObjType,
     isPressed: boolean
@@ -73,10 +80,23 @@ export class Client
   };
 
   private initSocket = () => {
-    this.socket = new WebSocket(this.connString);
+    this.socket = new WebSocket(this.connURL);
     this.socket.onopen = () => this.signalEmitter.emit("socketOpen");
-    this.socket.onclose = () => this.signalEmitter.emit("socketClose");
+    this.socket.onclose = (event: CloseEvent) => {
+      if (!event.wasClean) {
+        if (!this.errorEmitted) this.emitError("socketError");
+      }
+      this.signalEmitter.emit("socketClose");
+    };
+    this.socket.onerror = () => {
+      if (!this.errorEmitted) this.emitError("socketConnectionError");
+    };
     this.socket.onmessage = this.onmessage;
+  };
+
+  private emitError = (error: ClientErrorEventEmitterType) => {
+    this.signalEmitter.emit(error);
+    this.errorEmitted = true;
   };
 
   private socketSend = <T extends object>(data: T) =>
@@ -152,16 +172,23 @@ export class Client
     this.signalEmitter.emit(parsedMsg.name, parsedMsg);
   };
 
-  constructor(connString: string) {
-    this.connString = connString;
+  constructor(connURL: string) {
+    this.connURL = connURL;
     this.initSocket();
+    this.on("socketError", "easel", () => {
+      const errorImg = document.createElement("img");
+      errorImg.src = `${iconRoute}networkError.png`;
+      errorImg.alt = "Network error occured!";
+      errorImg.classList.add("network-error");
+      document.body.appendChild(errorImg);
+    });
     this.on("connRes", "self", (data: IConnectResponseMessageExt) => {
       (this.isRegistered as any) = data.status == "allowed";
     });
-    this.on("socketClose", "self", () => {
-      this.initSocket();
-      (this.isRegistered as any) = false;
-    });
+    // this.on("socketClose", "self", () => {
+    //   this.initSocket();
+    //   (this.isRegistered as any) = false;
+    // });
     this.on("stageChange", "self", (msg: IStageChangeExt) => {
       if (msg.status == "reloadStage")
         this.sendInput("reviveSilent", "pressed");

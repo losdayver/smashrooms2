@@ -20,10 +20,10 @@ The testing environment is already deployed here http://olegzhmelev.ru:5890. Not
 
 ### Docker
 
-To deploy the application, simply run the `deploy.bash` script, which will automatically build Docker images and start the application within `smashrooms2-ws-server` and `smashrooms2-static-server` Docker containers:
+To deploy the application, simply run the `deploy.sh` script, which will automatically build Docker images and start the application within `smashrooms2-ws-server` and `smashrooms2-static-server` Docker containers:
 
 ```sh
-./deploy.bash
+./scripts/deploy.sh
 ```
 
 Before that make sure:
