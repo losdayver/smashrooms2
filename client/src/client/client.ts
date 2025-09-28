@@ -15,6 +15,7 @@ import { FocusManager, IFocusable } from "@client/focus/focusManager";
 import { SignalEmitter, ISignalEmitterPublicInterface } from "@client/utils";
 import { ClientActionCodesExt } from "@stdTypes/messages";
 import { SmshMessageTypeExt } from "@smshTypes/messages";
+import { iconRoute } from "@client/routes";
 
 type ClientEventEmitterType =
   | SmshMessageTypeExt["name"]
@@ -174,6 +175,13 @@ export class Client
   constructor(connURL: string) {
     this.connURL = connURL;
     this.initSocket();
+    this.on("socketError", "easel", () => {
+      const errorImg = document.createElement("img");
+      errorImg.src = `${iconRoute}networkError.png`;
+      errorImg.alt = "Network error occured!";
+      errorImg.classList.add("network-error");
+      document.body.appendChild(errorImg);
+    });
     this.on("connRes", "self", (data: IConnectResponseMessageExt) => {
       (this.isRegistered as any) = data.status == "allowed";
     });
