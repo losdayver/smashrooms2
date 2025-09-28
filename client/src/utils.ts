@@ -62,14 +62,39 @@ export const makeIconLink = (
   return a;
 };
 
-export const makeIconButton = (iconBasename: string, onClick: () => void) => {
+export const makeIconButton = (
+  iconBasename: string,
+  onClick: (ev: MouseEvent) => void,
+  size?: [number, number]
+) => {
   const d = document;
   const img = d.createElement("img");
   img.className = "smsh-button";
   img.setAttribute("src", `${iconRoute}${iconBasename}`);
   img.onclick = onClick;
+  if (size) {
+    img.style.width = size[0] + "px";
+    img.style.height = size[1] + "px";
+  }
   return img;
 };
 
 export const pickRandom = (array: any[]) =>
   array[Math.floor(Math.random() * array.length)];
+
+export const minMax = (value: number, min: number, max: number) => {
+  if (value < min) return min;
+  else if (value > max) return max;
+  return value;
+};
+
+export const getDivElPos = (el: HTMLElement): [number, number] => [
+  Number(el.style.left?.replace("px", "")) ?? 0,
+  Number(el.style.top?.replace("px", "")) ?? 0,
+];
+
+export const getResolver = () => {
+  let resolve: (value: void | PromiseLike<void>) => void = () => {};
+  let promise: Promise<void> = new Promise((res) => (resolve = res));
+  return { resolve, promise };
+};

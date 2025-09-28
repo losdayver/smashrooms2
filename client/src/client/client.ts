@@ -14,7 +14,7 @@ import { ControlsObjType } from "@client/config/config";
 import { FocusManager, IFocusable } from "@client/focus/focusManager";
 import { SignalEmitter, ISignalEmitterPublicInterface } from "@client/utils";
 import { ClientActionCodesExt } from "@stdTypes/messages";
-import { IScoreUpdateExt, SmshMessageTypeExt } from "@smshTypes/messages";
+import { SmshMessageTypeExt } from "@smshTypes/messages";
 
 type ClientEventEmitterType =
   | SmshMessageTypeExt["name"]

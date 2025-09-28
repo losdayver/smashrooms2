@@ -36,6 +36,9 @@ export class WSSocketServer implements ISocketServer {
     this.init();
     this.initClientConnectionChecks();
   }
+  destructor = () => {
+    this.socketServer.close();
+  };
 
   onReceiveMessageFromCommunicator = (
     event: any,

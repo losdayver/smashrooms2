@@ -13,3 +13,13 @@ export interface StageExt {
   meta: LayoutMetaExt;
   layoutData: string;
 }
+
+// todo move this interface from this file
+export interface ISmshStageMetaExtra {
+  preload: {
+    name: string;
+    behaviours?: any;
+  }[];
+  disasters?: string[];
+  gamemode?: string;
+}

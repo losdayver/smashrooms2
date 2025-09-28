@@ -1,0 +1,67 @@
+.editor {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  overflow: hidden;
+  user-select: none;
+}
+
+.editor * {
+  z-index: 99;
+}
+
+.editor__toolbar {
+  height: 45px;
+  background: white;
+  z-index: 90;
+  padding: 4px;
+  display: flex;
+  gap: 4px;
+}
+
+.editor__statusbar {
+  height: 30px;
+  background: white;
+  z-index: 90;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-left: 8px;
+}
+
+.editor__workplace {
+  z-index: 80;
+  flex: 1;
+  display: flex;
+  justify-content: space-between;
+}
+
+.editor__workplace__left-sidebar {
+  min-width: 200px;
+  width: 20%;
+  background: wheat;
+  display: flex;
+  flex-direction: column;
+}
+
+.editor__workplace__canvas-container {
+  z-index: 1;
+  flex: 1;
+  border: 0.2em solid #2f3133;
+  border-right: none;
+  background-size: cover;
+}
+
+.editor__workplace__left-sidebar__prop-list {
+  height: 50%;
+  background: white;
+  border-bottom: 0.2em solid #2f3133;
+  overflow-y: auto;
+  padding: 4px;
+}
+
+.editor__workplace__left-sidebar__palette {
+  height: 50%;
+  padding: 4px;
+}
