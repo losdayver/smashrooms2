@@ -11,13 +11,16 @@
   "license": "GPL-3.0",
   "description": "",
   "dependencies": {
+    "express": "^5.1.0",
     "module-alias": "^2.2.3",
     "pg": "^8.16.0",
     "ws": "^8.18.0"
   },
   "devDependencies": {
+    "@types/express": "^5.0.3",
     "@types/node": "^22.10.1",
     "@types/pg": "^8.15.4",
+    "@types/ws": "^8.18.1",
     "nodemon": "^3.1.7"
   },
   "_moduleAliases": {

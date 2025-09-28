@@ -45,6 +45,7 @@
   border-radius: 0.2em;
 
   color: #0d0f11;
+  background-size: cover;
 }
 
 .smsh-button:hover {

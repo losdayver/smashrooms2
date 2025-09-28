@@ -1,0 +1,31 @@
+.smsh-editor-canvas {
+  z-index: 1;
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.smsh-editor-canvas__tile {
+  position: absolute;
+  box-shadow: 4px 6px 9px 0px #00000087;
+}
+
+.smsh-editor-canvas__prop {
+  position: absolute;
+  z-index: 1000000;
+}
+
+.smsh-editor-canvas__prop--selected {
+  outline: 2px solid red;
+}
+
+.smsh-editor-canvas__prop__controls {
+  position: absolute;
+  top: -30;
+  right: -30;
+  display: flex;
+  gap: 4px;
+}
+
+.smsh-editor-canvas__prop__controls_btn {
+}

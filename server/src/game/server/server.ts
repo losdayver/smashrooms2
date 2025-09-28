@@ -7,18 +7,24 @@ import { Communicator } from "@server/game/communicator/communicator";
 import { ICommunicator } from "@server/game/communicator/communicatorTypes";
 import { smshPropFactory, smshPropMap } from "@server/game/smsh/props";
 import { Scene } from "@server/game/scene/scene";
-import { IScene } from "@server/game/scene/sceneTypes";
+import { IScene, IStageLoader } from "@server/game/scene/sceneTypes";
 import { WSSocketServer } from "@server/game/sockets/sockets";
 import { ISocketServer } from "@server/game/sockets/socketsTypes";
 import { SmshScheduler } from "@server/game/smsh/scheduler";
 import { PGQuerier } from "@server/db/pgQuerier";
-
 export class Server {
   private scene: IScene;
   private communicator: ICommunicator;
   private socketServer: ISocketServer;
+  private interval: NodeJS.Timeout;
 
-  start = () => setInterval(this.scene.tick, 32);
+  start = () => (this.interval = setInterval(this.scene.tick, 32));
+
+  stop = () => {
+    clearTimeout(this.interval);
+    this.scene.destructor();
+    this.socketServer.destructor();
+  };
 
   constructor(
     socketServer: ISocketServer,
@@ -34,14 +40,17 @@ export class Server {
   }
 }
 
-export const getWSServer = (port: number) => {
+export const getWSServer = (
+  port: number,
+  custom?: { stages?: string[]; stageLoader?: IStageLoader }
+) => {
   const pgQuerier = new PGQuerier();
 
   severityLog(`starting server on port ${port}`);
   const scene = new Scene(
     smshPropMap,
-    ["instagib", "ascend", "origins"],
-    { load: getStageFS },
+    custom?.stages ?? ["instagib", "ascend", "origins"],
+    custom?.stageLoader ?? { load: getStageFS },
     smshPropFactory,
     new SmshScheduler(),
     pgQuerier

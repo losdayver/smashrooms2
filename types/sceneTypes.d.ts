@@ -86,6 +86,20 @@ export interface INameTaggedExt extends IDrawableExt {
 export interface IHasMasterExt {
   hasMaster: {
     master: IPropExt;
+    onDestroySlave?: () => void;
+  };
+}
+
+export interface IPortalExt {
+  portal: {
+    portalID?: string;
+  };
+}
+
+export interface ISpawnerExt {
+  spawner: {
+    props: string[];
+    spawnDelay?: number;
   };
 }
 
@@ -96,7 +110,23 @@ export type PropBehavioursExt = Partial<
     ICollidableExt &
     IDamageableExt &
     IDamagingExt &
-    INameTaggedExt
+    INameTaggedExt &
+    IPortalExt &
+    ISpawnerExt
 >;
 
 export type IBehaviouredPropExt = IPropExt & PropBehavioursExt;
+
+export type ITileSymbols =
+  | " " /** ghost */
+  | "#" /** bricks */
+  | "=" /** metalBeam */
+  | "G" /** deepGround */
+  | "g" /** grass */
+  | "l" /** leaves */
+  | "s" /** stone */
+  | "m" /** metal */
+  | "b" /** box */
+  | "B" /** box broken 1 */
+  | "D" /** box broken 2 */
+  | "C"; /** reinforced concrete */

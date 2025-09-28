@@ -20,6 +20,7 @@ import {
   propSpriteRoute,
   stagesRoute,
 } from "@client/routes";
+import { layoutTileImgMap } from "@client/common";
 
 export class EaselManager {
   private easelDiv: HTMLDivElement | HTMLSpanElement;
@@ -325,7 +326,7 @@ export class EaselManager {
         const char = line[x];
         if (char != " ") {
           const img = document.createElement("img") as HTMLImageElement;
-          img.src = `${layoutSpriteRoute}${layoutTileMap[char].imgSrc}`;
+          img.src = `${layoutSpriteRoute}${layoutTileImgMap[char].imgPath}`;
           img.className = "easel__layout-tile";
           img.style.top = (y * tileSize).toString();
           img.style.left = (x * tileSize).toString();
@@ -421,34 +422,3 @@ interface IEaselProp extends IBehaviouredPropExt {
   overlay0?: HTMLDivElement;
   overlay1?: HTMLDivElement;
 }
-
-interface ILayoutTile {
-  imgSrc: string;
-}
-
-const layoutTileMap: Record<string, ILayoutTile> = {
-  "#": {
-    imgSrc: "bricks.png",
-  },
-  "=": {
-    imgSrc: "metalBeam.png",
-  },
-  G: {
-    imgSrc: "deepGround.png",
-  },
-  g: {
-    imgSrc: "grass.png",
-  },
-  l: {
-    imgSrc: "leaves.png",
-  },
-  s: {
-    imgSrc: "stone.png",
-  },
-  m: {
-    imgSrc: "metal.png",
-  },
-  b: {
-    imgSrc: "box.png",
-  },
-};

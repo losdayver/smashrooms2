@@ -9,160 +9,98 @@
     "preload": [
       {
         "name": "playerSpawner",
-        "behaviours": {
-          "positioned": {
-            "posX": 96,
-            "posY": 672
-          }
-        }
+        "behaviours": { "positioned": { "posX": 96, "posY": 704 } }
       },
       {
         "name": "playerSpawner",
-        "behaviours": {
-          "positioned": {
-            "posX": 1664,
-            "posY": 640
-          }
-        }
+        "behaviours": { "positioned": { "posX": 1664, "posY": 672 } }
       },
       {
         "name": "playerSpawner",
-        "behaviours": {
-          "positioned": {
-            "posX": 1184,
-            "posY": 800
-          }
-        }
+        "behaviours": { "positioned": { "posX": 1184, "posY": 800 } }
       },
       {
         "name": "playerSpawner",
+        "behaviours": { "positioned": { "posX": 1856, "posY": 800 } }
+      },
+      {
+        "name": "portal",
         "behaviours": {
-          "positioned": {
-            "posX": 1856,
-            "posY": 768
-          }
+          "portal": { "portalID": "1" },
+          "positioned": { "posX": 160, "posY": 128 }
         }
       },
       {
         "name": "portal",
         "behaviours": {
-          "positioned": {
-            "posX": 160,
-            "posY": 128
-          },
-          "portal": {
-            "portalID": "1"
-          }
+          "portal": { "portalID": "2" },
+          "positioned": { "posX": 32, "posY": 704 }
         }
       },
       {
         "name": "portal",
         "behaviours": {
-          "positioned": {
-            "posX": 32,
-            "posY": 704
-          },
-          "portal": {
-            "portalID": "2"
-          }
+          "portal": { "portalID": "1" },
+          "positioned": { "posX": 1952, "posY": 640 }
         }
       },
       {
         "name": "portal",
         "behaviours": {
-          "positioned": {
-            "posX": 1952,
-            "posY": 640
-          },
-          "portal": {
-            "portalID": "1"
-          }
-        }
-      },
-      {
-        "name": "portal",
-        "behaviours": {
-          "positioned": {
-            "posX": 1824,
-            "posY": 160
-          },
-          "portal": {
-            "portalID": "2"
-          }
+          "portal": { "portalID": "2" },
+          "positioned": { "posX": 1824, "posY": 160 }
         }
       },
       {
         "name": "itemSpawner",
         "behaviours": {
-          "positioned": {
-            "posX": 1920,
-            "posY": 448
-          },
           "spawner": {
             "props": ["shotgunItem", "pistolItem", "blasterItem", "medikitItem"]
-          }
+          },
+          "positioned": { "posX": 1920, "posY": 448 }
         }
       },
       {
         "name": "itemSpawner",
         "behaviours": {
-          "positioned": {
-            "posX": 640,
-            "posY": 160
-          },
           "spawner": {
             "props": ["bazookaItem", "sniperItem"],
             "spawnDelay": 350
-          }
+          },
+          "positioned": { "posX": 640, "posY": 160 }
         }
       },
       {
         "name": "itemSpawner",
         "behaviours": {
-          "positioned": {
-            "posX": 1568,
-            "posY": 192
-          },
           "spawner": {
             "props": ["bazookaItem", "sniperItem"],
             "spawnDelay": 350
-          }
+          },
+          "positioned": { "posX": 1568, "posY": 192 }
         }
       },
       {
         "name": "itemSpawner",
         "behaviours": {
-          "positioned": {
-            "posX": 512,
-            "posY": 448
-          },
           "spawner": {
             "props": ["shotgunItem", "pistolItem", "blasterItem", "medikitItem"]
-          }
+          },
+          "positioned": { "posX": 512, "posY": 448 }
         }
       },
       {
         "name": "itemSpawner",
         "behaviours": {
-          "positioned": {
-            "posX": 608,
-            "posY": 832
-          },
-          "spawner": {
-            "props": ["pistolItem", "blasterItem"]
-          }
+          "spawner": { "props": ["pistolItem", "blasterItem"] },
+          "positioned": { "posX": 608, "posY": 832 }
         }
       },
       {
         "name": "itemSpawner",
         "behaviours": {
-          "positioned": {
-            "posX": 1952,
-            "posY": 832
-          },
-          "spawner": {
-            "props": ["pistolItem", "blasterItem"]
-          }
+          "spawner": { "props": ["pistolItem", "blasterItem"] },
+          "positioned": { "posX": 1952, "posY": 832 }
         }
       }
     ]

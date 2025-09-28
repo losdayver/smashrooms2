@@ -18,19 +18,13 @@ import { Toast } from "@client/ui/toast";
 import { pickRandom } from "@client/utils";
 import { RegModal } from "@client/modal/regModal";
 import { GameMenuModal } from "@client/modal/gameMenuModal";
-import { defaultServerConfigObj, ServerConfig } from "@client/config/server";
+import { urlParams } from "@client/url";
 
 export const gameLoader = async () => {
-  const serverCfg = new ServerConfig();
-  let wsURLPrefix: string;
-  // TODO: what if I connect to different host?
-  window.location.protocol === "https:"
-    ? (wsURLPrefix = "wss")
-    : (wsURLPrefix = "ws");
   const client = new Client(
-    new URL(
-      `${wsURLPrefix}://${serverCfg.getValue("host")}:${serverCfg.getValue("port")}`
-    )
+    `ws://${urlParams?.wsHost ?? window.location.hostname}:${
+      urlParams.wsPort ?? 5889
+    }`
   );
 
   const chat = new Chat(
