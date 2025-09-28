@@ -87,6 +87,8 @@ export class RegModal extends Modal {
     const input = document.createElement("input");
     input.classList.add("smsh-input");
     input.type = "text";
+    input.style.height = "40px";
+    input.style.width = "100%";
 
     const label = document.createElement("label");
     label.append("Enter player name:", input);
@@ -96,6 +98,7 @@ export class RegModal extends Modal {
     submitBtn.classList.add("smsh-button");
     submitBtn.type = "submit";
     submitBtn.value = "Connect";
+    submitBtn.style.height = "40px";
 
     this.form.append(label, submitBtn);
     this.form.addEventListener("submit", (event: SubmitEvent) => {
@@ -105,6 +108,7 @@ export class RegModal extends Modal {
     this.form.classList.add("smsh-form");
     this.form.style.display = "flex";
     this.form.style.justifyContent = "center";
+    this.form.style.alignItems = "end";
     this.form.style.gap = "0.5em";
     this.formIsInit = true;
   };
@@ -146,7 +150,8 @@ export class RegModal extends Modal {
       data.stageName;
     (document.querySelector(".stage-author") as HTMLElement).innerText =
       data.stageAuthor;
-    (document.querySelector(".stage-players") as HTMLElement).innerText =
-      `${data.currPlayerCount}/${data.maxPlayerCount}`;
+    (
+      document.querySelector(".stage-players") as HTMLElement
+    ).innerText = `${data.currPlayerCount}/${data.maxPlayerCount}`;
   };
 }
