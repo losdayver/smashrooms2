@@ -10,4 +10,4 @@ RUN chmod +x ./scripts/*-ws-server.sh
 RUN npm i -g typescript
 RUN ./scripts/build-ws-server.sh
 EXPOSE 5889
-CMD ["bash", "./scripts/run-ws-server.bash"]
+CMD ["bash", "./scripts/run-ws-server.sh"]

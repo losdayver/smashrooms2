@@ -9,4 +9,4 @@ COPY smshTypes ./smshTypes/
 RUN chmod +x ./scripts/*-static-server.sh
 RUN ./scripts/build-static-server.sh
 EXPOSE 5890
-CMD ["bash", "./scripts/run-static-server.bash"]
+CMD ["bash", "./scripts/run-static-server.sh"]
