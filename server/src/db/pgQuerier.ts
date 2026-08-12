@@ -57,7 +57,7 @@ const queryStorage: Record<
     return "select * from top_scores_by_tag order by kills desc limit $limit";
   },
   qUpsertTopScore(conf) {
-    if (conf.params.target == "client") return;
+    if (conf.target == "client") return;
     return `
     insert into top_scores_by_tag (tag, kills) 
     values ($tag, $kills)

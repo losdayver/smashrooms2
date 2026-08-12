@@ -35,9 +35,10 @@ export abstract class DBQuerier<Params extends object = object> {
     // if instance of IDBRes is returned
     else if (typeof text == "object") return text as IDBRes;
     const preprocessed = this.preProcessText?.(text, params) ?? text;
-    const client = await this.getClient();
+    let client: DBClient | undefined;
     let res: IDBRes = [];
     try {
+      client = await this.getClient();
       if (typeof preprocessed == "string")
         res = await client.query(preprocessed, params);
       else
@@ -46,7 +47,11 @@ export abstract class DBQuerier<Params extends object = object> {
     } catch (e) {
       console.error(e);
     } finally {
-      client?.release();
+      try {
+        client?.release();
+      } catch (e) {
+        console.error(e);
+      }
     }
   };
 }
