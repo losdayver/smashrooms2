@@ -1,5 +1,5 @@
 import type { PoolConfig } from "pg";
-import { z } from "zod";
+import { z, infer as zInfer } from "zod";
 
 interface DatabaseConfig {
   postgres?: PoolConfig;
@@ -12,7 +12,16 @@ const serverConfigSchema = z.object({
   editor: z.object({ enabled: z.boolean(), testingServerPort: port }),
 });
 
+type ServerConfig = zInfer<typeof serverConfigSchema>
+
+let config: ServerConfig;
+try {
+  config = require("../../config/server.json")
+} catch {
+  config = require("../../config/server-example.json")
+}
+
 export const env = {
-  server: serverConfigSchema.parse(require("../../config/server.json")),
+  server: serverConfigSchema.parse(config),
   dbConfig: {} as DatabaseConfig,
 } as const;
