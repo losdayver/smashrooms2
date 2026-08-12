@@ -17,7 +17,7 @@ export const defaultControlsObj: ControlsObjType = {
   right: ["ArrowRight", "KeyD", "LStickRight", "DPadRight"],
   down: ["ArrowDown", "KeyS", "LStickDown", "DPadDown"],
   left: ["ArrowLeft", "KeyA", "LStickLeft", "DPadLeft"],
-  fire: ["ShiftLeft", "Square"],
+  fire: ["ControlLeft", "Square"],
   chat: ["KeyT", "Share"],
   back: ["Escape", "Options"],
   confirm: ["Enter"],
