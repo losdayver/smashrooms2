@@ -3,10 +3,10 @@ services:
     build:
       dockerfile: ./Dockerfile-ws-server
     ports:
-      - "5889:5889"
+      - "127.0.0.1:15889:5889"
 
   static-server:
     build:
       dockerfile: ./Dockerfile-static-server
     ports:
-      - "5890:5890"
+      - "127.0.0.1:15890:5890"
