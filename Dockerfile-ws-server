@@ -1,6 +1,6 @@
 FROM node:22
 WORKDIR /app
-COPY package.json package-lock.json tsconfig.paths.json ./
+COPY package.json package-lock.json tsconfig.json ./
 COPY client/package.json ./client/package.json
 COPY staticServer/package.json ./staticServer/package.json
 COPY ./scripts/*-ws-server.sh ./scripts/
