@@ -23,7 +23,7 @@ export abstract class Palette<Color extends IPaletteColor> {
       colorDiv.classList.add("smsh-palette__container__color");
       colorDiv.onclick = () => this._selectColor(colorDiv, color);
 
-      const img = document.createElement("img") as HTMLImageElement;
+      const img = document.createElement("img");
       img.src = `${baseImgRoute}${colorMap[color].imgPath}`;
       colorDiv.appendChild(img);
       this.palette.appendChild(colorDiv);

@@ -1,20 +1,16 @@
 {
-  "name": "staticserver",
+  "name": "@smashrooms/static-server",
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "nodemon -L -e js,json --exec node index.js\"",
-    "prod": "node index.js"
+    "dev": "nodemon -L -e js,json --exec \"node index.js\"",
+    "start": "node index.js"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "description": "",
   "dependencies": {
-    "express": "^4.21.1"
-  },
-  "devDependencies": {
-    "nodemon": "^3.1.7"
+    "express": "^5.1.0"
   }
 }

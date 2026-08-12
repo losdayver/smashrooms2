@@ -84,7 +84,7 @@ export const startApi = () => {
   api.use(express.json());
   api.use(corsMiddleware);
 
-  if (env.editorConfig?.allow) {
+  if (env.server.editor.enabled) {
     let editorWSServer: Server;
     api.get("/editor/stageNames", async (_, res) => {
       const folders = await fsp
@@ -119,17 +119,17 @@ export const startApi = () => {
       } catch {
         res.send(400);
       }
-      editorWSServer = getWSServer(env.editorConfig.testingServerPort, {
+      editorWSServer = getWSServer(env.server.editor.testingServerPort, {
         stages: [stage.meta.stageSystemName],
         stageLoader: { load: () => stage },
       });
       editorWSServer.start();
       res.send({
-        testingUrlParams: `?wsPort=${env.editorConfig.testingServerPort}`,
+        testingUrlParams: `?wsPort=${env.server.editor.testingServerPort}`,
       } satisfies IEditorUploadOutgoingBody);
     });
   }
-  api.listen(env.apiConfig.port ?? 5900, "0.0.0.0", () => {
-    console.log(`api server listening on port ${env.apiConfig.port ?? 5900}!`);
+  api.listen(env.server.api.port, "0.0.0.0", () => {
+    console.log(`api server listening on port ${env.server.api.port}!`);
   });
 };

@@ -1,0 +1,31 @@
+{
+  "name": "smashrooms2",
+  "version": "1.0.0",
+  "private": true,
+  "workspaces": [
+    "client",
+    "server",
+    "staticServer"
+  ],
+  "scripts": {
+    "build": "npm run build:client && npm run build:server",
+    "build:client": "npm run build --workspace @smashrooms/client",
+    "build:server": "npm run build --workspace @smashrooms/server",
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "start:server": "npm run start --workspace @smashrooms/server",
+    "start:static": "npm run start --workspace @smashrooms/static-server",
+    "dev:client": "npm run dev --workspace @smashrooms/client",
+    "dev:server": "npm run dev --workspace @smashrooms/server",
+    "dev:static": "npm run dev --workspace @smashrooms/static-server"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "_moduleAliases": {
+    "@server": "server/dist"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.7",
+    "typescript": "7.0.2"
+  }
+}

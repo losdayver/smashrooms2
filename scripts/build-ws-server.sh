@@ -1,2 +1,3 @@
 #!/usr/bin/env bash
-cd ./server && npm i && tsc
+npm ci
+npm run build:server

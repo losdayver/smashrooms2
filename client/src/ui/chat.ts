@@ -8,7 +8,7 @@ export class Chat implements IFocusable {
   private input: HTMLInputElement;
 
   receiveMessage = (sender: string, message: string) => {
-    const messageEl = document.createElement("div") as HTMLDivElement;
+    const messageEl = document.createElement("div");
     messageEl.className = "chat__message";
     messageEl.innerText = `${sender}: ${
       message.length > this.maxMessageLength
@@ -70,22 +70,22 @@ export class Chat implements IFocusable {
 
     this.maxMessageLength = maxMessageLength;
 
-    const submit = document.createElement("button") as HTMLInputElement;
+    const submit = document.createElement("button");
     submit.innerHTML = "Send";
     submit.classList.add("chat__submit", "smsh-button");
 
     submit.addEventListener("click", this.send);
 
-    const controls = document.createElement("div") as HTMLDivElement;
+    const controls = document.createElement("div");
 
     controls.className = "chat__controls-container";
     controls.append(input, submit);
 
-    const messageContainer = document.createElement("div") as HTMLDivElement;
+    const messageContainer = document.createElement("div");
     messageContainer.className = "chat__message-container";
     this.messageContainer = messageContainer;
 
-    const chatEl = document.createElement("div") as HTMLDivElement;
+    const chatEl = document.createElement("div");
     chatEl.className = "chat";
 
     chatEl.append(messageContainer, controls);

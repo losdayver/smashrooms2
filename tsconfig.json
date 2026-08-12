@@ -1,0 +1,10 @@
+{
+  "compilerOptions": {
+    "paths": {
+      "@client/*": ["./client/src/*"],
+      "@server/*": ["./server/src/*"],
+      "@stdTypes/*": ["./types/*"],
+      "@smshTypes/*": ["./smshTypes/*"]
+    }
+  }
+}

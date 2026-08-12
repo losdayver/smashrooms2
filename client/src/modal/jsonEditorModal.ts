@@ -51,7 +51,7 @@ export class JsonEditorModal extends FocusableModal {
   };
 
   protected getContent = () => {
-    const formatButton = document.createElement("button") as HTMLButtonElement;
+    const formatButton = document.createElement("button");
     formatButton.classList.add("smsh-button");
     formatButton.onclick = this.formatTextArea;
     formatButton.innerText = "format";

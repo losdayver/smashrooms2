@@ -338,7 +338,7 @@ export class EditorCanvas implements IFocusable, IDestructible {
     tileDiv.style.zIndex = String(x * 10000 + y);
     tileDiv.style.top = (y * this.tileSize).toString();
     tileDiv.style.left = (x * this.tileSize).toString();
-    const img = document.createElement("img") as HTMLImageElement;
+    const img = document.createElement("img");
     img.src = `${layoutSpriteRoute}${layoutTileImgMap[tile].imgPath}`;
     tileDiv.appendChild(img);
     return tileDiv;
@@ -362,7 +362,7 @@ export class EditorCanvas implements IFocusable, IDestructible {
       propDiv.style.transform = `translate(${propMeta.offset
         .map((val) => val + "px")
         .join(", ")})`;
-    const img = document.createElement("img") as HTMLImageElement;
+    const img = document.createElement("img");
     img.src = `${propSpriteRoute}${propMeta.imgPath}`;
     propDiv.appendChild(img);
     const behavioursRef = {

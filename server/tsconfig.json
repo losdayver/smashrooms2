@@ -1,22 +1,16 @@
 {
+  "extends": "../tsconfig.json",
   "compilerOptions": {
-    "moduleResolution": "node",
-    "target": "es2021",
-    "module": "CommonJS",
-    "baseUrl": "./",
+    "moduleResolution": "NodeNext",
+    "target": "ESNext",
+    "module": "NodeNext",
+    "rootDir": "src",
     "outDir": "dist",
-    "paths": {
-      "@server/*": ["./src/*"],
-      "@stdTypes/*": ["../types/*"],
-      "@smshTypes/*": ["../smshTypes/*"],
-      "@env/*": ["../.env/*"]
-    },
     "strict": true,
     "esModuleInterop": true,
     "strictNullChecks": false,
     "noImplicitAny": false,
     "noEmitOnError": true,
-    "typeRoots": ["./node_modules/@types", "../types", "../smshTypes"],
     "resolveJsonModule": true
   },
   "include": ["src"]

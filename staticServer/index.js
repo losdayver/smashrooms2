@@ -7,7 +7,6 @@ const staticRoot = "../static/";
 
 app.use(express.json());
 
-const scriptsPath = path.resolve(__dirname + staticRoot + "scripts");
 const noCache = (req, res, next) => {
   res.setHeader(
     "Cache-Control",
@@ -17,10 +16,11 @@ const noCache = (req, res, next) => {
   res.setHeader("Expires", "0");
   next();
 };
+const scriptsPath = path.resolve(__dirname + staticRoot + "scripts");
 app.use("/scripts", noCache, express.static(scriptsPath));
 app.use(express.static(staticRoot));
 
-app.get("/*", (req, res) => {
+app.get("/{*path}", (req, res) => {
   res.sendFile(path.join(__dirname, staticRoot, "html", "index.html"));
 });
 

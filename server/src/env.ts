@@ -1,16 +1,18 @@
-import { readFileSync } from "fs";
-import { config } from "./config";
+import type { PoolConfig } from "pg";
+import { z } from "zod";
 
-const getEnv = (route: string) => {
-  try {
-    return JSON.parse(readFileSync(route).toString());
-  } catch {
-    return {};
-  }
-};
+interface DatabaseConfig {
+  postgres?: PoolConfig;
+}
+
+const port = z.number().int().min(1).max(65_535);
+const serverConfigSchema = z.object({
+  webSocket: z.object({ port }),
+  api: z.object({ enabled: z.boolean(), port }),
+  editor: z.object({ enabled: z.boolean(), testingServerPort: port }),
+});
 
 export const env = {
-  dbConfig: getEnv(config.dbConfigRoute),
-  editorConfig: getEnv(config.editorConfigRoute),
-  apiConfig: getEnv(config.editorConfigRoute),
+  server: serverConfigSchema.parse(require("../../config/server.json")),
+  dbConfig: {} as DatabaseConfig,
 } as const;

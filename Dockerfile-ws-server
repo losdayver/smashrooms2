@@ -1,13 +1,15 @@
 FROM node:22
 WORKDIR /app
+COPY package.json package-lock.json tsconfig.paths.json ./
+COPY client/package.json ./client/package.json
+COPY staticServer/package.json ./staticServer/package.json
 COPY ./scripts/*-ws-server.sh ./scripts/
 COPY server ./server/
 COPY types ./types/
 COPY smshTypes ./smshTypes/
 COPY static ./static/
-COPY .env ./.env/
+COPY config ./config/
 RUN chmod +x ./scripts/*-ws-server.sh
-RUN npm i -g typescript
 RUN ./scripts/build-ws-server.sh
 EXPOSE 5889
 CMD ["bash", "./scripts/run-ws-server.sh"]

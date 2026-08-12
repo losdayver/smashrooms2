@@ -1,0 +1,13 @@
+{
+  "webSocket": {
+    "port": 5889
+  },
+  "api": {
+    "enabled": false,
+    "port": 5900
+  },
+  "editor": {
+    "enabled": false,
+    "testingServerPort": 5891
+  }
+}

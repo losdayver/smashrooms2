@@ -1,3 +1,2 @@
 #!/bin/bash
-cd server
-npm run prod
+npm run start:server

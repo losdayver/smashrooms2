@@ -315,7 +315,7 @@ export class EaselManager {
 
   private constructStage = (stage: StageExt) => {
     const tileSize = stage.meta.gridSize;
-    this.layoutPivot = document.createElement("div") as HTMLDivElement;
+    this.layoutPivot = document.createElement("div");
     this.layoutPivot.style.position = "relative";
     this.stage = stage;
     let width: number;
@@ -325,7 +325,7 @@ export class EaselManager {
       for (let x = 0; x < line.length; x++) {
         const char = line[x];
         if (char != " ") {
-          const img = document.createElement("img") as HTMLImageElement;
+          const img = document.createElement("img");
           img.src = `${layoutSpriteRoute}${layoutTileImgMap[char].imgPath}`;
           img.className = "easel__layout-tile";
           img.style.top = (y * tileSize).toString();

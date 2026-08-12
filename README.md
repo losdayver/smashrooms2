@@ -18,6 +18,27 @@ The testing environment is already deployed here http://olegzhmelev.ru:5890. Not
 
 ## Deployment
 
+### Local development
+
+Requirements: Node.js 22 or newer and npm.
+
+```sh
+npm ci
+npm run build
+```
+
+Run the WebSocket and static servers in separate terminals:
+
+```sh
+npm run start:server
+npm run start:static
+```
+
+The WebSocket server listens on `5889`; the UI is available at
+http://127.0.0.1:5890. Server ports and optional API/editor features are
+configured in `config/server.json`. Database configuration is optional for a
+local start and is intentionally not configured yet.
+
 ### Docker
 
 To deploy the application, simply run the `deploy.sh` script, which will automatically build Docker images and start the application within `smashrooms2-ws-server` and `smashrooms2-static-server` Docker containers:

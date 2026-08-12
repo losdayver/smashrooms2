@@ -24,7 +24,7 @@ export const commitInfoToHtml = (info: ILastCommitInfo) => {
   let msg = info.message.split("\n")[0];
   const d = info.date;
   const match = /\(#(\d+)\)/g.exec(msg)?.[0];
-  const pullNum = match.replace("(#", "").replace(")", "");
+  const pullNum = match?.replace("(#", "").replace(")", "");
   if (match)
     msg = msg.replace(
       match,

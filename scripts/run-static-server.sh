@@ -1,3 +1,2 @@
 #!/bin/bash
-cd staticServer
-npm run prod
+npm run start:static
