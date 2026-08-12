@@ -21,11 +21,23 @@ import { GameMenuModal } from "@client/modal/gameMenuModal";
 import { urlParams } from "@client/url";
 
 export const gameLoader = async () => {
-  const client = new Client(
-    `ws://${urlParams?.wsHost ?? window.location.hostname}:${
-      urlParams.wsPort ?? 5889
-    }`
-  );
+  const encryptOverride =
+    urlParams.wsEncrypt === "true"
+      ? true
+      : urlParams.wsEncrypt === "false"
+        ? false
+        : undefined;
+  const encryptWebSocket =
+    encryptOverride ?? window.location.protocol === "https:";
+  const webSocketUrl = new URL(window.location.href);
+  webSocketUrl.protocol = encryptWebSocket ? "wss:" : "ws:";
+  webSocketUrl.hostname = urlParams.wsHost ?? window.location.hostname;
+  webSocketUrl.port = urlParams.wsPort ?? "5889";
+  webSocketUrl.pathname = "/";
+  webSocketUrl.search = "";
+  webSocketUrl.hash = "";
+
+  const client = new Client(webSocketUrl.href);
 
   const chat = new Chat(
     document.querySelector(".chat-container"),

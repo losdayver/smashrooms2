@@ -1,6 +1,7 @@
 {
   "webSocket": {
-    "port": 5889
+    "port": 5889,
+    "encrypt": false
   },
   "api": {
     "enabled": false,
